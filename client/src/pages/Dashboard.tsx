@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Header } from "@/components/Header";
 import { StatsCard } from "@/components/StatsCard";
 import { AssessmentCard, type Assessment } from "@/components/AssessmentCard";
@@ -6,153 +7,165 @@ import { EmptyState } from "@/components/EmptyState";
 import { UploadDialog } from "@/components/UploadDialog";
 import { AssessmentReport, type FullAssessment } from "@/components/AssessmentReport";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { FileText, TrendingUp, CheckCircle, Clock } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
-// todo: remove mock functionality
-const mockAssessments: Assessment[] = [
-  {
-    id: "1",
-    businessName: "TechStart Solutions LLC",
-    fileName: "techstart_business_plan_2024.pdf",
-    uploadDate: "Dec 15, 2025",
-    status: "complete",
-    overallScore: 74,
-  },
-  {
-    id: "2",
-    businessName: "Green Energy Ventures",
-    fileName: "green_energy_bp.docx",
-    uploadDate: "Dec 14, 2025",
-    status: "complete",
-    overallScore: 88,
-  },
-  {
-    id: "3",
-    businessName: "Urban Logistics Co",
-    fileName: "urban_logistics_plan.pdf",
-    uploadDate: "Dec 13, 2025",
-    status: "needs_review",
-    overallScore: 52,
-  },
-  {
-    id: "4",
-    businessName: "HealthTech Innovations",
-    fileName: "healthtech_proposal.pdf",
-    uploadDate: "Dec 12, 2025",
-    status: "analyzing",
-    overallScore: null,
-  },
-];
+interface ApiAssessment {
+  id: string;
+  businessName: string;
+  fileName: string;
+  uploadDate: string;
+  status: "analyzing" | "complete" | "needs_review" | "failed";
+  overallScore: number | null;
+}
 
-// todo: remove mock functionality
-const mockFullAssessment: FullAssessment = {
-  id: "1",
-  businessName: "TechStart Solutions LLC",
-  fileName: "techstart_business_plan_2024.pdf",
-  uploadDate: "December 15, 2025",
-  status: "complete",
-  overallScore: 74,
-  executiveSummary:
-    "TechStart Solutions presents a moderately strong case for bank debt financing. The company demonstrates solid revenue growth and experienced management. However, concerns around collateral coverage and customer concentration may require additional mitigation strategies. Overall, this business plan shows promise but would benefit from addressing key risk factors before pursuing significant debt financing.",
-  criteria: [
-    {
-      id: "creditworthiness",
-      name: "Creditworthiness",
-      score: 82,
-      analysis: "Strong credit profile with established business history and positive payment patterns. The company has maintained good standing with existing creditors and demonstrates responsible financial management.",
-      keyFindings: ["5+ years in operation", "No significant delinquencies", "Strong personal guarantor credit scores"],
-    },
-    {
-      id: "cash_flow",
-      name: "Cash Flow Analysis",
-      score: 68,
-      analysis: "Adequate cash flow coverage with some seasonal variations that may impact consistency. The debt service coverage ratio meets minimum requirements but leaves limited buffer for unexpected expenses.",
-      keyFindings: ["DSCR of 1.4x", "Seasonal fluctuations of 20%", "Growing accounts receivable"],
-    },
-    {
-      id: "collateral",
-      name: "Collateral Assessment",
-      score: 55,
-      analysis: "Limited hard assets available for secured lending. Primary company value is in intellectual property and human capital, which are difficult to collateralize for traditional bank loans.",
-      keyFindings: ["Primary assets are IP and equipment", "May need third-party guarantees", "Real estate could enhance collateral position"],
-    },
-    {
-      id: "debt_equity",
-      name: "Debt-to-Equity Ratio",
-      score: 78,
-      analysis: "Conservative leverage with room for additional debt capacity. Current debt structure is manageable and leaves headroom for growth financing.",
-      keyFindings: ["Current D/E ratio of 0.8", "Industry average is 1.2", "Strong equity base from retained earnings"],
-    },
-    {
-      id: "market_viability",
-      name: "Market Viability",
-      score: 85,
-      analysis: "Strong market position with clear growth opportunities. The target market is expanding and the company has established competitive advantages.",
-      keyFindings: ["Growing market segment of 15% annually", "Clear competitive advantages in technology", "Diversified revenue streams"],
-    },
-    {
-      id: "management",
-      name: "Management Team",
-      score: 80,
-      analysis: "Experienced leadership team with relevant industry background and track record of successful execution.",
-      keyFindings: ["15+ years combined experience", "Previous successful ventures", "Strong advisory board"],
-    },
-  ],
-  strengths: [
-    "Strong management team with proven track record in the industry",
-    "Consistent revenue growth of 25% over past 3 years",
-    "Conservative debt levels with room for additional leverage",
-    "Clear market opportunity with established competitive moat",
-  ],
-  weaknesses: [
-    "Limited tangible collateral assets for secured lending",
-    "High customer concentration risk (top 3 clients = 60% revenue)",
-    "Thin operating margins compared to industry benchmarks",
-  ],
-  recommendations: [
-    "Diversify customer base to reduce concentration risk before applying for larger loan amounts",
-    "Build additional collateral through strategic asset acquisition or arrange third-party guarantees",
-    "Implement cost optimization strategies to improve operating margins by at least 3-5%",
-    "Prepare detailed cash flow projections showing seasonal patterns and mitigation strategies",
-  ],
-};
+interface ApiFullAssessment extends ApiAssessment {
+  executiveSummary: string | null;
+  criteria: Array<{
+    id: string;
+    name: string;
+    score: number;
+    analysis: string;
+    keyFindings: string[];
+  }> | null;
+  strengths: string[] | null;
+  weaknesses: string[] | null;
+  recommendations: string[] | null;
+}
 
 export default function Dashboard() {
   const [uploadOpen, setUploadOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [viewingId, setViewingId] = useState<string | null>(null);
-  const [assessments, setAssessments] = useState<Assessment[]>(mockAssessments);
   const { toast } = useToast();
+  const previousStatusRef = useRef<Map<string, string>>(new Map());
 
-  const handleUpload = (file: File) => {
-    setIsUploading(true);
-    // todo: replace with actual API call
-    setTimeout(() => {
-      const newAssessment: Assessment = {
-        id: String(Date.now()),
-        businessName: file.name.replace(/\.[^/.]+$/, "").replace(/_/g, " "),
-        fileName: file.name,
-        uploadDate: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-        status: "analyzing",
-        overallScore: null,
-      };
-      setAssessments([newAssessment, ...assessments]);
-      setIsUploading(false);
+  const { data: assessments = [], isLoading } = useQuery<ApiAssessment[]>({
+    queryKey: ["/api/assessments"],
+    refetchInterval: 5000,
+  });
+
+  useEffect(() => {
+    assessments.forEach((assessment) => {
+      const prevStatus = previousStatusRef.current.get(assessment.id);
+      if (prevStatus === "analyzing" && assessment.status === "failed") {
+        toast({
+          title: "Analysis failed",
+          description: `Failed to analyze "${assessment.businessName}". Please try uploading again.`,
+          variant: "destructive",
+        });
+      }
+      if (prevStatus === "analyzing" && assessment.status === "complete") {
+        toast({
+          title: "Analysis complete",
+          description: `"${assessment.businessName}" has been analyzed successfully.`,
+        });
+      }
+      previousStatusRef.current.set(assessment.id, assessment.status);
+    });
+  }, [assessments, toast]);
+
+  const { data: fullAssessment, isLoading: isLoadingFull } = useQuery<ApiFullAssessment>({
+    queryKey: ["/api/assessments", viewingId],
+    queryFn: async () => {
+      const response = await fetch(`/api/assessments/${viewingId}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch assessment");
+      }
+      return response.json();
+    },
+    enabled: !!viewingId,
+    staleTime: 0,
+    refetchInterval: (query) => {
+      const data = query.state.data;
+      if (data && data.status === "analyzing") {
+        return 3000;
+      }
+      return false;
+    },
+  });
+
+  const uploadMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append("file", file);
+      const response = await fetch("/api/assessments/upload", {
+        method: "POST",
+        body: formData,
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Upload failed");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/assessments"] });
       setUploadOpen(false);
+      setIsUploading(false);
       toast({
         title: "Business plan uploaded",
         description: "Your document is being analyzed. This may take a few moments.",
       });
-    }, 1500);
+    },
+    onError: (error: Error) => {
+      setIsUploading(false);
+      toast({
+        title: "Upload failed",
+        description: error.message || "Failed to upload the document. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await apiRequest("DELETE", `/api/assessments/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/assessments"] });
+      toast({
+        title: "Assessment deleted",
+        description: "The assessment has been removed.",
+      });
+    },
+  });
+
+  const handleUpload = (file: File) => {
+    setIsUploading(true);
+    uploadMutation.mutate(file);
   };
 
   const handleDelete = (id: string) => {
-    setAssessments(assessments.filter((a) => a.id !== id));
-    toast({
-      title: "Assessment deleted",
-      description: "The assessment has been removed.",
-    });
+    deleteMutation.mutate(id);
   };
+
+  const handleBack = () => {
+    const currentId = viewingId;
+    setViewingId(null);
+    if (currentId) {
+      queryClient.removeQueries({ queryKey: ["/api/assessments", currentId] });
+    }
+  };
+
+  const handleView = (id: string) => {
+    queryClient.removeQueries({ queryKey: ["/api/assessments", id] });
+    setViewingId(id);
+  };
+
+  const mappedAssessments: Assessment[] = assessments.map((a) => ({
+    id: a.id,
+    businessName: a.businessName,
+    fileName: a.fileName,
+    uploadDate: new Date(a.uploadDate).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }),
+    status: a.status,
+    overallScore: a.overallScore,
+  }));
 
   const completedCount = assessments.filter((a) => a.status === "complete").length;
   const avgScore = assessments
@@ -160,12 +173,104 @@ export default function Dashboard() {
     .reduce((sum, a, _, arr) => sum + (a.overallScore || 0) / arr.length, 0);
 
   if (viewingId) {
-    // todo: fetch actual assessment data
+    if (isLoadingFull) {
+      return (
+        <div className="min-h-screen bg-background">
+          <Header />
+          <main className="mx-auto max-w-6xl px-6 py-8">
+            <div className="space-y-6">
+              <Skeleton className="h-8 w-64" />
+              <Skeleton className="h-48 w-full" />
+              <Skeleton className="h-64 w-full" />
+            </div>
+          </main>
+        </div>
+      );
+    }
+
+    if (!fullAssessment) {
+      return (
+        <div className="min-h-screen bg-background">
+          <Header />
+          <main className="mx-auto max-w-6xl px-6 py-8">
+            <div className="text-center">
+              <p className="text-muted-foreground">Assessment not found</p>
+            </div>
+          </main>
+        </div>
+      );
+    }
+
+    if (fullAssessment.status === "failed") {
+      return (
+        <div className="min-h-screen bg-background">
+          <Header />
+          <main className="mx-auto max-w-6xl px-6 py-8">
+            <div className="text-center space-y-4">
+              <p className="text-lg font-semibold text-destructive">Analysis Failed</p>
+              <p className="text-muted-foreground">
+                Unable to analyze "{fullAssessment.businessName}". Please try uploading the document again.
+              </p>
+              <button
+                onClick={handleBack}
+                className="text-primary underline"
+                data-testid="button-back-to-dashboard"
+              >
+                Back to Dashboard
+              </button>
+            </div>
+          </main>
+        </div>
+      );
+    }
+
+    if (fullAssessment.status === "analyzing") {
+      return (
+        <div className="min-h-screen bg-background">
+          <Header />
+          <main className="mx-auto max-w-6xl px-6 py-8">
+            <div className="text-center space-y-4">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
+              <p className="text-lg font-semibold">Analyzing Business Plan</p>
+              <p className="text-muted-foreground">
+                "{fullAssessment.businessName}" is being analyzed. This may take a minute.
+              </p>
+              <button
+                onClick={handleBack}
+                className="text-primary underline"
+                data-testid="button-back-to-dashboard"
+              >
+                Back to Dashboard
+              </button>
+            </div>
+          </main>
+        </div>
+      );
+    }
+
+    const mappedFull: FullAssessment = {
+      id: fullAssessment.id,
+      businessName: fullAssessment.businessName,
+      fileName: fullAssessment.fileName,
+      uploadDate: new Date(fullAssessment.uploadDate).toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      }),
+      status: fullAssessment.status,
+      overallScore: fullAssessment.overallScore || 0,
+      executiveSummary: fullAssessment.executiveSummary || "Analysis pending...",
+      criteria: fullAssessment.criteria || [],
+      strengths: fullAssessment.strengths || [],
+      weaknesses: fullAssessment.weaknesses || [],
+      recommendations: fullAssessment.recommendations || [],
+    };
+
     return (
       <div className="min-h-screen bg-background">
         <Header />
         <main className="mx-auto max-w-6xl px-6 py-8">
-          <AssessmentReport assessment={mockFullAssessment} onBack={() => setViewingId(null)} />
+          <AssessmentReport assessment={mappedFull} onBack={handleBack} />
         </main>
       </div>
     );
@@ -174,44 +279,46 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-background">
       <Header onNewAssessment={() => setUploadOpen(true)} />
-      
+
       <main className="mx-auto max-w-7xl px-6 py-8">
         <div className="space-y-8">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <StatsCard 
-              title="Total Assessments" 
-              value={assessments.length} 
+            <StatsCard
+              title="Total Assessments"
+              value={assessments.length}
               icon={FileText}
             />
-            <StatsCard 
-              title="Completed" 
-              value={completedCount} 
-              icon={CheckCircle}
-            />
-            <StatsCard 
-              title="In Progress" 
-              value={assessments.filter((a) => a.status === "analyzing").length} 
+            <StatsCard title="Completed" value={completedCount} icon={CheckCircle} />
+            <StatsCard
+              title="In Progress"
+              value={assessments.filter((a) => a.status === "analyzing").length}
               icon={Clock}
             />
-            <StatsCard 
-              title="Average Score" 
-              value={avgScore > 0 ? avgScore.toFixed(1) : "-"} 
+            <StatsCard
+              title="Average Score"
+              value={avgScore > 0 ? avgScore.toFixed(1) : "-"}
               icon={TrendingUp}
             />
           </div>
 
           <div className="space-y-4">
             <h2 className="text-xl font-semibold">Recent Assessments</h2>
-            
-            {assessments.length === 0 ? (
+
+            {isLoading ? (
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-48 w-full" />
+                ))}
+              </div>
+            ) : mappedAssessments.length === 0 ? (
               <EmptyState onUpload={() => setUploadOpen(true)} />
             ) : (
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {assessments.map((assessment) => (
+                {mappedAssessments.map((assessment) => (
                   <AssessmentCard
                     key={assessment.id}
                     assessment={assessment}
-                    onView={setViewingId}
+                    onView={handleView}
                     onDelete={handleDelete}
                   />
                 ))}

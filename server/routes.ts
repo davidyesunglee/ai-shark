@@ -3,9 +3,9 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import multer from "multer";
 import { parseDocument } from "./documentParser";
-import { analyzeBusinessPlan } from "./openai";
+import { analyzeBusinessPlan, isOpenAIConfigured } from "./openai";
 
-const upload = multer({ 
+const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 },
 });
@@ -14,7 +14,7 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  
+
   app.get("/api/assessments", async (req, res) => {
     try {
       const assessments = await storage.getAllAssessments();
@@ -52,8 +52,12 @@ export async function registerRoutes(
         return res.status(400).json({ message: "No file uploaded" });
       }
 
+      if (!isOpenAIConfigured()) {
+        return res.status(503).json({ message: "AI analysis is not configured. Please add your OpenAI API key." });
+      }
+
       const { originalname, mimetype, buffer } = req.file;
-      
+
       let fileContent: string;
       try {
         fileContent = await parseDocument(buffer, mimetype);
@@ -80,7 +84,7 @@ export async function registerRoutes(
         recommendations: null,
       });
 
-      res.json({ 
+      res.json({
         id: assessment.id,
         businessName: assessment.businessName,
         fileName: assessment.fileName,
@@ -115,7 +119,7 @@ export async function registerRoutes(
 async function analyzeInBackground(assessmentId: string, content: string) {
   try {
     const result = await analyzeBusinessPlan(content);
-    
+
     await storage.updateAssessment(assessmentId, {
       status: "complete",
       overallScore: result.overallScore,
@@ -125,7 +129,7 @@ async function analyzeInBackground(assessmentId: string, content: string) {
       weaknesses: result.weaknesses,
       recommendations: result.recommendations,
     });
-    
+
     console.log(`Analysis complete for assessment ${assessmentId}`);
   } catch (error) {
     console.error(`Analysis failed for assessment ${assessmentId}:`, error);

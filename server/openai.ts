@@ -1,11 +1,20 @@
 import OpenAI from "openai";
-import type { CriterionScore, AssessmentStatus } from "@shared/schema";
+import type { CriterionScore } from "@shared/schema";
+
+let openaiClient: OpenAI | null = null;
 
 function getOpenAIClient(): OpenAI {
-  if (!process.env.OPENAI_API_KEY) {
-    throw new Error("OPENAI_API_KEY is not configured");
+  if (!openaiClient) {
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error("OPENAI_API_KEY is not configured");
+    }
+    openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   }
-  return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  return openaiClient;
+}
+
+export function isOpenAIConfigured(): boolean {
+  return !!process.env.OPENAI_API_KEY;
 }
 
 export interface AnalysisResult {
@@ -85,7 +94,7 @@ BUSINESS PLAN CONTENT:
 
 export async function analyzeBusinessPlan(content: string): Promise<AnalysisResult> {
   const truncatedContent = content.slice(0, 50000);
-  
+
   const openai = getOpenAIClient();
   const response = await openai.chat.completions.create({
     model: "gpt-4o",
@@ -111,11 +120,11 @@ export async function analyzeBusinessPlan(content: string): Promise<AnalysisResu
 
   try {
     const result = JSON.parse(resultText) as AnalysisResult;
-    
+
     if (typeof result.overallScore !== "number" || !Array.isArray(result.criteria)) {
       throw new Error("Invalid response structure");
     }
-    
+
     return result;
   } catch (error) {
     console.error("Failed to parse OpenAI response:", resultText);

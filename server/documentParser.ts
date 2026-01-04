@@ -1,4 +1,4 @@
-import * as pdfParse from "pdf-parse";
+import { PDFParse } from "pdf-parse";
 import mammoth from "mammoth";
 
 export async function parseDocument(buffer: Buffer, mimeType: string): Promise<string> {
@@ -15,12 +15,22 @@ export async function parseDocument(buffer: Buffer, mimeType: string): Promise<s
 }
 
 async function parsePDF(buffer: Buffer): Promise<string> {
+  let parser: PDFParse | null = null;
   try {
-    const data = await pdfParse(buffer);
-    return data.text;
+    const uint8Array = new Uint8Array(buffer);
+    parser = new PDFParse({ data: uint8Array });
+    const textResult = await parser.getText();
+    return textResult.text;
   } catch (error) {
     console.error("PDF parsing error:", error);
     throw new Error("Failed to parse PDF file");
+  } finally {
+    if (parser) {
+      try {
+        await parser.destroy();
+      } catch {
+      }
+    }
   }
 }
 
