@@ -1,7 +1,12 @@
 import OpenAI from "openai";
 import type { CriterionScore, AssessmentStatus } from "@shared/schema";
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+function getOpenAIClient(): OpenAI {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error("OPENAI_API_KEY is not configured");
+  }
+  return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+}
 
 export interface AnalysisResult {
   overallScore: number;
@@ -81,6 +86,7 @@ BUSINESS PLAN CONTENT:
 export async function analyzeBusinessPlan(content: string): Promise<AnalysisResult> {
   const truncatedContent = content.slice(0, 50000);
   
+  const openai = getOpenAIClient();
   const response = await openai.chat.completions.create({
     model: "gpt-4o",
     messages: [
