@@ -1,15 +1,18 @@
-import OpenAI from "openai";
+import { GoogleGenAI } from "@google/genai";
 import type { CriterionScore } from "@shared/schema";
 
 // Using Replit AI Integrations for Gemini access - no API key required
 // Charges are billed to Replit credits
-let geminiClient: OpenAI | null = null;
+let geminiClient: GoogleGenAI | null = null;
 
-function getGeminiClient(): OpenAI {
+function getGeminiClient(): GoogleGenAI {
   if (!geminiClient) {
-    geminiClient = new OpenAI({
+    geminiClient = new GoogleGenAI({
       apiKey: process.env.AI_INTEGRATIONS_GEMINI_API_KEY!,
-      baseURL: process.env.AI_INTEGRATIONS_GEMINI_BASE_URL,
+      httpOptions: {
+        apiVersion: "",
+        baseUrl: process.env.AI_INTEGRATIONS_GEMINI_BASE_URL,
+      },
     });
   }
   return geminiClient;
@@ -90,32 +93,25 @@ Scoring guide:
 - 0-49: Significant improvements needed before qualifying
 
 Be specific, cite details from the business plan where possible, and provide actionable recommendations.
+IMPORTANT: Return ONLY valid JSON, no markdown formatting, no code blocks, just the raw JSON object.
 
 BUSINESS PLAN CONTENT:
 `;
 
-// the newest Gemini model is "gemini-2.5-flash" - do not change this unless explicitly requested by the user
+// Using Gemini 2.5 Flash via Replit AI Integrations
 export async function analyzeBusinessPlan(content: string): Promise<AnalysisResult> {
   const truncatedContent = content.slice(0, 50000);
 
   const gemini = getGeminiClient();
-  const response = await gemini.chat.completions.create({
+  const response = await gemini.models.generateContent({
     model: "gemini-2.5-flash",
-    messages: [
-      {
-        role: "system",
-        content: "You are an expert bank loan officer and financial analyst. Always respond with valid JSON only, no markdown formatting.",
-      },
-      {
-        role: "user",
-        content: ASSESSMENT_PROMPT + truncatedContent,
-      },
-    ],
-    response_format: { type: "json_object" },
-    max_completion_tokens: 8192,
+    contents: ASSESSMENT_PROMPT + truncatedContent,
+    config: {
+      responseMimeType: "application/json",
+    },
   });
 
-  const resultText = response.choices[0]?.message?.content;
+  const resultText = response.text;
   if (!resultText) {
     throw new Error("No response from Gemini");
   }
