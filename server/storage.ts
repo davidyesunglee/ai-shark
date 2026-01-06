@@ -1,6 +1,4 @@
 import { 
-  type User, 
-  type InsertUser,
   type Assessment,
   type InsertAssessment,
   type AssessmentStatus,
@@ -9,51 +7,28 @@ import {
 import { randomUUID } from "crypto";
 
 export interface IStorage {
-  getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
-  
   getAssessment(id: string): Promise<Assessment | undefined>;
-  getAllAssessments(): Promise<Assessment[]>;
+  getAssessmentsByUser(userId: string): Promise<Assessment[]>;
   createAssessment(assessment: InsertAssessment): Promise<Assessment>;
   updateAssessment(id: string, updates: Partial<Assessment>): Promise<Assessment | undefined>;
   deleteAssessment(id: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
-  private users: Map<string, User>;
   private assessments: Map<string, Assessment>;
 
   constructor() {
-    this.users = new Map();
     this.assessments = new Map();
-  }
-
-  async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
-  }
-
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
-  }
-
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
-    return user;
   }
 
   async getAssessment(id: string): Promise<Assessment | undefined> {
     return this.assessments.get(id);
   }
 
-  async getAllAssessments(): Promise<Assessment[]> {
-    return Array.from(this.assessments.values()).sort(
-      (a, b) => new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime()
-    );
+  async getAssessmentsByUser(userId: string): Promise<Assessment[]> {
+    return Array.from(this.assessments.values())
+      .filter(a => a.userId === userId)
+      .sort((a, b) => new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime());
   }
 
   async createAssessment(insertAssessment: InsertAssessment): Promise<Assessment> {
@@ -74,6 +49,7 @@ export class MemStorage implements IStorage {
 
     const assessment: Assessment = {
       id,
+      userId: insertAssessment.userId,
       businessName: insertAssessment.businessName,
       fileName: insertAssessment.fileName,
       fileContent: insertAssessment.fileContent ?? null,

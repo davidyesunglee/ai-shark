@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import multer from "multer";
 import { parseDocument } from "./documentParser";
 import { analyzeBusinessPlan, isOpenAIConfigured } from "./openai";
+import { setupAuth, isAuthenticated, registerAuthRoutes } from "./replit_integrations/auth";
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -15,9 +16,13 @@ export async function registerRoutes(
   app: Express
 ): Promise<Server> {
 
-  app.get("/api/assessments", async (req, res) => {
+  await setupAuth(app);
+  registerAuthRoutes(app);
+
+  app.get("/api/assessments", isAuthenticated, async (req: any, res) => {
     try {
-      const assessments = await storage.getAllAssessments();
+      const userId = req.user?.claims?.sub;
+      const assessments = await storage.getAssessmentsByUser(userId);
       const mapped = assessments.map((a) => ({
         id: a.id,
         businessName: a.businessName,
@@ -33,11 +38,15 @@ export async function registerRoutes(
     }
   });
 
-  app.get("/api/assessments/:id", async (req, res) => {
+  app.get("/api/assessments/:id", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user?.claims?.sub;
       const assessment = await storage.getAssessment(req.params.id);
       if (!assessment) {
         return res.status(404).json({ message: "Assessment not found" });
+      }
+      if (assessment.userId !== userId) {
+        return res.status(403).json({ message: "Access denied" });
       }
       res.json(assessment);
     } catch (error) {
@@ -46,7 +55,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/assessments/upload", upload.single("file"), async (req, res) => {
+  app.post("/api/assessments/upload", isAuthenticated, upload.single("file"), async (req: any, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No file uploaded" });
@@ -56,6 +65,7 @@ export async function registerRoutes(
         return res.status(503).json({ message: "AI analysis is not configured." });
       }
 
+      const userId = req.user?.claims?.sub;
       const { originalname, mimetype, buffer } = req.file;
 
       let fileContent: string;
@@ -69,9 +79,10 @@ export async function registerRoutes(
       const businessName = originalname
         .replace(/\.[^/.]+$/, "")
         .replace(/[_-]/g, " ")
-        .replace(/\b\w/g, (c) => c.toUpperCase());
+        .replace(/\b\w/g, (c: string) => c.toUpperCase());
 
       const assessment = await storage.createAssessment({
+        userId,
         businessName,
         fileName: originalname,
         fileContent,
@@ -100,8 +111,16 @@ export async function registerRoutes(
     }
   });
 
-  app.delete("/api/assessments/:id", async (req, res) => {
+  app.delete("/api/assessments/:id", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user?.claims?.sub;
+      const assessment = await storage.getAssessment(req.params.id);
+      if (!assessment) {
+        return res.status(404).json({ message: "Assessment not found" });
+      }
+      if (assessment.userId !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
       const deleted = await storage.deleteAssessment(req.params.id);
       if (!deleted) {
         return res.status(404).json({ message: "Assessment not found" });
