@@ -1,20 +1,22 @@
 import OpenAI from "openai";
 import type { CriterionScore } from "@shared/schema";
 
-let openaiClient: OpenAI | null = null;
+// Using Replit AI Integrations for Gemini access - no API key required
+// Charges are billed to Replit credits
+let geminiClient: OpenAI | null = null;
 
-function getOpenAIClient(): OpenAI {
-  if (!openaiClient) {
-    if (!process.env.OPENAI_API_KEY) {
-      throw new Error("OPENAI_API_KEY is not configured");
-    }
-    openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+function getGeminiClient(): OpenAI {
+  if (!geminiClient) {
+    geminiClient = new OpenAI({
+      apiKey: process.env.AI_INTEGRATIONS_GEMINI_API_KEY!,
+      baseURL: process.env.AI_INTEGRATIONS_GEMINI_BASE_URL,
+    });
   }
-  return openaiClient;
+  return geminiClient;
 }
 
 export function isOpenAIConfigured(): boolean {
-  return !!process.env.OPENAI_API_KEY;
+  return !!(process.env.AI_INTEGRATIONS_GEMINI_API_KEY && process.env.AI_INTEGRATIONS_GEMINI_BASE_URL);
 }
 
 export interface AnalysisResult {
@@ -92,12 +94,13 @@ Be specific, cite details from the business plan where possible, and provide act
 BUSINESS PLAN CONTENT:
 `;
 
+// the newest Gemini model is "gemini-2.5-flash" - do not change this unless explicitly requested by the user
 export async function analyzeBusinessPlan(content: string): Promise<AnalysisResult> {
   const truncatedContent = content.slice(0, 50000);
 
-  const openai = getOpenAIClient();
-  const response = await openai.chat.completions.create({
-    model: "gpt-4o",
+  const gemini = getGeminiClient();
+  const response = await gemini.chat.completions.create({
+    model: "gemini-2.5-flash",
     messages: [
       {
         role: "system",
@@ -109,13 +112,12 @@ export async function analyzeBusinessPlan(content: string): Promise<AnalysisResu
       },
     ],
     response_format: { type: "json_object" },
-    temperature: 0.3,
-    max_tokens: 4000,
+    max_completion_tokens: 8192,
   });
 
   const resultText = response.choices[0]?.message?.content;
   if (!resultText) {
-    throw new Error("No response from OpenAI");
+    throw new Error("No response from Gemini");
   }
 
   try {
@@ -127,7 +129,7 @@ export async function analyzeBusinessPlan(content: string): Promise<AnalysisResu
 
     return result;
   } catch (error) {
-    console.error("Failed to parse OpenAI response:", resultText);
+    console.error("Failed to parse Gemini response:", resultText);
     throw new Error("Failed to parse analysis results");
   }
 }

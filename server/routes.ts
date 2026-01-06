@@ -53,7 +53,7 @@ export async function registerRoutes(
       }
 
       if (!isOpenAIConfigured()) {
-        return res.status(503).json({ message: "AI analysis is not configured. Please add your OpenAI API key." });
+        return res.status(503).json({ message: "AI analysis is not configured." });
       }
 
       const { originalname, mimetype, buffer } = req.file;
