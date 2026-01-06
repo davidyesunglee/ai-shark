@@ -6,11 +6,12 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/Dashboard";
 import LandingPage from "@/pages/LandingPage";
+import AboutPage from "@/pages/AboutPage";
 import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
 
 function Router() {
-  const { user, isLoading, isAuthenticated } = useAuth();
+  const { isLoading, isAuthenticated } = useAuth();
 
   if (isLoading) {
     return (
@@ -20,13 +21,14 @@ function Router() {
     );
   }
 
-  if (!isAuthenticated) {
-    return <LandingPage />;
-  }
-
   return (
     <Switch>
-      <Route path="/" component={Dashboard} />
+      <Route path="/about" component={AboutPage} />
+      {!isAuthenticated ? (
+        <Route path="/" component={LandingPage} />
+      ) : (
+        <Route path="/" component={Dashboard} />
+      )}
       <Route component={NotFound} />
     </Switch>
   );

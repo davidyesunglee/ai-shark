@@ -17,7 +17,7 @@ export function Header({ onNewAssessment }: HeaderProps) {
           <FileText className="h-5 w-5 text-primary-foreground" />
         </div>
         <div>
-          <h1 className="text-lg font-semibold">Business Plan Assessor</h1>
+          <h1 className="text-lg font-semibold">AI Shark</h1>
           <p className="text-xs text-muted-foreground">Bank Debt Financing Criteria</p>
         </div>
       </div>

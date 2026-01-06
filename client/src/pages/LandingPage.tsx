@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, TrendingUp, Shield, CheckCircle } from "lucide-react";
+import { Link } from "wouter";
 
 export default function LandingPage() {
   const handleLogin = () => {
@@ -13,11 +14,18 @@ export default function LandingPage() {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <FileText className="h-6 w-6 text-primary" />
-            <span className="font-semibold text-lg" data-testid="text-app-title">Business Plan Analyzer</span>
+            <span className="font-semibold text-lg" data-testid="text-app-title">AI Shark</span>
           </div>
-          <Button onClick={handleLogin} data-testid="button-login-header">
-            Sign In
-          </Button>
+          <div className="flex items-center gap-2">
+            <Link href="/about">
+              <Button variant="ghost" data-testid="link-about">
+                About
+              </Button>
+            </Link>
+            <Button onClick={handleLogin} data-testid="button-login-header">
+              Sign In
+            </Button>
+          </div>
         </div>
       </header>
 
