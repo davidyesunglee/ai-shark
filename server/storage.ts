@@ -1,10 +1,13 @@
 import { 
+  assessments,
+  userRegistrations,
   type Assessment,
   type InsertAssessment,
-  type AssessmentStatus,
-  type CriterionScore 
+  type UserRegistration,
+  type InsertUserRegistration,
 } from "@shared/schema";
-import { randomUUID } from "crypto";
+import { db } from "./db";
+import { eq, isNull, desc } from "drizzle-orm";
 
 export interface IStorage {
   getAssessment(id: string): Promise<Assessment | undefined>;
@@ -12,72 +15,71 @@ export interface IStorage {
   createAssessment(assessment: InsertAssessment): Promise<Assessment>;
   updateAssessment(id: string, updates: Partial<Assessment>): Promise<Assessment | undefined>;
   deleteAssessment(id: string): Promise<boolean>;
+  getUserRegistration(replitUserId: string): Promise<UserRegistration | undefined>;
+  createUserRegistration(registration: InsertUserRegistration): Promise<UserRegistration>;
+  getAllRegistrations(): Promise<UserRegistration[]>;
+  getUnsentRegistrations(): Promise<UserRegistration[]>;
+  markRegistrationsAsEmailed(ids: string[]): Promise<void>;
 }
 
-export class MemStorage implements IStorage {
-  private assessments: Map<string, Assessment>;
-
-  constructor() {
-    this.assessments = new Map();
-  }
-
+export class DatabaseStorage implements IStorage {
   async getAssessment(id: string): Promise<Assessment | undefined> {
-    return this.assessments.get(id);
+    const [assessment] = await db.select().from(assessments).where(eq(assessments.id, id));
+    return assessment || undefined;
   }
 
   async getAssessmentsByUser(userId: string): Promise<Assessment[]> {
-    return Array.from(this.assessments.values())
-      .filter(a => a.userId === userId)
-      .sort((a, b) => new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime());
+    return await db.select().from(assessments)
+      .where(eq(assessments.userId, userId))
+      .orderBy(desc(assessments.uploadDate));
   }
 
   async createAssessment(insertAssessment: InsertAssessment): Promise<Assessment> {
-    const id = randomUUID();
-    const status: AssessmentStatus = (insertAssessment.status as AssessmentStatus) ?? "analyzing";
-    const criteria: CriterionScore[] | null = insertAssessment.criteria 
-      ? (insertAssessment.criteria as CriterionScore[]) 
-      : null;
-    const strengths: string[] | null = insertAssessment.strengths 
-      ? (insertAssessment.strengths as string[]) 
-      : null;
-    const weaknesses: string[] | null = insertAssessment.weaknesses 
-      ? (insertAssessment.weaknesses as string[]) 
-      : null;
-    const recommendations: string[] | null = insertAssessment.recommendations 
-      ? (insertAssessment.recommendations as string[]) 
-      : null;
-
-    const assessment: Assessment = {
-      id,
-      userId: insertAssessment.userId,
-      businessName: insertAssessment.businessName,
-      fileName: insertAssessment.fileName,
-      fileContent: insertAssessment.fileContent ?? null,
-      uploadDate: new Date(),
-      status,
-      overallScore: insertAssessment.overallScore ?? null,
-      executiveSummary: insertAssessment.executiveSummary ?? null,
-      criteria,
-      strengths,
-      weaknesses,
-      recommendations,
-    };
-    this.assessments.set(id, assessment);
+    const [assessment] = await db.insert(assessments).values(insertAssessment as any).returning();
     return assessment;
   }
 
   async updateAssessment(id: string, updates: Partial<Assessment>): Promise<Assessment | undefined> {
-    const existing = this.assessments.get(id);
-    if (!existing) return undefined;
-    
-    const updated: Assessment = { ...existing, ...updates };
-    this.assessments.set(id, updated);
-    return updated;
+    const [assessment] = await db.update(assessments)
+      .set(updates)
+      .where(eq(assessments.id, id))
+      .returning();
+    return assessment || undefined;
   }
 
   async deleteAssessment(id: string): Promise<boolean> {
-    return this.assessments.delete(id);
+    const result = await db.delete(assessments).where(eq(assessments.id, id)).returning();
+    return result.length > 0;
+  }
+
+  async getUserRegistration(replitUserId: string): Promise<UserRegistration | undefined> {
+    const [registration] = await db.select().from(userRegistrations)
+      .where(eq(userRegistrations.replitUserId, replitUserId));
+    return registration || undefined;
+  }
+
+  async createUserRegistration(registration: InsertUserRegistration): Promise<UserRegistration> {
+    const [newRegistration] = await db.insert(userRegistrations).values(registration).returning();
+    return newRegistration;
+  }
+
+  async getAllRegistrations(): Promise<UserRegistration[]> {
+    return await db.select().from(userRegistrations).orderBy(desc(userRegistrations.registeredAt));
+  }
+
+  async getUnsentRegistrations(): Promise<UserRegistration[]> {
+    return await db.select().from(userRegistrations)
+      .where(isNull(userRegistrations.emailedAt))
+      .orderBy(desc(userRegistrations.registeredAt));
+  }
+
+  async markRegistrationsAsEmailed(ids: string[]): Promise<void> {
+    for (const id of ids) {
+      await db.update(userRegistrations)
+        .set({ emailedAt: new Date() })
+        .where(eq(userRegistrations.id, id));
+    }
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
