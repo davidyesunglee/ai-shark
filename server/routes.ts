@@ -124,6 +124,11 @@ export async function registerRoutes(
       }
 
       const userId = req.user?.claims?.sub;
+      
+      const registration = await storage.getUserRegistration(userId);
+      if (!registration) {
+        return res.status(403).json({ message: "Registration required before uploading business plans" });
+      }
       const { originalname, mimetype, buffer } = req.file;
 
       let fileContent: string;
