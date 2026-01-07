@@ -22,6 +22,11 @@ export default function LandingPage() {
                 About
               </Button>
             </Link>
+            <Link href="/education">
+              <Button variant="ghost" data-testid="link-education">
+                Education
+              </Button>
+            </Link>
             <Button onClick={handleLogin} data-testid="button-login-header">
               Sign In
             </Button>

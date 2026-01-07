@@ -7,6 +7,7 @@ import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/Dashboard";
 import LandingPage from "@/pages/LandingPage";
 import AboutPage from "@/pages/AboutPage";
+import EducationPage from "@/pages/EducationPage";
 import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
 
@@ -24,6 +25,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/about" component={AboutPage} />
+      <Route path="/education" component={EducationPage} />
       {!isAuthenticated ? (
         <Route path="/" component={LandingPage} />
       ) : (
