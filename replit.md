@@ -48,10 +48,19 @@ Preferred communication style: Simple, everyday language.
 ### Required Environment Variables
 - `DATABASE_URL`: PostgreSQL connection string (required)
 - `OPENAI_API_KEY`: OpenAI API key for AI-powered analysis (required for full functionality)
+- `RESEND_API_KEY`: Resend API key for weekly registration email reports
 
 ### Third-Party Services
 - **OpenAI API**: Powers the business plan analysis and scoring
 - **PostgreSQL**: Primary data storage (can be provisioned via Replit)
+- **Resend**: Email service for sending weekly registration reports to vemangum@gmail.com
+
+## User Registration System
+- All users must complete registration before uploading business plans
+- Registration collects: username, email, phone, address, company info
+- Registration data stored in `user_registrations` table
+- Weekly email reports sent every Sunday at midnight via Resend API
+- Email includes HTML table and CSV attachment with registration data
 
 ### Key NPM Packages
 - `drizzle-orm` / `drizzle-kit`: Database ORM and migrations

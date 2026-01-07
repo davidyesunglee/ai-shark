@@ -1,6 +1,16 @@
 import { storage } from "./storage";
+import { Resend } from "resend";
 
 const RECIPIENT_EMAIL = "vemangum@gmail.com";
+const FROM_EMAIL = "AI Shark <onboarding@resend.dev>";
+
+function getResend(): Resend | null {
+  if (!process.env.RESEND_API_KEY) {
+    console.log("[Email Scheduler] RESEND_API_KEY not configured");
+    return null;
+  }
+  return new Resend(process.env.RESEND_API_KEY);
+}
 
 function getNextSundayMidnight(): Date {
   const now = new Date();
@@ -12,11 +22,12 @@ function getNextSundayMidnight(): Date {
 }
 
 function formatRegistrationsAsCSV(registrations: any[]): string {
+  const header = "Username,Email,Phone,Street Address,City,State,Zip,Country,Company,Job Title,Industry,Company Size,How Heard,Registered At";
+  
   if (registrations.length === 0) {
-    return "No new registrations this week.";
+    return header;
   }
 
-  const header = "Username,Email,Phone,Street Address,City,State,Zip,Country,Company,Job Title,Industry,Company Size,How Heard,Registered At";
   const rows = registrations.map(r => 
     `"${r.username}","${r.email}","${r.phoneNumber}","${r.streetAddress}","${r.city}","${r.state}","${r.zipCode}","${r.country}","${r.companyName || ''}","${r.jobTitle || ''}","${r.industry || ''}","${r.companySize || ''}","${r.howDidYouHear || ''}","${r.registeredAt}"`
   );
@@ -24,8 +35,66 @@ function formatRegistrationsAsCSV(registrations: any[]): string {
   return header + "\n" + rows.join("\n");
 }
 
+function formatRegistrationsAsHTML(registrations: any[]): string {
+  if (registrations.length === 0) {
+    return "<p>No new registrations this week.</p>";
+  }
+
+  let html = `
+    <h2>AI Shark Weekly Registration Report</h2>
+    <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
+    <p><strong>New Registrations:</strong> ${registrations.length}</p>
+    <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+      <thead style="background-color: #f0f0f0;">
+        <tr>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>City</th>
+          <th>State</th>
+          <th>Company</th>
+          <th>Industry</th>
+          <th>Registered</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  registrations.forEach(r => {
+    html += `
+      <tr>
+        <td>${r.username}</td>
+        <td>${r.email}</td>
+        <td>${r.phoneNumber}</td>
+        <td>${r.city}</td>
+        <td>${r.state}</td>
+        <td>${r.companyName || '-'}</td>
+        <td>${r.industry || '-'}</td>
+        <td>${new Date(r.registeredAt).toLocaleDateString()}</td>
+      </tr>
+    `;
+  });
+
+  html += `
+      </tbody>
+    </table>
+    <p style="margin-top: 20px; color: #666;">
+      This is an automated weekly report from AI Shark.<br>
+      Full CSV data is attached to this email.
+    </p>
+  `;
+
+  return html;
+}
+
 async function sendWeeklyEmail() {
   try {
+    const resend = getResend();
+    if (!resend) {
+      console.log("[Email Scheduler] Skipping email - Resend not configured");
+      return;
+    }
+
     const unsentRegistrations = await storage.getUnsentRegistrations();
     
     if (unsentRegistrations.length === 0) {
@@ -34,22 +103,31 @@ async function sendWeeklyEmail() {
     }
 
     const csvContent = formatRegistrationsAsCSV(unsentRegistrations);
-    const emailBody = `
-AI Shark Weekly Registration Report
-====================================
-Date: ${new Date().toLocaleDateString()}
-New Registrations: ${unsentRegistrations.length}
+    const htmlContent = formatRegistrationsAsHTML(unsentRegistrations);
+    const csvBuffer = Buffer.from(csvContent, 'utf-8');
 
-Registration Data (CSV format):
-${csvContent}
-
----
-This is an automated weekly report from AI Shark.
-    `.trim();
-
-    console.log(`[Email Scheduler] Weekly report ready for ${RECIPIENT_EMAIL}`);
+    console.log(`[Email Scheduler] Sending weekly report to ${RECIPIENT_EMAIL}`);
     console.log(`[Email Scheduler] Report contains ${unsentRegistrations.length} new registrations`);
-    console.log(`[Email Scheduler] Email content preview:\n${emailBody.substring(0, 500)}...`);
+
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: [RECIPIENT_EMAIL],
+      subject: `AI Shark Weekly Registration Report - ${new Date().toLocaleDateString()}`,
+      html: htmlContent,
+      attachments: [
+        {
+          filename: `registrations_${new Date().toISOString().split('T')[0]}.csv`,
+          content: csvBuffer,
+        },
+      ],
+    });
+
+    if (error) {
+      console.error("[Email Scheduler] Failed to send email:", error);
+      return;
+    }
+
+    console.log(`[Email Scheduler] Email sent successfully! ID: ${data?.id}`);
     
     const ids = unsentRegistrations.map(r => r.id);
     await storage.markRegistrationsAsEmailed(ids);
