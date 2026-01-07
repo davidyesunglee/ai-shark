@@ -5,6 +5,8 @@ import multer from "multer";
 import { parseDocument } from "./documentParser";
 import { analyzeBusinessPlan, isOpenAIConfigured } from "./openai";
 import { setupAuth, isAuthenticated, registerAuthRoutes } from "./replit_integrations/auth";
+import { insertUserRegistrationSchema } from "@shared/schema";
+import { startWeeklyEmailScheduler } from "./emailScheduler";
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -18,6 +20,62 @@ export async function registerRoutes(
 
   await setupAuth(app);
   registerAuthRoutes(app);
+  
+  startWeeklyEmailScheduler();
+
+  app.get("/api/registration/status", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const registration = await storage.getUserRegistration(userId);
+      res.json({ isRegistered: !!registration, registration });
+    } catch (error) {
+      console.error("Error checking registration status:", error);
+      res.status(500).json({ message: "Failed to check registration status" });
+    }
+  });
+
+  app.post("/api/registration", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      
+      const existing = await storage.getUserRegistration(userId);
+      if (existing) {
+        return res.status(400).json({ message: "Already registered" });
+      }
+
+      const validatedData = insertUserRegistrationSchema.parse({
+        ...req.body,
+        replitUserId: userId,
+      });
+
+      const registration = await storage.createUserRegistration(validatedData);
+      res.json({ success: true, registration });
+    } catch (error: any) {
+      console.error("Error creating registration:", error);
+      if (error.name === "ZodError") {
+        return res.status(400).json({ message: "Invalid registration data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create registration" });
+    }
+  });
+
+  app.get("/api/registrations/export", isAuthenticated, async (req: any, res) => {
+    try {
+      const registrations = await storage.getAllRegistrations();
+      
+      const csvHeader = "ID,Username,Email,Phone,Street Address,City,State,Zip,Country,Company,Job Title,Industry,Company Size,How Heard,Registered At\n";
+      const csvRows = registrations.map(r => 
+        `"${r.id}","${r.username}","${r.email}","${r.phoneNumber}","${r.streetAddress}","${r.city}","${r.state}","${r.zipCode}","${r.country}","${r.companyName || ''}","${r.jobTitle || ''}","${r.industry || ''}","${r.companySize || ''}","${r.howDidYouHear || ''}","${r.registeredAt}"`
+      ).join("\n");
+      
+      res.setHeader("Content-Type", "text/csv");
+      res.setHeader("Content-Disposition", "attachment; filename=registrations.csv");
+      res.send(csvHeader + csvRows);
+    } catch (error) {
+      console.error("Error exporting registrations:", error);
+      res.status(500).json({ message: "Failed to export registrations" });
+    }
+  });
 
   app.get("/api/assessments", isAuthenticated, async (req: any, res) => {
     try {

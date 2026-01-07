@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Header } from "@/components/Header";
 import { StatsCard } from "@/components/StatsCard";
 import { AssessmentCard, type Assessment } from "@/components/AssessmentCard";
@@ -8,7 +9,7 @@ import { UploadDialog } from "@/components/UploadDialog";
 import { AssessmentReport, type FullAssessment } from "@/components/AssessmentReport";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { FileText, TrendingUp, CheckCircle, Clock } from "lucide-react";
+import { FileText, TrendingUp, CheckCircle, Clock, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface ApiAssessment {
@@ -40,10 +41,22 @@ export default function Dashboard() {
   const [viewingId, setViewingId] = useState<string | null>(null);
   const { toast } = useToast();
   const previousStatusRef = useRef<Map<string, string>>(new Map());
+  const [, setLocation] = useLocation();
+
+  const { data: registrationStatus, isLoading: isCheckingRegistration } = useQuery<{ isRegistered: boolean }>({
+    queryKey: ["/api/registration/status"],
+  });
+
+  useEffect(() => {
+    if (!isCheckingRegistration && registrationStatus && !registrationStatus.isRegistered) {
+      setLocation("/register");
+    }
+  }, [isCheckingRegistration, registrationStatus, setLocation]);
 
   const { data: assessments = [], isLoading } = useQuery<ApiAssessment[]>({
     queryKey: ["/api/assessments"],
     refetchInterval: 5000,
+    enabled: registrationStatus?.isRegistered === true,
   });
 
   useEffect(() => {
@@ -171,6 +184,14 @@ export default function Dashboard() {
   const avgScore = assessments
     .filter((a) => a.overallScore !== null)
     .reduce((sum, a, _, arr) => sum + (a.overallScore || 0) / arr.length, 0);
+
+  if (isCheckingRegistration) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   if (viewingId) {
     if (isLoadingFull) {
