@@ -6,7 +6,10 @@ import { parseDocument } from "./documentParser";
 import { analyzeBusinessPlan, isOpenAIConfigured } from "./openai";
 import { setupAuth, isAuthenticated, registerAuthRoutes } from "./replit_integrations/auth";
 import { insertUserRegistrationSchema } from "@shared/schema";
-import { startWeeklyEmailScheduler } from "./emailScheduler";
+import { startWeeklyEmailScheduler, startTransactionEmailScheduler } from "./emailScheduler";
+import { getUncachableStripeClient, getStripePublishableKey } from "./stripeClient";
+import { db } from "./db";
+import { sql } from "drizzle-orm";
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -22,6 +25,7 @@ export async function registerRoutes(
   registerAuthRoutes(app);
   
   startWeeklyEmailScheduler();
+  startTransactionEmailScheduler();
 
   app.get("/api/registration/status", isAuthenticated, async (req: any, res) => {
     try {
@@ -129,6 +133,22 @@ export async function registerRoutes(
       if (!registration) {
         return res.status(403).json({ message: "Registration required before uploading business plans" });
       }
+
+      const billingProfile = await storage.getBillingProfile(registration.id);
+      if (!billingProfile || billingProfile.currentTier === "free") {
+        return res.status(402).json({ 
+          message: "Payment required. Please purchase a subscription or one-time evaluation.",
+          requiresPayment: true 
+        });
+      }
+
+      if (billingProfile.creditsRemaining <= 0) {
+        return res.status(402).json({ 
+          message: "No evaluation credits remaining. Please purchase additional credits.",
+          requiresPayment: true 
+        });
+      }
+
       const { originalname, mimetype, buffer } = req.file;
 
       let fileContent: string;
@@ -157,6 +177,8 @@ export async function registerRoutes(
         weaknesses: null,
         recommendations: null,
       });
+
+      await storage.deductCredit(registration.id, assessment.id);
 
       res.json({
         id: assessment.id,
@@ -192,6 +214,246 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Error deleting assessment:", error);
       res.status(500).json({ message: "Failed to delete assessment" });
+    }
+  });
+
+  app.get("/api/stripe/publishable-key", async (req, res) => {
+    try {
+      const publishableKey = await getStripePublishableKey();
+      res.json({ publishableKey });
+    } catch (error) {
+      console.error("Error getting Stripe key:", error);
+      res.status(500).json({ message: "Stripe not configured" });
+    }
+  });
+
+  app.get("/api/billing/status", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const registration = await storage.getUserRegistration(userId);
+      if (!registration) {
+        return res.status(403).json({ message: "Registration required" });
+      }
+
+      const billingProfile = await storage.getBillingProfile(registration.id);
+      res.json({
+        tier: billingProfile?.currentTier || "free",
+        creditsRemaining: billingProfile?.creditsRemaining || 0,
+        hasActiveSubscription: !!billingProfile?.activeSubscriptionId,
+      });
+    } catch (error) {
+      console.error("Error fetching billing status:", error);
+      res.status(500).json({ message: "Failed to fetch billing status" });
+    }
+  });
+
+  app.get("/api/products", async (req, res) => {
+    try {
+      const result = await db.execute(sql`
+        SELECT 
+          p.id as product_id,
+          p.name as product_name,
+          p.description as product_description,
+          p.metadata as product_metadata,
+          pr.id as price_id,
+          pr.unit_amount,
+          pr.currency,
+          pr.recurring
+        FROM stripe.products p
+        LEFT JOIN stripe.prices pr ON pr.product = p.id AND pr.active = true
+        WHERE p.active = true
+        ORDER BY pr.unit_amount
+      `);
+
+      const productsMap = new Map();
+      for (const row of result.rows as any[]) {
+        if (!productsMap.has(row.product_id)) {
+          productsMap.set(row.product_id, {
+            id: row.product_id,
+            name: row.product_name,
+            description: row.product_description,
+            metadata: row.product_metadata,
+            prices: [],
+          });
+        }
+        if (row.price_id) {
+          productsMap.get(row.product_id).prices.push({
+            id: row.price_id,
+            unit_amount: row.unit_amount,
+            currency: row.currency,
+            recurring: row.recurring,
+          });
+        }
+      }
+
+      res.json({ products: Array.from(productsMap.values()) });
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      res.status(500).json({ message: "Failed to fetch products" });
+    }
+  });
+
+  app.post("/api/checkout/create-session", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const { priceId, mode } = req.body;
+
+      const registration = await storage.getUserRegistration(userId);
+      if (!registration) {
+        return res.status(403).json({ message: "Registration required" });
+      }
+
+      const stripe = await getUncachableStripeClient();
+
+      let billingProfile = await storage.getBillingProfile(registration.id);
+      let customerId = billingProfile?.stripeCustomerId;
+
+      if (!customerId) {
+        const customer = await stripe.customers.create({
+          email: registration.email,
+          name: registration.username,
+          metadata: { userRegistrationId: registration.id },
+        });
+        customerId = customer.id;
+
+        billingProfile = await storage.upsertBillingProfile(registration.id, {
+          stripeCustomerId: customerId,
+        });
+      }
+
+      const baseUrl = `https://${process.env.REPLIT_DOMAINS?.split(",")[0]}`;
+      
+      const session = await stripe.checkout.sessions.create({
+        customer: customerId,
+        payment_method_types: ["card"],
+        line_items: [{ price: priceId, quantity: 1 }],
+        mode: mode === "subscription" ? "subscription" : "payment",
+        success_url: `${baseUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${baseUrl}/pricing`,
+        automatic_tax: { enabled: true },
+        billing_address_collection: "required",
+        customer_update: {
+          address: "auto",
+          name: "auto",
+        },
+        metadata: {
+          userRegistrationId: registration.id,
+          tier: mode === "subscription" ? "subscription" : "one_time",
+        },
+      });
+
+      res.json({ url: session.url });
+    } catch (error) {
+      console.error("Error creating checkout session:", error);
+      res.status(500).json({ message: "Failed to create checkout session" });
+    }
+  });
+
+  app.post("/api/billing/portal", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const registration = await storage.getUserRegistration(userId);
+      if (!registration) {
+        return res.status(403).json({ message: "Registration required" });
+      }
+
+      const billingProfile = await storage.getBillingProfile(registration.id);
+      if (!billingProfile?.stripeCustomerId) {
+        return res.status(400).json({ message: "No billing profile found" });
+      }
+
+      const stripe = await getUncachableStripeClient();
+      const baseUrl = `https://${process.env.REPLIT_DOMAINS?.split(",")[0]}`;
+
+      const session = await stripe.billingPortal.sessions.create({
+        customer: billingProfile.stripeCustomerId,
+        return_url: `${baseUrl}/dashboard`,
+      });
+
+      res.json({ url: session.url });
+    } catch (error) {
+      console.error("Error creating portal session:", error);
+      res.status(500).json({ message: "Failed to create portal session" });
+    }
+  });
+
+  app.post("/api/stripe/webhook/process", async (req: any, res) => {
+    try {
+      const event = req.body;
+      
+      if (event.type === "checkout.session.completed") {
+        const session = event.data.object;
+        const userRegistrationId = session.metadata?.userRegistrationId;
+        const tier = session.metadata?.tier;
+
+        if (userRegistrationId) {
+          const credits = tier === "subscription" ? 2 : 1;
+          
+          await storage.upsertBillingProfile(userRegistrationId, {
+            currentTier: tier as any,
+            creditsRemaining: credits,
+            activeSubscriptionId: session.subscription || null,
+            lastPaymentAt: new Date(),
+          });
+
+          await storage.addCredits(userRegistrationId, credits, "purchase");
+
+          await storage.createTransactionRecord({
+            userRegistrationId,
+            stripeCheckoutSessionId: session.id,
+            stripePaymentIntentId: session.payment_intent,
+            amount: session.amount_total,
+            currency: session.currency,
+            taxAmount: session.total_details?.amount_tax,
+            tier: tier as any,
+            paymentStatus: "succeeded",
+            paidAt: new Date(),
+          });
+        }
+      }
+
+      if (event.type === "invoice.payment_succeeded") {
+        const invoice = event.data.object;
+        const customerId = invoice.customer;
+
+        const billingProfile = await storage.getBillingProfileByStripeCustomer(customerId);
+        if (billingProfile && billingProfile.currentTier === "subscription") {
+          await storage.addCredits(billingProfile.userRegistrationId, 2, "reset");
+          await storage.updateBillingProfile(billingProfile.userRegistrationId, {
+            lastPaymentAt: new Date(),
+          });
+
+          await storage.createTransactionRecord({
+            userRegistrationId: billingProfile.userRegistrationId,
+            stripeInvoiceId: invoice.id,
+            amount: invoice.amount_paid,
+            currency: invoice.currency,
+            taxAmount: invoice.tax,
+            tier: "subscription",
+            paymentStatus: "succeeded",
+            paidAt: new Date(),
+          });
+        }
+      }
+
+      if (event.type === "customer.subscription.deleted") {
+        const subscription = event.data.object;
+        const customerId = subscription.customer;
+
+        const billingProfile = await storage.getBillingProfileByStripeCustomer(customerId);
+        if (billingProfile) {
+          await storage.updateBillingProfile(billingProfile.userRegistrationId, {
+            currentTier: "free",
+            activeSubscriptionId: null,
+            creditsRemaining: 0,
+          });
+        }
+      }
+
+      res.json({ received: true });
+    } catch (error) {
+      console.error("Error processing webhook:", error);
+      res.status(500).json({ message: "Webhook processing failed" });
     }
   });
 

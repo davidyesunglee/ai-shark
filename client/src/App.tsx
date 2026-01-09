@@ -9,6 +9,8 @@ import LandingPage from "@/pages/LandingPage";
 import AboutPage from "@/pages/AboutPage";
 import EducationPage from "@/pages/EducationPage";
 import RegistrationPage from "@/pages/RegistrationPage";
+import PricingPage from "@/pages/PricingPage";
+import PaymentSuccessPage from "@/pages/PaymentSuccessPage";
 import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
 
@@ -28,6 +30,8 @@ function Router() {
       <Route path="/about" component={AboutPage} />
       <Route path="/education" component={EducationPage} />
       <Route path="/register" component={RegistrationPage} />
+      <Route path="/pricing" component={PricingPage} />
+      <Route path="/payment/success" component={PaymentSuccessPage} />
       {!isAuthenticated ? (
         <Route path="/" component={LandingPage} />
       ) : (

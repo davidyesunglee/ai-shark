@@ -62,6 +62,35 @@ Preferred communication style: Simple, everyday language.
 - Weekly email reports sent every Sunday at midnight via Resend API
 - Email includes HTML table and CSV attachment with registration data
 
+## Payment System (Stripe Integration)
+
+### Pricing Tiers
+- **Free Tier**: Registration only, no evaluations or score access
+- **Monthly Subscription**: $6.99/month + tax, 2 evaluations per month
+- **One-Time Payment**: $13.99 + tax, 1 evaluation
+
+### Database Tables
+- `billing_profiles`: Tracks user tier, Stripe customer ID, credits remaining
+- `transaction_records`: Logs all payments with amount, tax, status
+- `credit_ledger`: Audit trail of credit additions/deductions
+
+### Stripe Integration
+- Uses `stripe-replit-sync` for automated webhook handling and data sync
+- Products synced to `stripe.products` and `stripe.prices` tables
+- Webhook endpoint: `/api/stripe/webhook`
+- Checkout sessions created via `/api/checkout/create-session`
+
+### Payment Enforcement
+- Upload endpoint checks billing profile before allowing evaluation
+- Free tier users blocked from uploading business plans
+- Credits deducted after successful upload
+- Subscription credits reset monthly via invoice webhook
+
+### Weekly Transaction Reports
+- Transaction data emailed to vemangum@gmail.com every Sunday
+- Includes HTML summary and CSV attachment
+- Tracks user, amount, tax, tier, and payment status
+
 ### Key NPM Packages
 - `drizzle-orm` / `drizzle-kit`: Database ORM and migrations
 - `openai`: OpenAI API client

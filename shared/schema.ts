@@ -68,5 +68,77 @@ export const insertAssessmentSchema = createInsertSchema(assessments).omit({
 export type InsertAssessment = z.infer<typeof insertAssessmentSchema>;
 export type Assessment = typeof assessments.$inferSelect;
 
+export type PaymentTier = "free" | "subscription" | "one_time";
+export type PaymentStatus = "pending" | "succeeded" | "failed" | "refunded";
+export type CreditReason = "purchase" | "evaluation" | "reset" | "manual";
+
+export const billingProfiles = pgTable("billing_profiles", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userRegistrationId: varchar("user_registration_id").notNull().unique(),
+  stripeCustomerId: varchar("stripe_customer_id"),
+  currentTier: text("current_tier").notNull().$type<PaymentTier>().default("free"),
+  activeSubscriptionId: varchar("active_subscription_id"),
+  activePriceId: varchar("active_price_id"),
+  creditsRemaining: integer("credits_remaining").notNull().default(0),
+  creditWindowStart: timestamp("credit_window_start"),
+  lastPaymentAt: timestamp("last_payment_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertBillingProfileSchema = createInsertSchema(billingProfiles).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertBillingProfile = z.infer<typeof insertBillingProfileSchema>;
+export type BillingProfile = typeof billingProfiles.$inferSelect;
+
+export const transactionRecords = pgTable("transaction_records", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userRegistrationId: varchar("user_registration_id").notNull(),
+  stripePaymentIntentId: varchar("stripe_payment_intent_id"),
+  stripeCheckoutSessionId: varchar("stripe_checkout_session_id"),
+  stripeInvoiceId: varchar("stripe_invoice_id"),
+  priceId: varchar("price_id"),
+  amount: integer("amount").notNull(),
+  currency: varchar("currency").notNull().default("usd"),
+  taxAmount: integer("tax_amount"),
+  tier: text("tier").$type<PaymentTier>(),
+  paymentStatus: text("payment_status").notNull().$type<PaymentStatus>().default("pending"),
+  paidAt: timestamp("paid_at"),
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  emailedAt: timestamp("emailed_at"),
+});
+
+export const insertTransactionRecordSchema = createInsertSchema(transactionRecords).omit({
+  id: true,
+  createdAt: true,
+  emailedAt: true,
+});
+
+export type InsertTransactionRecord = z.infer<typeof insertTransactionRecordSchema>;
+export type TransactionRecord = typeof transactionRecords.$inferSelect;
+
+export const creditLedger = pgTable("credit_ledger", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userRegistrationId: varchar("user_registration_id").notNull(),
+  assessmentId: varchar("assessment_id"),
+  delta: integer("delta").notNull(),
+  reason: text("reason").notNull().$type<CreditReason>(),
+  balanceAfter: integer("balance_after").notNull(),
+  occurredAt: timestamp("occurred_at").defaultNow().notNull(),
+});
+
+export const insertCreditLedgerSchema = createInsertSchema(creditLedger).omit({
+  id: true,
+  occurredAt: true,
+});
+
+export type InsertCreditLedger = z.infer<typeof insertCreditLedgerSchema>;
+export type CreditLedgerEntry = typeof creditLedger.$inferSelect;
+
 export * from "./models/chat";
 export * from "./models/auth";
