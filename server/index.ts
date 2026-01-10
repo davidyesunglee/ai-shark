@@ -5,6 +5,8 @@ import { createServer } from "http";
 import { runMigrations } from "stripe-replit-sync";
 import { getStripeSync } from "./stripeClient";
 import { WebhookHandlers } from "./webhookHandlers";
+import { migrate } from "drizzle-orm/node-postgres/migrator";
+import { db } from "./db";
 
 const app = express();
 const httpServer = createServer(app);
@@ -129,6 +131,14 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  console.log("[Database] Running migrations...");
+  try {
+    await migrate(db, { migrationsFolder: "./migrations" });
+    console.log("[Database] Migrations complete");
+  } catch (error) {
+    console.error("[Database] Migration error:", error);
+  }
+  
   await initStripe();
   await registerRoutes(httpServer, app);
 
