@@ -295,7 +295,7 @@ export async function registerRoutes(
   app.post("/api/checkout/create-session", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.id;
-      const { priceId, mode } = req.body;
+      const { priceId } = req.body;
 
       const registration = await storage.getUserRegistration(userId);
       if (!registration) {
@@ -303,6 +303,12 @@ export async function registerRoutes(
       }
 
       const stripe = await getUncachableStripeClient();
+
+      // Fetch the price to determine if it's recurring
+      const price = await stripe.prices.retrieve(priceId);
+      const isSubscription = !!price.recurring;
+      const mode = isSubscription ? "subscription" : "payment";
+      const tier = isSubscription ? "subscription" : "one_time";
 
       let billingProfile = await storage.getBillingProfile(registration.id);
       let customerId = billingProfile?.stripeCustomerId;
@@ -326,7 +332,7 @@ export async function registerRoutes(
         customer: customerId,
         payment_method_types: ["card"],
         line_items: [{ price: priceId, quantity: 1 }],
-        mode: mode === "subscription" ? "subscription" : "payment",
+        mode: mode,
         success_url: `${baseUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${baseUrl}/pricing`,
         automatic_tax: { enabled: true },
@@ -337,7 +343,7 @@ export async function registerRoutes(
         },
         metadata: {
           userRegistrationId: registration.id,
-          tier: mode === "subscription" ? "subscription" : "one_time",
+          tier: tier,
         },
       });
 
