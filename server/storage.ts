@@ -24,7 +24,7 @@ export interface IStorage {
   createAssessment(assessment: InsertAssessment): Promise<Assessment>;
   updateAssessment(id: string, updates: Partial<Assessment>): Promise<Assessment | undefined>;
   deleteAssessment(id: string): Promise<boolean>;
-  getUserRegistration(replitUserId: string): Promise<UserRegistration | undefined>;
+  getUserRegistration(userId: string): Promise<UserRegistration | undefined>;
   createUserRegistration(registration: InsertUserRegistration): Promise<UserRegistration>;
   getAllRegistrations(): Promise<UserRegistration[]>;
   getUnsentRegistrations(): Promise<UserRegistration[]>;
@@ -61,9 +61,9 @@ export class DatabaseStorage implements IStorage {
     return result.length > 0;
   }
 
-  async getUserRegistration(replitUserId: string): Promise<UserRegistration | undefined> {
+  async getUserRegistration(userId: string): Promise<UserRegistration | undefined> {
     const [registration] = await db.select().from(userRegistrations)
-      .where(eq(userRegistrations.replitUserId, replitUserId));
+      .where(eq(userRegistrations.userId, userId));
     return registration || undefined;
   }
 

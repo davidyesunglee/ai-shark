@@ -7,7 +7,7 @@ export type AssessmentStatus = "analyzing" | "complete" | "needs_review" | "fail
 
 export const userRegistrations = pgTable("user_registrations", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  replitUserId: varchar("replit_user_id").notNull().unique(),
+  userId: varchar("user_id").notNull().unique(),
   username: varchar("username").notNull(),
   email: varchar("email").notNull(),
   phoneNumber: varchar("phone_number").notNull(),

@@ -4,9 +4,6 @@ import { FileText, TrendingUp, Shield, CheckCircle } from "lucide-react";
 import { Link } from "wouter";
 
 export default function LandingPage() {
-  const handleLogin = () => {
-    window.location.href = "/api/login";
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -27,9 +24,9 @@ export default function LandingPage() {
                 Education
               </Button>
             </Link>
-            <Button onClick={handleLogin} data-testid="button-login-header">
-              Sign In
-            </Button>
+            <Link href="/login">
+              <Button data-testid="button-login-header">Sign In</Button>
+            </Link>
           </div>
         </div>
       </header>
@@ -43,9 +40,9 @@ export default function LandingPage() {
             Get instant, comprehensive analysis of your business plan against bank debt financing criteria. 
             Understand your strengths, weaknesses, and get actionable recommendations.
           </p>
-          <Button size="lg" onClick={handleLogin} data-testid="button-get-started">
-            Get Started
-          </Button>
+          <Link href="/signup">
+            <Button size="lg" data-testid="button-get-started">Get Started</Button>
+          </Link>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">

@@ -55,10 +55,18 @@ Preferred communication style: Simple, everyday language.
 - **PostgreSQL**: Primary data storage (can be provisioned via Replit)
 - **Resend**: Email service for sending weekly registration reports to vemangum@gmail.com
 
+## Authentication System
+- **Email/Password Authentication**: Users sign up with email and password (no Replit account required)
+- **Password Security**: bcryptjs with 12 rounds of hashing
+- **Session Management**: express-session with PostgreSQL store (sessions table)
+- **Email Verification**: Optional email verification with 24-hour token expiry
+- **Routes**: `/api/auth/signup`, `/api/auth/login`, `/api/auth/logout`, `/api/auth/user`, `/api/auth/verify-email`
+- **Required Environment Variable**: `SESSION_SECRET` (required, no fallback for security)
+
 ## User Registration System
 - All users must complete registration before uploading business plans
 - Registration collects: username, email, phone, address, company info
-- Registration data stored in `user_registrations` table
+- Registration data stored in `user_registrations` table (linked via userId to users table)
 - Weekly email reports sent every Sunday at midnight via Resend API
 - Email includes HTML table and CSV attachment with registration data
 

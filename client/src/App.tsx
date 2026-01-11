@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, Redirect } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -6,11 +6,14 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/Dashboard";
 import LandingPage from "@/pages/LandingPage";
+import LoginPage from "@/pages/LoginPage";
+import SignupPage from "@/pages/SignupPage";
 import AboutPage from "@/pages/AboutPage";
 import EducationPage from "@/pages/EducationPage";
 import RegistrationPage from "@/pages/RegistrationPage";
 import PricingPage from "@/pages/PricingPage";
 import PaymentSuccessPage from "@/pages/PaymentSuccessPage";
+import VerifyEmailPage from "@/pages/VerifyEmailPage";
 import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
 
@@ -29,6 +32,13 @@ function Router() {
     <Switch>
       <Route path="/about" component={AboutPage} />
       <Route path="/education" component={EducationPage} />
+      <Route path="/login">
+        {isAuthenticated ? <Redirect to="/" /> : <LoginPage />}
+      </Route>
+      <Route path="/signup">
+        {isAuthenticated ? <Redirect to="/" /> : <SignupPage />}
+      </Route>
+      <Route path="/verify-email" component={VerifyEmailPage} />
       <Route path="/register" component={RegistrationPage} />
       <Route path="/pricing" component={PricingPage} />
       <Route path="/payment/success" component={PaymentSuccessPage} />

@@ -59,7 +59,7 @@ CREATE TABLE "transaction_records" (
 --> statement-breakpoint
 CREATE TABLE "user_registrations" (
 	"id" varchar PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"replit_user_id" varchar NOT NULL,
+	"user_id" varchar NOT NULL,
 	"username" varchar NOT NULL,
 	"email" varchar NOT NULL,
 	"phone_number" varchar NOT NULL,
@@ -75,7 +75,7 @@ CREATE TABLE "user_registrations" (
 	"how_did_you_hear" varchar,
 	"registered_at" timestamp DEFAULT now() NOT NULL,
 	"emailed_at" timestamp,
-	CONSTRAINT "user_registrations_replit_user_id_unique" UNIQUE("replit_user_id")
+	CONSTRAINT "user_registrations_user_id_unique" UNIQUE("user_id")
 );
 --> statement-breakpoint
 CREATE TABLE "conversations" (
@@ -100,13 +100,26 @@ CREATE TABLE "sessions" (
 --> statement-breakpoint
 CREATE TABLE "users" (
 	"id" varchar PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"email" varchar,
+	"email" varchar NOT NULL,
+	"password_hash" varchar NOT NULL,
 	"first_name" varchar,
 	"last_name" varchar,
-	"profile_image_url" varchar,
+	"email_verified" boolean DEFAULT false,
+	"email_verified_at" timestamp,
+	"last_login_at" timestamp,
 	"created_at" timestamp DEFAULT now(),
 	"updated_at" timestamp DEFAULT now(),
 	CONSTRAINT "users_email_unique" UNIQUE("email")
+);
+--> statement-breakpoint
+CREATE TABLE "email_verification_tokens" (
+	"id" varchar PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"user_id" varchar NOT NULL,
+	"token" varchar NOT NULL,
+	"expires_at" timestamp NOT NULL,
+	"used_at" timestamp,
+	"created_at" timestamp DEFAULT now(),
+	CONSTRAINT "email_verification_tokens_token_unique" UNIQUE("token")
 );
 --> statement-breakpoint
 ALTER TABLE "messages" ADD CONSTRAINT "messages_conversation_id_conversations_id_fk" FOREIGN KEY ("conversation_id") REFERENCES "public"."conversations"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint

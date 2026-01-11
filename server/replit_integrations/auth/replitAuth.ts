@@ -1,24 +1,40 @@
-import * as client from "openid-client";
-import { Strategy, type VerifyFunction } from "openid-client/passport";
-
-import passport from "passport";
 import session from "express-session";
-import type { Express, RequestHandler } from "express";
-import memoize from "memoizee";
+import type { Express, Response, NextFunction } from "express";
+import { Request } from "express";
 import connectPg from "connect-pg-simple";
 import { authStorage } from "./storage";
+import { signupSchema, loginSchema } from "@shared/models/auth";
+import { Resend } from "resend";
 
-const getOidcConfig = memoize(
-  async () => {
-    return await client.discovery(
-      new URL(process.env.ISSUER_URL ?? "https://replit.com/oidc"),
-      process.env.REPL_ID!
-    );
-  },
-  { maxAge: 3600 * 1000 }
-);
+declare module "express-session" {
+  interface SessionData {
+    userId?: string;
+  }
+}
+
+interface AuthUser {
+  id: string;
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+  emailVerified: boolean | null;
+}
+
+declare global {
+  namespace Express {
+    interface Request {
+      user?: AuthUser;
+    }
+  }
+}
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export function getSession() {
+  if (!process.env.SESSION_SECRET) {
+    throw new Error("SESSION_SECRET environment variable is required");
+  }
+  
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
   const pgStore = connectPg(session);
   const sessionStore = new pgStore({
@@ -28,146 +44,212 @@ export function getSession() {
     tableName: "sessions",
   });
   return session({
-    secret: process.env.SESSION_SECRET!,
+    secret: process.env.SESSION_SECRET,
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === "production",
       maxAge: sessionTtl,
+      sameSite: "lax",
     },
-  });
-}
-
-function updateUserSession(
-  user: any,
-  tokens: client.TokenEndpointResponse & client.TokenEndpointResponseHelpers
-) {
-  user.claims = tokens.claims();
-  user.access_token = tokens.access_token;
-  user.refresh_token = tokens.refresh_token;
-  user.expires_at = user.claims?.exp;
-}
-
-async function upsertUser(claims: any) {
-  await authStorage.upsertUser({
-    id: claims["sub"],
-    email: claims["email"],
-    firstName: claims["first_name"],
-    lastName: claims["last_name"],
-    profileImageUrl: claims["profile_image_url"],
   });
 }
 
 export async function setupAuth(app: Express) {
   app.set("trust proxy", 1);
   app.use(getSession());
-  app.use(passport.initialize());
-  app.use(passport.session());
 
-  const config = await getOidcConfig();
-
-  const verify: VerifyFunction = async (
-    tokens: client.TokenEndpointResponse & client.TokenEndpointResponseHelpers,
-    verified: passport.AuthenticateCallback
-  ) => {
-    const user = {};
-    updateUserSession(user, tokens);
-    await upsertUser(tokens.claims());
-    verified(null, user);
-  };
-
-  // Keep track of registered strategies
-  const registeredStrategies = new Set<string>();
-
-  // Helper function to ensure strategy exists for a domain
-  const ensureStrategy = (domain: string) => {
-    const strategyName = `replitauth:${domain}`;
-    if (!registeredStrategies.has(strategyName)) {
-      const strategy = new Strategy(
-        {
-          name: strategyName,
-          config,
-          scope: "openid email profile offline_access",
-          callbackURL: `https://${domain}/api/callback`,
-        },
-        verify
-      );
-      passport.use(strategy);
-      registeredStrategies.add(strategyName);
+  // Hydrate req.user from session
+  app.use(async (req: Request, res: Response, next: NextFunction) => {
+    if (req.session.userId) {
+      const user = await authStorage.getUser(req.session.userId);
+      if (user) {
+        req.user = {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          emailVerified: user.emailVerified,
+        };
+      }
     }
-  };
-
-  passport.serializeUser((user: Express.User, cb) => cb(null, user));
-  passport.deserializeUser((user: Express.User, cb) => cb(null, user));
-
-  app.get("/api/login", (req, res, next) => {
-    ensureStrategy(req.hostname);
-    passport.authenticate(`replitauth:${req.hostname}`, {
-      prompt: "login consent",
-      scope: ["openid", "email", "profile", "offline_access"],
-    })(req, res, next);
+    next();
   });
 
-  app.get("/api/callback", (req, res, next) => {
-    ensureStrategy(req.hostname);
-    passport.authenticate(`replitauth:${req.hostname}`, (err: any, user: any, info: any) => {
-      if (err) {
-        console.error("[Auth Callback] Error:", err);
-        return res.status(500).json({ error: "Authentication failed", details: err.message });
+  // Signup endpoint
+  app.post("/api/auth/signup", async (req: Request, res: Response) => {
+    try {
+      const result = signupSchema.safeParse(req.body);
+      if (!result.success) {
+        return res.status(400).json({ message: result.error.errors[0].message });
       }
-      if (!user) {
-        console.error("[Auth Callback] No user returned:", info);
-        return res.redirect("/api/login");
+
+      const { email, password, firstName, lastName } = result.data;
+
+      // Check if user exists
+      const existing = await authStorage.getUserByEmail(email);
+      if (existing) {
+        return res.status(400).json({ message: "Email already registered" });
       }
-      req.logIn(user, (loginErr) => {
-        if (loginErr) {
-          console.error("[Auth Callback] Login error:", loginErr);
-          return res.status(500).json({ error: "Login failed", details: loginErr.message });
-        }
-        return res.redirect("/");
+
+      // Create user
+      const user = await authStorage.createUser({ email, password, firstName, lastName });
+
+      // Create verification token and send email
+      const token = await authStorage.createVerificationToken(user.id);
+      const verifyUrl = `${req.protocol}://${req.get("host")}/verify-email?token=${token}`;
+
+      try {
+        await resend.emails.send({
+          from: "AI Shark <noreply@aishark.org>",
+          to: email,
+          subject: "Verify your AI Shark account",
+          html: `
+            <h2>Welcome to AI Shark!</h2>
+            <p>Please verify your email by clicking the link below:</p>
+            <p><a href="${verifyUrl}">Verify Email</a></p>
+            <p>This link expires in 24 hours.</p>
+            <p>If you didn't create this account, you can ignore this email.</p>
+          `,
+        });
+      } catch (emailErr) {
+        console.error("[Auth] Failed to send verification email:", emailErr);
+      }
+
+      // Log user in
+      req.session.userId = user.id;
+
+      res.json({
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        emailVerified: user.emailVerified,
       });
-    })(req, res, next);
+    } catch (error: any) {
+      console.error("[Auth Signup] Error:", error);
+      res.status(500).json({ message: "Failed to create account" });
+    }
   });
 
-  app.get("/api/logout", (req, res) => {
-    req.logout(() => {
-      res.redirect(
-        client.buildEndSessionUrl(config, {
-          client_id: process.env.REPL_ID!,
-          post_logout_redirect_uri: `${req.protocol}://${req.hostname}`,
-        }).href
-      );
+  // Login endpoint
+  app.post("/api/auth/login", async (req: Request, res: Response) => {
+    try {
+      const result = loginSchema.safeParse(req.body);
+      if (!result.success) {
+        return res.status(400).json({ message: result.error.errors[0].message });
+      }
+
+      const { email, password } = result.data;
+
+      const user = await authStorage.verifyPassword(email, password);
+      if (!user) {
+        return res.status(401).json({ message: "Invalid email or password" });
+      }
+
+      // Update last login
+      await authStorage.updateLastLogin(user.id);
+
+      // Set session
+      req.session.userId = user.id;
+
+      res.json({
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        emailVerified: user.emailVerified,
+      });
+    } catch (error: any) {
+      console.error("[Auth Login] Error:", error);
+      res.status(500).json({ message: "Login failed" });
+    }
+  });
+
+  // Logout endpoint
+  app.post("/api/auth/logout", (req: Request, res: Response) => {
+    req.session.destroy((err) => {
+      if (err) {
+        console.error("[Auth Logout] Error:", err);
+        return res.status(500).json({ message: "Logout failed" });
+      }
+      res.clearCookie("connect.sid");
+      res.json({ message: "Logged out" });
     });
+  });
+
+  // Get current user
+  app.get("/api/auth/user", (req: Request, res: Response) => {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    res.json(req.user);
+  });
+
+  // Verify email
+  app.get("/api/auth/verify-email", async (req: Request, res: Response) => {
+    try {
+      const { token } = req.query;
+      if (!token || typeof token !== "string") {
+        return res.status(400).json({ message: "Invalid token" });
+      }
+
+      const success = await authStorage.verifyEmail(token);
+      if (!success) {
+        return res.status(400).json({ message: "Invalid or expired token" });
+      }
+
+      res.json({ message: "Email verified successfully" });
+    } catch (error: any) {
+      console.error("[Auth Verify] Error:", error);
+      res.status(500).json({ message: "Verification failed" });
+    }
+  });
+
+  // Resend verification email
+  app.post("/api/auth/resend-verification", async (req: Request, res: Response) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const user = await authStorage.getUser(req.user.id);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      if (user.emailVerified) {
+        return res.status(400).json({ message: "Email already verified" });
+      }
+
+      const token = await authStorage.createVerificationToken(user.id);
+      const verifyUrl = `${req.protocol}://${req.get("host")}/verify-email?token=${token}`;
+
+      await resend.emails.send({
+        from: "AI Shark <noreply@aishark.org>",
+        to: user.email,
+        subject: "Verify your AI Shark account",
+        html: `
+          <h2>Verify your email</h2>
+          <p>Please verify your email by clicking the link below:</p>
+          <p><a href="${verifyUrl}">Verify Email</a></p>
+          <p>This link expires in 24 hours.</p>
+        `,
+      });
+
+      res.json({ message: "Verification email sent" });
+    } catch (error: any) {
+      console.error("[Auth Resend] Error:", error);
+      res.status(500).json({ message: "Failed to send email" });
+    }
   });
 }
 
-export const isAuthenticated: RequestHandler = async (req, res, next) => {
-  const user = req.user as any;
-
-  if (!req.isAuthenticated() || !user.expires_at) {
+export const isAuthenticated = (req: Request, res: Response, next: NextFunction) => {
+  if (!req.user) {
     return res.status(401).json({ message: "Unauthorized" });
   }
-
-  const now = Math.floor(Date.now() / 1000);
-  if (now <= user.expires_at) {
-    return next();
-  }
-
-  const refreshToken = user.refresh_token;
-  if (!refreshToken) {
-    res.status(401).json({ message: "Unauthorized" });
-    return;
-  }
-
-  try {
-    const config = await getOidcConfig();
-    const tokenResponse = await client.refreshTokenGrant(config, refreshToken);
-    updateUserSession(user, tokenResponse);
-    return next();
-  } catch (error) {
-    res.status(401).json({ message: "Unauthorized" });
-    return;
-  }
+  next();
 };

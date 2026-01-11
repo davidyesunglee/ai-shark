@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import multer from "multer";
 import { parseDocument } from "./documentParser";
 import { analyzeBusinessPlan, isOpenAIConfigured } from "./openai";
-import { setupAuth, isAuthenticated, registerAuthRoutes } from "./replit_integrations/auth";
+import { setupAuth, isAuthenticated } from "./replit_integrations/auth";
 import { insertUserRegistrationSchema } from "@shared/schema";
 import { startWeeklyEmailScheduler, startTransactionEmailScheduler } from "./emailScheduler";
 import { getUncachableStripeClient, getStripePublishableKey } from "./stripeClient";
@@ -22,14 +22,13 @@ export async function registerRoutes(
 ): Promise<Server> {
 
   await setupAuth(app);
-  registerAuthRoutes(app);
   
   startWeeklyEmailScheduler();
   startTransactionEmailScheduler();
 
   app.get("/api/registration/status", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = req.user?.id;
       const registration = await storage.getUserRegistration(userId);
       res.json({ isRegistered: !!registration, registration });
     } catch (error) {
@@ -40,7 +39,7 @@ export async function registerRoutes(
 
   app.post("/api/registration", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = req.user?.id;
       
       const existing = await storage.getUserRegistration(userId);
       if (existing) {
@@ -49,7 +48,7 @@ export async function registerRoutes(
 
       const validatedData = insertUserRegistrationSchema.parse({
         ...req.body,
-        replitUserId: userId,
+        userId: userId,
       });
 
       const registration = await storage.createUserRegistration(validatedData);
@@ -83,7 +82,7 @@ export async function registerRoutes(
 
   app.get("/api/assessments", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = req.user?.id;
       const assessments = await storage.getAssessmentsByUser(userId);
       const mapped = assessments.map((a) => ({
         id: a.id,
@@ -102,7 +101,7 @@ export async function registerRoutes(
 
   app.get("/api/assessments/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = req.user?.id;
       const assessment = await storage.getAssessment(req.params.id);
       if (!assessment) {
         return res.status(404).json({ message: "Assessment not found" });
@@ -127,7 +126,7 @@ export async function registerRoutes(
         return res.status(503).json({ message: "AI analysis is not configured." });
       }
 
-      const userId = req.user?.claims?.sub;
+      const userId = req.user?.id;
       
       const registration = await storage.getUserRegistration(userId);
       if (!registration) {
@@ -198,7 +197,7 @@ export async function registerRoutes(
 
   app.delete("/api/assessments/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = req.user?.id;
       const assessment = await storage.getAssessment(req.params.id);
       if (!assessment) {
         return res.status(404).json({ message: "Assessment not found" });
@@ -229,7 +228,7 @@ export async function registerRoutes(
 
   app.get("/api/billing/status", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = req.user?.id;
       const registration = await storage.getUserRegistration(userId);
       if (!registration) {
         return res.status(403).json({ message: "Registration required" });
@@ -295,7 +294,7 @@ export async function registerRoutes(
 
   app.post("/api/checkout/create-session", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = req.user?.id;
       const { priceId, mode } = req.body;
 
       const registration = await storage.getUserRegistration(userId);
@@ -351,7 +350,7 @@ export async function registerRoutes(
 
   app.post("/api/billing/portal", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = req.user?.id;
       const registration = await storage.getUserRegistration(userId);
       if (!registration) {
         return res.status(403).json({ message: "Registration required" });
