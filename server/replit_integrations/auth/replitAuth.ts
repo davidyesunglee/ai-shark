@@ -120,13 +120,20 @@ export async function setupAuth(app: Express) {
 
       // Log user in
       req.session.userId = user.id;
-
-      res.json({
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        emailVerified: user.emailVerified,
+      
+      // Save session before responding
+      req.session.save((err) => {
+        if (err) {
+          console.error("[Auth Signup] Session save error:", err);
+          return res.status(500).json({ message: "Failed to create session" });
+        }
+        res.json({
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          emailVerified: user.emailVerified,
+        });
       });
     } catch (error: any) {
       console.error("[Auth Signup] Error:", error);
@@ -155,12 +162,19 @@ export async function setupAuth(app: Express) {
       // Set session
       req.session.userId = user.id;
 
-      res.json({
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        emailVerified: user.emailVerified,
+      // Save session before responding
+      req.session.save((err) => {
+        if (err) {
+          console.error("[Auth Login] Session save error:", err);
+          return res.status(500).json({ message: "Failed to create session" });
+        }
+        res.json({
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          emailVerified: user.emailVerified,
+        });
       });
     } catch (error: any) {
       console.error("[Auth Login] Error:", error);
