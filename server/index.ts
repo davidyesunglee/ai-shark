@@ -130,7 +130,8 @@ app.use((req, res, next) => {
   next();
 });
 
-(async () => {
+// Background initialization (runs after server starts)
+async function initializeBackground() {
   console.log("[Database] Running migrations...");
   try {
     await migrate(db, { migrationsFolder: "./migrations" });
@@ -140,6 +141,10 @@ app.use((req, res, next) => {
   }
   
   await initStripe();
+}
+
+(async () => {
+  // Register routes first (synchronous setup)
   await registerRoutes(httpServer, app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
@@ -173,6 +178,10 @@ app.use((req, res, next) => {
     },
     () => {
       log(`serving on port ${port}`);
+      // Run migrations and Stripe setup AFTER port is open
+      initializeBackground().catch(err => {
+        console.error("[Background Init] Error:", err);
+      });
     },
   );
 })();
