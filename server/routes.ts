@@ -80,6 +80,17 @@ export async function registerRoutes(
     }
   });
 
+  app.post("/api/admin/trigger-emails", isAuthenticated, async (req: any, res) => {
+    try {
+      const { triggerEmailManually } = await import("./emailScheduler");
+      await triggerEmailManually();
+      res.json({ success: true, message: "Email triggered successfully" });
+    } catch (error) {
+      console.error("Error triggering email:", error);
+      res.status(500).json({ message: "Failed to trigger email" });
+    }
+  });
+
   app.get("/api/assessments", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.id;
