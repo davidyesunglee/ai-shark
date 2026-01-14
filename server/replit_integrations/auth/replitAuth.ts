@@ -61,15 +61,10 @@ export function getSession() {
   
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
   const pgStore = connectPg(session);
-  let dbUrl = getDatabaseUrl();
+  const dbUrl = getDatabaseUrl();
   const isProduction = process.env.NODE_ENV === "production";
   
-  // Add SSL mode for production if not already in the connection string
-  if (isProduction && !dbUrl.includes('sslmode=')) {
-    const separator = dbUrl.includes('?') ? '&' : '?';
-    dbUrl = `${dbUrl}${separator}sslmode=require`;
-  }
-  
+  // Use the connection string as-is - Replit's production URL already has correct config
   const sessionStore = new pgStore({
     conString: dbUrl,
     createTableIfMissing: true,
