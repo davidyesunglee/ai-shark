@@ -47,9 +47,20 @@ export default function SignupPage() {
       });
       setLocation("/register");
     } catch (error: any) {
-      const message = error.message?.includes("400") 
-        ? "Email already registered. Please sign in instead." 
-        : "Signup failed. Please try again.";
+      console.error("Signup error:", error);
+      let message = "Signup failed. Please try again.";
+      if (error.message?.includes("400")) {
+        message = "Email already registered. Please sign in instead.";
+      } else if (error.message?.includes("Failed to fetch") || error.message?.includes("NetworkError")) {
+        message = "Network error. Please check your connection and try again.";
+      } else if (error.message) {
+        try {
+          const parsed = JSON.parse(error.message.split(": ").slice(1).join(": "));
+          if (parsed.message) message = parsed.message;
+        } catch {
+          // Keep the default message
+        }
+      }
       toast({
         title: "Signup failed",
         description: message,

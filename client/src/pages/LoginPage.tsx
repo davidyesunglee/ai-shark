@@ -21,9 +21,21 @@ export default function LoginPage() {
       await login({ email, password });
       setLocation("/");
     } catch (error: any) {
-      const message = error.message?.includes("401") 
-        ? "Invalid email or password" 
-        : "Login failed. Please try again.";
+      console.error("Login error:", error);
+      let message = "Login failed. Please try again.";
+      if (error.message?.includes("401")) {
+        message = "Invalid email or password";
+      } else if (error.message?.includes("Failed to fetch") || error.message?.includes("NetworkError")) {
+        message = "Network error. Please check your connection and try again.";
+      } else if (error.message) {
+        // Try to extract a more specific message
+        try {
+          const parsed = JSON.parse(error.message.split(": ").slice(1).join(": "));
+          if (parsed.message) message = parsed.message;
+        } catch {
+          // Keep the default message
+        }
+      }
       toast({
         title: "Login failed",
         description: message,
