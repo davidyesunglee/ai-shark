@@ -82,6 +82,7 @@ export async function setupAuth(app: Express) {
   app.post("/api/auth/signup", async (req: Request, res: Response) => {
     try {
       console.log("[Auth Signup] Attempt from:", req.get("host"), "Protocol:", req.protocol, "Secure:", req.secure);
+      console.log("[Auth Signup] NODE_ENV:", process.env.NODE_ENV);
       
       const result = signupSchema.safeParse(req.body);
       if (!result.success) {
@@ -93,19 +94,43 @@ export async function setupAuth(app: Express) {
       console.log("[Auth Signup] Attempting signup for:", email);
 
       // Check if user exists
-      const existing = await authStorage.getUserByEmail(email);
+      let existing;
+      try {
+        existing = await authStorage.getUserByEmail(email);
+      } catch (dbErr: any) {
+        console.error("[Auth Signup] DB error checking existing user:", dbErr.message, dbErr.stack);
+        return res.status(500).json({ 
+          message: "Failed to create account", 
+          detail: "database check error",
+          errorType: dbErr.name,
+          errorMessage: dbErr.message
+        });
+      }
+      
       if (existing) {
         return res.status(400).json({ message: "Email already registered" });
       }
 
       // Create user
-      const user = await authStorage.createUser({ email, password, firstName, lastName });
+      let user;
+      try {
+        user = await authStorage.createUser({ email, password, firstName, lastName });
+        console.log("[Auth Signup] User created:", user.id);
+      } catch (createErr: any) {
+        console.error("[Auth Signup] Error creating user:", createErr.message, createErr.stack);
+        return res.status(500).json({ 
+          message: "Failed to create account", 
+          detail: "user creation error",
+          errorType: createErr.name,
+          errorMessage: createErr.message
+        });
+      }
 
       // Create verification token and send email
-      const token = await authStorage.createVerificationToken(user.id);
-      const verifyUrl = `${req.protocol}://${req.get("host")}/verify-email?token=${token}`;
-
       try {
+        const token = await authStorage.createVerificationToken(user.id);
+        const verifyUrl = `${req.protocol}://${req.get("host")}/verify-email?token=${token}`;
+
         await resend.emails.send({
           from: "AI Shark <noreply@aishark.org>",
           to: email,
@@ -118,8 +143,8 @@ export async function setupAuth(app: Express) {
             <p>If you didn't create this account, you can ignore this email.</p>
           `,
         });
-      } catch (emailErr) {
-        console.error("[Auth] Failed to send verification email:", emailErr);
+      } catch (emailErr: any) {
+        console.error("[Auth Signup] Failed to send verification email:", emailErr.message);
       }
 
       // Log user in
@@ -128,9 +153,15 @@ export async function setupAuth(app: Express) {
       // Save session before responding
       req.session.save((err) => {
         if (err) {
-          console.error("[Auth Signup] Session save error:", err);
-          return res.status(500).json({ message: "Failed to create session" });
+          console.error("[Auth Signup] Session save error:", err.message, err.stack);
+          return res.status(500).json({ 
+            message: "Failed to create session",
+            detail: "session save error",
+            errorType: err.name,
+            errorMessage: err.message
+          });
         }
+        console.log("[Auth Signup] Session saved for:", user.id);
         res.json({
           id: user.id,
           email: user.email,
@@ -140,8 +171,13 @@ export async function setupAuth(app: Express) {
         });
       });
     } catch (error: any) {
-      console.error("[Auth Signup] Error:", error);
-      res.status(500).json({ message: "Failed to create account" });
+      console.error("[Auth Signup] Unexpected error:", error.message, error.stack);
+      res.status(500).json({ 
+        message: "Failed to create account",
+        detail: "unexpected error",
+        errorType: error.name,
+        errorMessage: error.message
+      });
     }
   });
 
