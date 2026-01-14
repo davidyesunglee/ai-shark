@@ -81,12 +81,16 @@ export async function setupAuth(app: Express) {
   // Signup endpoint
   app.post("/api/auth/signup", async (req: Request, res: Response) => {
     try {
+      console.log("[Auth Signup] Attempt from:", req.get("host"), "Protocol:", req.protocol, "Secure:", req.secure);
+      
       const result = signupSchema.safeParse(req.body);
       if (!result.success) {
+        console.log("[Auth Signup] Validation failed:", result.error.errors[0].message);
         return res.status(400).json({ message: result.error.errors[0].message });
       }
 
       const { email, password, firstName, lastName } = result.data;
+      console.log("[Auth Signup] Attempting signup for:", email);
 
       // Check if user exists
       const existing = await authStorage.getUserByEmail(email);
@@ -144,17 +148,24 @@ export async function setupAuth(app: Express) {
   // Login endpoint
   app.post("/api/auth/login", async (req: Request, res: Response) => {
     try {
+      console.log("[Auth Login] Attempt from:", req.get("host"), "Protocol:", req.protocol, "Secure:", req.secure);
+      
       const result = loginSchema.safeParse(req.body);
       if (!result.success) {
+        console.log("[Auth Login] Validation failed:", result.error.errors[0].message);
         return res.status(400).json({ message: result.error.errors[0].message });
       }
 
       const { email, password } = result.data;
+      console.log("[Auth Login] Attempting login for:", email);
 
       const user = await authStorage.verifyPassword(email, password);
       if (!user) {
+        console.log("[Auth Login] Invalid credentials for:", email);
         return res.status(401).json({ message: "Invalid email or password" });
       }
+
+      console.log("[Auth Login] User verified:", user.id);
 
       // Update last login
       await authStorage.updateLastLogin(user.id);
@@ -168,6 +179,7 @@ export async function setupAuth(app: Express) {
           console.error("[Auth Login] Session save error:", err);
           return res.status(500).json({ message: "Failed to create session" });
         }
+        console.log("[Auth Login] Session saved successfully for:", user.id);
         res.json({
           id: user.id,
           email: user.email,
