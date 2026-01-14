@@ -149,6 +149,8 @@ export async function setupAuth(app: Express) {
   app.post("/api/auth/login", async (req: Request, res: Response) => {
     try {
       console.log("[Auth Login] Attempt from:", req.get("host"), "Protocol:", req.protocol, "Secure:", req.secure);
+      console.log("[Auth Login] NODE_ENV:", process.env.NODE_ENV);
+      console.log("[Auth Login] Session config - secure:", process.env.NODE_ENV === "production");
       
       const result = loginSchema.safeParse(req.body);
       if (!result.success) {
@@ -159,7 +161,14 @@ export async function setupAuth(app: Express) {
       const { email, password } = result.data;
       console.log("[Auth Login] Attempting login for:", email);
 
-      const user = await authStorage.verifyPassword(email, password);
+      let user;
+      try {
+        user = await authStorage.verifyPassword(email, password);
+      } catch (verifyErr: any) {
+        console.error("[Auth Login] verifyPassword threw:", verifyErr.message, verifyErr.stack);
+        return res.status(500).json({ message: "Login failed", detail: "password verification error" });
+      }
+      
       if (!user) {
         console.log("[Auth Login] Invalid credentials for:", email);
         return res.status(401).json({ message: "Invalid email or password" });
@@ -168,7 +177,11 @@ export async function setupAuth(app: Express) {
       console.log("[Auth Login] User verified:", user.id);
 
       // Update last login
-      await authStorage.updateLastLogin(user.id);
+      try {
+        await authStorage.updateLastLogin(user.id);
+      } catch (updateErr: any) {
+        console.error("[Auth Login] updateLastLogin threw:", updateErr.message);
+      }
 
       // Set session
       req.session.userId = user.id;
@@ -176,8 +189,8 @@ export async function setupAuth(app: Express) {
       // Save session before responding
       req.session.save((err) => {
         if (err) {
-          console.error("[Auth Login] Session save error:", err);
-          return res.status(500).json({ message: "Failed to create session" });
+          console.error("[Auth Login] Session save error:", err.message, err.stack);
+          return res.status(500).json({ message: "Failed to create session", detail: "session save error" });
         }
         console.log("[Auth Login] Session saved successfully for:", user.id);
         res.json({
@@ -189,8 +202,8 @@ export async function setupAuth(app: Express) {
         });
       });
     } catch (error: any) {
-      console.error("[Auth Login] Error:", error);
-      res.status(500).json({ message: "Login failed" });
+      console.error("[Auth Login] Unexpected error:", error.message, error.stack);
+      res.status(500).json({ message: "Login failed", detail: error.message });
     }
   });
 
