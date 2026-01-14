@@ -40,10 +40,29 @@ class AuthStorage implements IAuthStorage {
   }
 
   async verifyPassword(email: string, password: string): Promise<User | null> {
-    const user = await this.getUserByEmail(email);
+    console.log("[AuthStorage] verifyPassword called for:", email);
+    let user;
+    try {
+      user = await this.getUserByEmail(email);
+      console.log("[AuthStorage] User found:", !!user);
+    } catch (dbErr: any) {
+      console.error("[AuthStorage] Database error getting user:", dbErr.message, dbErr.stack);
+      throw dbErr;
+    }
+    
     if (!user) return null;
-    const valid = await bcrypt.compare(password, user.passwordHash);
-    return valid ? user : null;
+    
+    console.log("[AuthStorage] passwordHash exists:", !!user.passwordHash);
+    console.log("[AuthStorage] passwordHash length:", user.passwordHash?.length);
+    
+    try {
+      const valid = await bcrypt.compare(password, user.passwordHash);
+      console.log("[AuthStorage] Password valid:", valid);
+      return valid ? user : null;
+    } catch (bcryptErr: any) {
+      console.error("[AuthStorage] bcrypt.compare error:", bcryptErr.message, bcryptErr.stack);
+      throw bcryptErr;
+    }
   }
 
   async updateLastLogin(userId: string): Promise<void> {
