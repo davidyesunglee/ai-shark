@@ -22,12 +22,22 @@ export async function registerRoutes(
 ): Promise<Server> {
 
   // Health check endpoint for debugging production issues
-  app.get("/api/health", (req, res) => {
+  app.get("/api/health", async (req, res) => {
+    let dbStatus = "unknown";
+    try {
+      await db.execute(sql`SELECT 1`);
+      dbStatus = "connected";
+    } catch (e: any) {
+      dbStatus = `error: ${e.message}`;
+    }
+    
     res.json({
       status: "ok",
       environment: process.env.NODE_ENV || "not set",
       hasSessionSecret: !!process.env.SESSION_SECRET,
       hasDatabaseUrl: !!process.env.DATABASE_URL,
+      hasReplitDb: require('fs').existsSync('/tmp/replitdb'),
+      dbStatus,
       host: req.get("host"),
       protocol: req.protocol,
       secure: req.secure,
