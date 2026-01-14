@@ -166,7 +166,12 @@ export async function setupAuth(app: Express) {
         user = await authStorage.verifyPassword(email, password);
       } catch (verifyErr: any) {
         console.error("[Auth Login] verifyPassword threw:", verifyErr.message, verifyErr.stack);
-        return res.status(500).json({ message: "Login failed", detail: "password verification error" });
+        return res.status(500).json({ 
+          message: "Login failed", 
+          detail: "password verification error",
+          errorType: verifyErr.name || "Unknown",
+          errorMessage: verifyErr.message || "No message"
+        });
       }
       
       if (!user) {
