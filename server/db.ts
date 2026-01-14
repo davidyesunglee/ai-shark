@@ -34,13 +34,19 @@ const isProduction = process.env.NODE_ENV === "production";
 export const pool = new Pool({ 
   connectionString,
   ssl: isProduction ? { rejectUnauthorized: false } : false,
-  max: 10,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 10000,
+  max: 5,
+  idleTimeoutMillis: 60000,
+  connectionTimeoutMillis: 30000,
+  keepAlive: true,
+  keepAliveInitialDelayMillis: 10000,
 });
 
 pool.on('error', (err) => {
   console.error('[Database] Unexpected pool error:', err.message);
+});
+
+pool.on('connect', () => {
+  console.log('[Database] New client connected to pool');
 });
 
 export const db = drizzle(pool, { schema });

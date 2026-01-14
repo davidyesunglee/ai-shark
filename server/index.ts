@@ -132,12 +132,18 @@ app.use((req, res, next) => {
 
 // Background initialization (runs after server starts)
 async function initializeBackground() {
-  console.log("[Database] Running migrations...");
-  try {
-    await migrate(db, { migrationsFolder: "./migrations" });
-    console.log("[Database] Migrations complete");
-  } catch (error) {
-    console.error("[Database] Migration error:", error);
+  // Skip migrations in production - schema is managed via db:push
+  // This prevents deployment timeout issues
+  if (process.env.NODE_ENV !== "production") {
+    console.log("[Database] Running migrations (dev only)...");
+    try {
+      await migrate(db, { migrationsFolder: "./migrations" });
+      console.log("[Database] Migrations complete");
+    } catch (error) {
+      console.error("[Database] Migration error:", error);
+    }
+  } else {
+    console.log("[Database] Skipping migrations in production");
   }
   
   await initStripe();
