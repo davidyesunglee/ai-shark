@@ -8,8 +8,8 @@ import { WebhookHandlers } from "./webhookHandlers";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { db } from "./db";
 
-// Top-level debug logging
-console.log("[Boot] Server starting...");
+// Top-level debug logging - Version 2
+console.log("[Boot] Server starting... v2");
 console.log(`[Boot] NODE_ENV: ${process.env.NODE_ENV}`);
 console.log(`[Boot] PORT: ${process.env.PORT}`);
 
