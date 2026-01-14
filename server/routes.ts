@@ -21,6 +21,20 @@ export async function registerRoutes(
   app: Express
 ): Promise<Server> {
 
+  // Health check endpoint for debugging production issues
+  app.get("/api/health", (req, res) => {
+    res.json({
+      status: "ok",
+      environment: process.env.NODE_ENV || "not set",
+      hasSessionSecret: !!process.env.SESSION_SECRET,
+      hasDatabaseUrl: !!process.env.DATABASE_URL,
+      host: req.get("host"),
+      protocol: req.protocol,
+      secure: req.secure,
+      timestamp: new Date().toISOString(),
+    });
+  });
+
   await setupAuth(app);
   
   startWeeklyEmailScheduler();
