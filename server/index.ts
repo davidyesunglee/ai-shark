@@ -159,8 +159,10 @@ async function initializeBackground() {
 
 (async () => {
   // ALWAYS serve the app on the port specified in the environment variable PORT
-  // Other ports are firewalled. Default to 5000 if not specified.
+  // For Reserved VM deployments, PORT may be set to 80
+  // Default to 5000 for development
   const port = parseInt(process.env.PORT || "5000", 10);
+  console.log(`[Server] PORT env: ${process.env.PORT}, using port: ${port}`);
   
   // In production, start listening FIRST to pass health checks quickly
   // Then initialize routes and database connections
