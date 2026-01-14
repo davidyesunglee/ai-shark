@@ -5,6 +5,7 @@ import connectPg from "connect-pg-simple";
 import { authStorage } from "./storage";
 import { signupSchema, loginSchema } from "@shared/models/auth";
 import { Resend } from "resend";
+import fs from "fs";
 
 declare module "express-session" {
   interface SessionData {
@@ -30,6 +31,29 @@ declare global {
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+function getDatabaseUrl(): string {
+  // Check /tmp/replitdb first (used in production deployments)
+  try {
+    if (fs.existsSync('/tmp/replitdb')) {
+      const url = fs.readFileSync('/tmp/replitdb', 'utf-8').trim();
+      if (url) {
+        console.log("[Session] Using /tmp/replitdb connection");
+        return url;
+      }
+    }
+  } catch (e) {
+    // Fall through to environment variable
+  }
+  
+  // Fall back to environment variable
+  if (process.env.DATABASE_URL) {
+    console.log("[Session] Using DATABASE_URL environment variable");
+    return process.env.DATABASE_URL;
+  }
+  
+  throw new Error("DATABASE_URL must be set for session store");
+}
+
 export function getSession() {
   if (!process.env.SESSION_SECRET) {
     throw new Error("SESSION_SECRET environment variable is required");
@@ -37,12 +61,22 @@ export function getSession() {
   
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
   const pgStore = connectPg(session);
+  let dbUrl = getDatabaseUrl();
+  const isProduction = process.env.NODE_ENV === "production";
+  
+  // Add SSL mode for production if not already in the connection string
+  if (isProduction && !dbUrl.includes('sslmode=')) {
+    const separator = dbUrl.includes('?') ? '&' : '?';
+    dbUrl = `${dbUrl}${separator}sslmode=require`;
+  }
+  
   const sessionStore = new pgStore({
-    conString: process.env.DATABASE_URL,
+    conString: dbUrl,
     createTableIfMissing: true,
     ttl: sessionTtl,
     tableName: "sessions",
   });
+  
   return session({
     secret: process.env.SESSION_SECRET,
     store: sessionStore,
@@ -50,7 +84,7 @@ export function getSession() {
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: isProduction,
       maxAge: sessionTtl,
       sameSite: "lax",
     },
