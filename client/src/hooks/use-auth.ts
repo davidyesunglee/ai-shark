@@ -42,13 +42,27 @@ async function logout(): Promise<void> {
 }
 
 async function login(data: LoginInput): Promise<AuthUser> {
-  const res = await apiRequest("POST", "/api/auth/login", data);
-  return res.json();
+  try {
+    const res = await apiRequest("POST", "/api/auth/login", data);
+    const user = await res.json();
+    console.log("[Auth] Login successful:", user.email);
+    return user;
+  } catch (error: any) {
+    console.error("[Auth] Login failed:", error.message);
+    throw error;
+  }
 }
 
 async function signup(data: SignupInput): Promise<AuthUser> {
-  const res = await apiRequest("POST", "/api/auth/signup", data);
-  return res.json();
+  try {
+    const res = await apiRequest("POST", "/api/auth/signup", data);
+    const user = await res.json();
+    console.log("[Auth] Signup successful:", user.email);
+    return user;
+  } catch (error: any) {
+    console.error("[Auth] Signup failed:", error.message);
+    throw error;
+  }
 }
 
 export function useAuth() {
