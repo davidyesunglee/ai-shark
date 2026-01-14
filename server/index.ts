@@ -8,6 +8,11 @@ import { WebhookHandlers } from "./webhookHandlers";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { db } from "./db";
 
+// Top-level debug logging
+console.log("[Boot] Server starting...");
+console.log(`[Boot] NODE_ENV: ${process.env.NODE_ENV}`);
+console.log(`[Boot] PORT: ${process.env.PORT}`);
+
 const app = express();
 const httpServer = createServer(app);
 
