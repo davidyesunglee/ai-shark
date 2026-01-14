@@ -11,6 +11,14 @@ import { db } from "./db";
 const app = express();
 const httpServer = createServer(app);
 
+// Debug: Log ALL incoming requests in production
+if (process.env.NODE_ENV === "production") {
+  app.use((req, _res, next) => {
+    console.log(`[Request] ${req.method} ${req.url}`);
+    next();
+  });
+}
+
 declare module "http" {
   interface IncomingMessage {
     rawBody: unknown;
