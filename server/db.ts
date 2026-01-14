@@ -10,7 +10,10 @@ function getDatabaseUrl(): string {
   try {
     if (fs.existsSync('/tmp/replitdb')) {
       const url = fs.readFileSync('/tmp/replitdb', 'utf-8').trim();
-      if (url) return url;
+      if (url) {
+        console.log("[Database] Using /tmp/replitdb connection");
+        return url;
+      }
     }
   } catch (e) {
     // Fall through to environment variable
@@ -18,6 +21,7 @@ function getDatabaseUrl(): string {
   
   // Fall back to environment variable
   if (process.env.DATABASE_URL) {
+    console.log("[Database] Using DATABASE_URL environment variable");
     return process.env.DATABASE_URL;
   }
   
@@ -25,5 +29,18 @@ function getDatabaseUrl(): string {
 }
 
 const connectionString = getDatabaseUrl();
-export const pool = new Pool({ connectionString });
+const isProduction = process.env.NODE_ENV === "production";
+
+export const pool = new Pool({ 
+  connectionString,
+  ssl: isProduction ? { rejectUnauthorized: false } : false,
+  max: 10,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 10000,
+});
+
+pool.on('error', (err) => {
+  console.error('[Database] Unexpected pool error:', err.message);
+});
+
 export const db = drizzle(pool, { schema });
