@@ -6,20 +6,26 @@ import fs from "fs";
 const { Pool } = pg;
 
 function getDatabaseUrl(): string {
+  console.log("[Database] Looking for database connection...");
+  console.log("[Database] NODE_ENV:", process.env.NODE_ENV);
+  
   // Check /tmp/replitdb first (used in production deployments)
   try {
-    if (fs.existsSync('/tmp/replitdb')) {
-      const url = fs.readFileSync('/tmp/replitdb', 'utf-8').trim();
+    const replitDbPath = '/tmp/replitdb';
+    console.log("[Database] Checking", replitDbPath, "exists:", fs.existsSync(replitDbPath));
+    if (fs.existsSync(replitDbPath)) {
+      const url = fs.readFileSync(replitDbPath, 'utf-8').trim();
       if (url) {
         console.log("[Database] Using /tmp/replitdb connection");
         return url;
       }
     }
-  } catch (e) {
-    // Fall through to environment variable
+  } catch (e: any) {
+    console.log("[Database] Error reading /tmp/replitdb:", e.message);
   }
   
   // Fall back to environment variable
+  console.log("[Database] DATABASE_URL set:", !!process.env.DATABASE_URL);
   if (process.env.DATABASE_URL) {
     console.log("[Database] Using DATABASE_URL environment variable");
     return process.env.DATABASE_URL;
