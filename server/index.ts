@@ -164,52 +164,48 @@ async function initializeBackground() {
 
 (async () => {
   // ALWAYS serve the app on the port specified in the environment variable PORT
-  // For Reserved VM deployments, PORT may be set to 80
   // Default to 5000 for development
   const port = parseInt(process.env.PORT || "5000", 10);
   console.log(`[Server] PORT env: ${process.env.PORT}, using port: ${port}`);
   
-  // In production, start listening FIRST to pass health checks quickly
-  // Then initialize routes and database connections
+  // In production, register all routes BEFORE listening
   if (process.env.NODE_ENV === "production") {
-    // Add a simple health endpoint before anything else
+    console.log("[Production] Initializing routes...");
+    
+    // Add health endpoint
     app.get("/health", (_req, res) => {
       res.status(200).send("OK");
     });
     
-    // Start server immediately to pass deployment health check
+    // Register all routes (includes auth/session setup)
+    await registerRoutes(httpServer, app);
+    
+    app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+      const status = err.status || err.statusCode || 500;
+      const message = err.message || "Internal Server Error";
+      console.error("[Error Handler]", err.message, err.stack);
+      res.status(status).json({ message });
+    });
+    
+    // Serve static files
+    serveStatic(app);
+    
+    console.log("[Production] Routes initialized, starting server...");
+    
+    // Now start listening
     httpServer.listen(
       {
         port,
         host: "0.0.0.0",
         reusePort: true,
       },
-      async () => {
+      () => {
         log(`serving on port ${port}`);
         
-        try {
-          // Now register routes (includes auth/session setup)
-          await registerRoutes(httpServer, app);
-          
-          app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-            const status = err.status || err.statusCode || 500;
-            const message = err.message || "Internal Server Error";
-            console.error("[Error Handler]", err.message, err.stack);
-            res.status(status).json({ message });
-          });
-          
-          // Serve static files
-          serveStatic(app);
-          
-          log("Routes initialized");
-          
-          // Run background initialization
-          initializeBackground().catch(err => {
-            console.error("[Background Init] Error:", err);
-          });
-        } catch (err) {
-          console.error("[Startup Error]", err);
-        }
+        // Run background initialization (stripe sync, etc.)
+        initializeBackground().catch(err => {
+          console.error("[Background Init] Error:", err);
+        });
       },
     );
   } else {
