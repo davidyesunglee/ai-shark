@@ -18,10 +18,21 @@ export function serveStatic(app: Express) {
 
   console.log("[Static] Contents:", fs.readdirSync(distPath));
   
-  app.use(express.static(distPath));
+  app.use(express.static(distPath, {
+    maxAge: '1d',
+    etag: true,
+    setHeaders: (res, filePath) => {
+      if (filePath.endsWith('.html')) {
+        res.setHeader('Cache-Control', 'no-cache');
+      } else {
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+      }
+    }
+  }));
 
   // fall through to index.html if the file doesn't exist
   app.use("*", (_req, res) => {
+    res.setHeader('Cache-Control', 'no-cache');
     res.sendFile(path.resolve(distPath, "index.html"));
   });
   
