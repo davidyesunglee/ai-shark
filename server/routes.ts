@@ -36,7 +36,6 @@ export async function registerRoutes(
       environment: process.env.NODE_ENV || "not set",
       hasSessionSecret: !!process.env.SESSION_SECRET,
       hasDatabaseUrl: !!process.env.DATABASE_URL,
-      hasReplitDb: require('fs').existsSync('/tmp/replitdb'),
       dbStatus,
       host: req.get("host"),
       protocol: req.protocol,
