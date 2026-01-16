@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
-import { FileText, Plus, LogOut } from "lucide-react";
+import { FileText, Plus, LogOut, CreditCard } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { Link } from "wouter";
 
 interface HeaderProps {
   onNewAssessment?: () => void;
@@ -27,6 +28,12 @@ export function Header({ onNewAssessment }: HeaderProps) {
             {user.firstName || user.email || "User"}
           </span>
         )}
+        <Link href="/pricing">
+          <Button variant="ghost" data-testid="link-pricing">
+            <CreditCard className="mr-1 h-4 w-4" />
+            Pricing
+          </Button>
+        </Link>
         {onNewAssessment && (
           <Button onClick={onNewAssessment} data-testid="button-new-assessment">
             <Plus className="mr-1 h-4 w-4" />

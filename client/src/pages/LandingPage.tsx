@@ -24,6 +24,11 @@ export default function LandingPage() {
                 Education
               </Button>
             </Link>
+            <Link href="/pricing">
+              <Button variant="ghost" data-testid="link-pricing">
+                Pricing
+              </Button>
+            </Link>
             <Link href="/login">
               <Button data-testid="button-login-header">Sign In</Button>
             </Link>
