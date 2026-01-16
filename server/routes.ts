@@ -330,16 +330,36 @@ export async function registerRoutes(
     try {
       const userId = req.user?.id;
       const { priceId } = req.body;
+      
+      console.log("[Checkout] Starting checkout for user:", userId, "price:", priceId);
+
+      if (!priceId) {
+        return res.status(400).json({ message: "Price ID is required" });
+      }
 
       const registration = await storage.getUserRegistration(userId);
       if (!registration) {
+        console.log("[Checkout] Registration not found for user:", userId);
         return res.status(403).json({ message: "Registration required" });
       }
 
-      const stripe = await getUncachableStripeClient();
+      let stripe;
+      try {
+        stripe = await getUncachableStripeClient();
+      } catch (stripeError: any) {
+        console.error("[Checkout] Failed to initialize Stripe client:", stripeError.message);
+        return res.status(500).json({ message: "Payment system temporarily unavailable. Please try again later." });
+      }
 
       // Fetch the price to determine if it's recurring
-      const price = await stripe.prices.retrieve(priceId);
+      let price;
+      try {
+        price = await stripe.prices.retrieve(priceId);
+      } catch (priceError: any) {
+        console.error("[Checkout] Failed to retrieve price:", priceError.message);
+        return res.status(400).json({ message: "Invalid price selected. Please refresh and try again." });
+      }
+      
       const isSubscription = !!price.recurring;
       const mode = isSubscription ? "subscription" : "payment";
       const tier = isSubscription ? "subscription" : "one_time";
@@ -348,6 +368,7 @@ export async function registerRoutes(
       let customerId = billingProfile?.stripeCustomerId;
 
       if (!customerId) {
+        console.log("[Checkout] Creating new Stripe customer for registration:", registration.id);
         const customer = await stripe.customers.create({
           email: registration.email,
           name: registration.username,
@@ -361,6 +382,7 @@ export async function registerRoutes(
       }
 
       const baseUrl = `https://${process.env.REPLIT_DOMAINS?.split(",")[0]}`;
+      console.log("[Checkout] Creating session with baseUrl:", baseUrl);
       
       const session = await stripe.checkout.sessions.create({
         customer: customerId,
@@ -381,10 +403,11 @@ export async function registerRoutes(
         },
       });
 
+      console.log("[Checkout] Session created:", session.id);
       res.json({ url: session.url });
-    } catch (error) {
-      console.error("Error creating checkout session:", error);
-      res.status(500).json({ message: "Failed to create checkout session" });
+    } catch (error: any) {
+      console.error("[Checkout] Error creating checkout session:", error.message, error.stack);
+      res.status(500).json({ message: error.message || "Failed to create checkout session" });
     }
   });
 

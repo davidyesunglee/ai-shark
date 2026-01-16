@@ -40,17 +40,21 @@ export default function PricingPage() {
   const checkoutMutation = useMutation({
     mutationFn: async ({ priceId, mode }: { priceId: string; mode: string }) => {
       const response = await apiRequest("POST", "/api/checkout/create-session", { priceId, mode });
-      return response.json();
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to start checkout");
+      }
+      return data;
     },
     onSuccess: (data) => {
       if (data.url) {
         window.location.href = data.url;
       }
     },
-    onError: () => {
+    onError: (error: Error) => {
       toast({
-        title: "Error",
-        description: "Failed to start checkout. Please try again.",
+        title: "Checkout Error",
+        description: error.message || "Failed to start checkout. Please try again.",
         variant: "destructive",
       });
     },
