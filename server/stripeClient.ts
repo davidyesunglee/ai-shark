@@ -72,11 +72,20 @@ export async function getStripeSecretKey() {
 }
 
 let stripeSync: any = null;
+let lastSecretKeyUsed: string | null = null;
 
 export async function getStripeSync() {
+  const secretKey = await getStripeSecretKey();
+  
+  // Reset stripeSync if the secret key changed (e.g., switched from TEST to LIVE)
+  if (stripeSync && lastSecretKeyUsed && lastSecretKeyUsed !== secretKey) {
+    console.log('[Stripe] Detected credential change, resetting sync client');
+    stripeSync = null;
+  }
+  
   if (!stripeSync) {
     const { StripeSync } = await import('stripe-replit-sync');
-    const secretKey = await getStripeSecretKey();
+    lastSecretKeyUsed = secretKey;
 
     stripeSync = new StripeSync({
       poolConfig: {
