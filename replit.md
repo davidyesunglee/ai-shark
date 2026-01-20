@@ -54,6 +54,7 @@ Preferred communication style: Simple, everyday language.
 - **OpenAI API**: Powers the business plan analysis and scoring
 - **PostgreSQL**: Primary data storage (can be provisioned via Replit)
 - **Resend**: Email service for sending weekly registration reports to vemangum@gmail.com
+- **Stripe**: Payment processing (uses STRIPE_LIVE_PUBLISHABLE_KEY and STRIPE_LIVE_SECRET_KEY secrets instead of Replit connector)
 
 ## Authentication System
 - **Email/Password Authentication**: Users sign up with email and password (no Replit account required)
