@@ -62,7 +62,7 @@ export default function PricingPage() {
 
   const handleSelectPlan = (priceId: string, isSubscription: boolean) => {
     if (!user) {
-      setLocation("/api/login");
+      setLocation("/login");
       return;
     }
     checkoutMutation.mutate({ priceId, mode: isSubscription ? "subscription" : "payment" });
