@@ -9,7 +9,8 @@ import { UploadDialog } from "@/components/UploadDialog";
 import { AssessmentReport, type FullAssessment } from "@/components/AssessmentReport";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { FileText, TrendingUp, CheckCircle, Clock, Loader2 } from "lucide-react";
+import { FileText, TrendingUp, CheckCircle, Clock, Loader2, CreditCard } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface ApiAssessment {
@@ -45,6 +46,11 @@ export default function Dashboard() {
 
   const { data: registrationStatus, isLoading: isCheckingRegistration } = useQuery<{ isRegistered: boolean }>({
     queryKey: ["/api/registration/status"],
+  });
+
+  const { data: billingStatus, isLoading: isBillingLoading } = useQuery<{ tier: string; creditsRemaining: number; hasActiveSubscription: boolean }>({
+    queryKey: ["/api/billing/status"],
+    enabled: registrationStatus?.isRegistered === true,
   });
 
   useEffect(() => {
@@ -109,6 +115,9 @@ export default function Dashboard() {
       });
       if (!response.ok) {
         const error = await response.json();
+        if (error.requiresPayment) {
+          throw new Error("PAYMENT_REQUIRED:" + (error.message || "Payment required"));
+        }
         throw new Error(error.message || "Upload failed");
       }
       return response.json();
@@ -124,6 +133,16 @@ export default function Dashboard() {
     },
     onError: (error: Error) => {
       setIsUploading(false);
+      if (error.message.startsWith("PAYMENT_REQUIRED:")) {
+        setUploadOpen(false);
+        toast({
+          title: "Payment Required",
+          description: "You need to purchase an evaluation plan to analyze business plans.",
+          variant: "destructive",
+        });
+        setLocation("/pricing");
+        return;
+      }
       toast({
         title: "Upload failed",
         description: error.message || "Failed to upload the document. Please try again.",
@@ -297,12 +316,37 @@ export default function Dashboard() {
     );
   }
 
+  const needsPayment = !isBillingLoading && (!billingStatus || billingStatus.tier === "free" || billingStatus.creditsRemaining <= 0);
+
   return (
     <div className="min-h-screen bg-background">
       <Header onNewAssessment={() => setUploadOpen(true)} />
 
       <main className="mx-auto max-w-7xl px-6 py-8">
         <div className="space-y-8">
+          {needsPayment && (
+            <div className="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-lg p-4 flex flex-wrap items-center justify-between gap-4" data-testid="banner-payment-required">
+              <div className="flex items-center gap-3">
+                <CreditCard className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                <div>
+                  <p className="font-medium text-amber-800 dark:text-amber-200">
+                    {billingStatus?.creditsRemaining === 0 
+                      ? "No evaluation credits remaining" 
+                      : "Choose a plan to start analyzing business plans"}
+                  </p>
+                  <p className="text-sm text-amber-600 dark:text-amber-400">
+                    {billingStatus?.tier === "subscription" 
+                      ? "Your subscription is active but you've used all credits this month."
+                      : "Subscribe for $6.99/month or purchase a single evaluation for $13.99"}
+                  </p>
+                </div>
+              </div>
+              <Button onClick={() => setLocation("/pricing")} data-testid="button-go-to-pricing">
+                View Plans
+              </Button>
+            </div>
+          )}
+
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <StatsCard
               title="Total Assessments"

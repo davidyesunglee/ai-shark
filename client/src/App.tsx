@@ -42,6 +42,9 @@ function Router() {
       <Route path="/register" component={RegistrationPage} />
       <Route path="/pricing" component={PricingPage} />
       <Route path="/payment/success" component={PaymentSuccessPage} />
+      <Route path="/dashboard">
+        {isAuthenticated ? <Dashboard /> : <Redirect to="/login" />}
+      </Route>
       {!isAuthenticated ? (
         <Route path="/" component={LandingPage} />
       ) : (
