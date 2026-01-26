@@ -331,9 +331,10 @@ export async function registerRoutes(
       const userId = req.user?.id;
       const { priceId } = req.body;
       
-      console.log("[Checkout] Starting checkout for user:", userId, "price:", priceId);
+      console.log("[Checkout] Starting checkout for user:", userId, "price:", priceId, "body:", JSON.stringify(req.body));
 
       if (!priceId) {
+        console.log("[Checkout] ERROR: No priceId provided");
         return res.status(400).json({ message: "Price ID is required" });
       }
 
