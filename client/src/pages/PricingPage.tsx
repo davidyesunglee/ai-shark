@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,7 @@ export default function PricingPage() {
   const { toast } = useToast();
   const { user, isLoading: authLoading } = useAuth();
   const [, setLocation] = useLocation();
+  const [processingTier, setProcessingTier] = useState<string | null>(null);
 
   const { data: productsData, isLoading: productsLoading } = useQuery<{ products: Product[] }>({
     queryKey: ["/api/products"],
@@ -52,6 +54,7 @@ export default function PricingPage() {
       }
     },
     onError: (error: Error) => {
+      setProcessingTier(null);
       toast({
         title: "Checkout Error",
         description: error.message || "Failed to start checkout. Please try again.",
@@ -60,11 +63,12 @@ export default function PricingPage() {
     },
   });
 
-  const handleSelectPlan = (priceId: string, isSubscription: boolean) => {
+  const handleSelectPlan = (priceId: string, isSubscription: boolean, tier: string) => {
     if (!user) {
       setLocation("/login");
       return;
     }
+    setProcessingTier(tier);
     checkoutMutation.mutate({ priceId, mode: isSubscription ? "subscription" : "payment" });
   };
 
@@ -226,10 +230,10 @@ export default function PricingPage() {
                     <Button
                       className="w-full"
                       data-testid={`button-select-${plan.tier}`}
-                      onClick={() => price && handleSelectPlan(price.id, isSubscription)}
-                      disabled={checkoutMutation.isPending || !price}
+                      onClick={() => price && handleSelectPlan(price.id, isSubscription, plan.tier)}
+                      disabled={processingTier !== null || !price}
                     >
-                      {checkoutMutation.isPending ? (
+                      {processingTier === plan.tier ? (
                         "Processing..."
                       ) : (
                         <>
