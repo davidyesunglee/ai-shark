@@ -282,6 +282,7 @@ export async function registerRoutes(
 
   app.get("/api/products", async (req, res) => {
     try {
+      console.log("[Products] Fetching products from stripe schema...");
       const result = await db.execute(sql`
         SELECT 
           p.id as product_id,
@@ -297,6 +298,7 @@ export async function registerRoutes(
         WHERE p.active = true
         ORDER BY pr.unit_amount
       `);
+      console.log("[Products] Query returned", result.rows?.length, "rows");
 
       const productsMap = new Map();
       for (const row of result.rows as any[]) {
@@ -319,7 +321,9 @@ export async function registerRoutes(
         }
       }
 
-      res.json({ products: Array.from(productsMap.values()) });
+      const products = Array.from(productsMap.values());
+      console.log("[Products] Returning", products.length, "products:", JSON.stringify(products.map(p => ({ id: p.id, name: p.name, priceIds: p.prices.map((pr: any) => pr.id) }))));
+      res.json({ products });
     } catch (error) {
       console.error("Error fetching products:", error);
       res.status(500).json({ message: "Failed to fetch products" });
