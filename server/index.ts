@@ -88,18 +88,14 @@ app.post(
         return res.status(500).json({ error: "Webhook processing error" });
       }
 
-      // Process with StripeSync for data syncing
+      // Process with StripeSync for data syncing (this validates the signature)
       await WebhookHandlers.processWebhook(req.body as Buffer, sig);
       
-      // Also process for billing logic
-      const stripe = await getUncachableStripeClient();
-      const stripeSync = await getStripeSync();
-      const webhookSecret = await stripeSync.getWebhookSecret();
+      // Parse the event body for our custom billing logic
+      const eventBody = JSON.parse(req.body.toString());
+      console.log("[Webhook] Processing event:", eventBody.type);
       
-      const event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
-      console.log("[Webhook] Processing event:", event.type);
-      
-      await processBillingWebhook(event);
+      await processBillingWebhook(eventBody);
       
       res.status(200).json({ received: true });
     } catch (error: any) {
