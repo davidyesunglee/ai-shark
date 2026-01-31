@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,11 @@ export default function PricingPage() {
   const { user, isLoading: authLoading } = useAuth();
   const [, setLocation] = useLocation();
   const [processingTier, setProcessingTier] = useState<string | null>(null);
+
+  // Reset processing state when component mounts (e.g., returning from Stripe)
+  useEffect(() => {
+    setProcessingTier(null);
+  }, []);
 
   const { data: productsData, isLoading: productsLoading } = useQuery<{ products: Product[] }>({
     queryKey: ["/api/products"],
