@@ -3,10 +3,11 @@ import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
 import { runMigrations } from "stripe-replit-sync";
-import { getStripeSync } from "./stripeClient";
+import { getStripeSync, getUncachableStripeClient } from "./stripeClient";
 import { WebhookHandlers } from "./webhookHandlers";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { db } from "./db";
+import { storage } from "./storage";
 
 // Top-level debug logging - Version 2
 console.log("[Boot] Server starting... v2");
@@ -87,7 +88,19 @@ app.post(
         return res.status(500).json({ error: "Webhook processing error" });
       }
 
+      // Process with StripeSync for data syncing
       await WebhookHandlers.processWebhook(req.body as Buffer, sig);
+      
+      // Also process for billing logic
+      const stripe = await getUncachableStripeClient();
+      const stripeSync = await getStripeSync();
+      const webhookSecret = await stripeSync.getWebhookSecret();
+      
+      const event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+      console.log("[Webhook] Processing event:", event.type);
+      
+      await processBillingWebhook(event);
+      
       res.status(200).json({ received: true });
     } catch (error: any) {
       console.error("[Stripe] Webhook error:", error.message);
@@ -95,6 +108,95 @@ app.post(
     }
   }
 );
+
+async function processBillingWebhook(event: any) {
+  try {
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object;
+      const userRegistrationId = session.metadata?.userRegistrationId;
+      const tier = session.metadata?.tier;
+
+      console.log("[Webhook] checkout.session.completed - userRegistrationId:", userRegistrationId, "tier:", tier);
+
+      if (userRegistrationId) {
+        const credits = tier === "subscription" ? 2 : 1;
+        
+        await storage.upsertBillingProfile(userRegistrationId, {
+          currentTier: tier as any,
+          creditsRemaining: credits,
+          stripeCustomerId: session.customer,
+          activeSubscriptionId: session.subscription || null,
+          lastPaymentAt: new Date(),
+        });
+
+        await storage.addCredits(userRegistrationId, credits, "purchase");
+
+        await storage.createTransactionRecord({
+          userRegistrationId,
+          stripeCheckoutSessionId: session.id,
+          stripePaymentIntentId: session.payment_intent,
+          amount: session.amount_total,
+          currency: session.currency,
+          taxAmount: session.total_details?.amount_tax,
+          tier: tier as any,
+          paymentStatus: "succeeded",
+          paidAt: new Date(),
+        });
+        
+        console.log("[Webhook] Billing profile updated for:", userRegistrationId, "credits:", credits, "tier:", tier);
+      }
+    }
+
+    if (event.type === "invoice.payment_succeeded") {
+      const invoice = event.data.object;
+      const customerId = invoice.customer;
+
+      console.log("[Webhook] invoice.payment_succeeded - customerId:", customerId);
+
+      const billingProfile = await storage.getBillingProfileByStripeCustomer(customerId);
+      if (billingProfile && billingProfile.currentTier === "subscription") {
+        await storage.addCredits(billingProfile.userRegistrationId, 2, "reset");
+        await storage.updateBillingProfile(billingProfile.userRegistrationId, {
+          lastPaymentAt: new Date(),
+        });
+
+        await storage.createTransactionRecord({
+          userRegistrationId: billingProfile.userRegistrationId,
+          stripeInvoiceId: invoice.id,
+          amount: invoice.amount_paid,
+          currency: invoice.currency,
+          taxAmount: invoice.tax,
+          tier: "subscription",
+          paymentStatus: "succeeded",
+          paidAt: new Date(),
+        });
+        
+        console.log("[Webhook] Subscription credits reset for:", billingProfile.userRegistrationId);
+      }
+    }
+
+    if (event.type === "customer.subscription.deleted") {
+      const subscription = event.data.object;
+      const customerId = subscription.customer;
+
+      console.log("[Webhook] customer.subscription.deleted - customerId:", customerId);
+
+      const billingProfile = await storage.getBillingProfileByStripeCustomer(customerId);
+      if (billingProfile) {
+        await storage.updateBillingProfile(billingProfile.userRegistrationId, {
+          currentTier: "free",
+          activeSubscriptionId: null,
+          creditsRemaining: 0,
+        });
+        
+        console.log("[Webhook] Subscription cancelled for:", billingProfile.userRegistrationId);
+      }
+    }
+  } catch (error) {
+    console.error("[Webhook] Error processing billing:", error);
+    // Don't throw - we still want to return 200 to Stripe
+  }
+}
 
 app.use(
   express.json({
