@@ -1,19 +1,19 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, TrendingUp, Shield, CheckCircle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { FileText, TrendingUp, Shield, CheckCircle, Clock, Users, Award, ArrowRight, Zap } from "lucide-react";
 import { Link } from "wouter";
 
 export default function LandingPage() {
-
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b">
+      <header className="border-b sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <FileText className="h-6 w-6 text-primary" />
             <span className="font-semibold text-lg" data-testid="text-app-title">AI Shark</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Link href="/about">
               <Button variant="ghost" data-testid="link-about">
                 About
@@ -36,56 +36,200 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-16">
-        <div className="max-w-3xl mx-auto text-center mb-16">
-          <h1 className="text-4xl font-bold tracking-tight mb-4" data-testid="text-hero-title">
-            AI-Powered Business Plan Assessment
-          </h1>
-          <p className="text-xl text-muted-foreground mb-8" data-testid="text-hero-description">
-            Get instant, comprehensive analysis of your business plan against bank debt financing criteria. 
-            Understand your strengths, weaknesses, and get actionable recommendations.
+      <main>
+        <section className="container mx-auto px-4 py-20">
+          <div className="max-w-4xl mx-auto text-center mb-12">
+            <Badge variant="secondary" className="mb-4">
+              <Zap className="h-3 w-3 mr-1" />
+              AI-Powered Analysis
+            </Badge>
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-6" data-testid="text-hero-title">
+              Know Your Business Plan Score
+              <span className="text-primary block mt-2">Before the Bank Does</span>
+            </h1>
+            <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto" data-testid="text-hero-description">
+              Get instant AI analysis of your business plan against real bank debt financing criteria. 
+              Discover strengths, fix weaknesses, and increase your approval chances.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <Link href="/signup">
+                <Button size="lg" className="gap-2" data-testid="button-get-started">
+                  Get Your Score Now
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+              <Link href="/pricing">
+                <Button size="lg" variant="outline" data-testid="button-view-pricing">
+                  View Pricing
+                </Button>
+              </Link>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap justify-center gap-8 text-center text-muted-foreground mb-16">
+            <div className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-primary" />
+              <span>Results in minutes</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Shield className="h-5 w-5 text-primary" />
+              <span>Bank-grade criteria</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Award className="h-5 w-5 text-primary" />
+              <span>Actionable insights</span>
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-muted/50 py-16">
+          <div className="container mx-auto px-4">
+            <h2 className="text-3xl font-bold text-center mb-4">How It Works</h2>
+            <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
+              Three simple steps to understand your business plan's financing potential
+            </p>
+            
+            <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+              <div className="text-center">
+                <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xl font-bold mx-auto mb-4">
+                  1
+                </div>
+                <h3 className="font-semibold text-lg mb-2">Upload Your Plan</h3>
+                <p className="text-muted-foreground">
+                  Upload your business plan in PDF, DOCX, or TXT format. We support files up to 10MB.
+                </p>
+              </div>
+              
+              <div className="text-center">
+                <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xl font-bold mx-auto mb-4">
+                  2
+                </div>
+                <h3 className="font-semibold text-lg mb-2">AI Analysis</h3>
+                <p className="text-muted-foreground">
+                  Our AI evaluates your plan against 8 key bank financing criteria used by lenders.
+                </p>
+              </div>
+              
+              <div className="text-center">
+                <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xl font-bold mx-auto mb-4">
+                  3
+                </div>
+                <h3 className="font-semibold text-lg mb-2">Get Your Report</h3>
+                <p className="text-muted-foreground">
+                  Receive detailed scores, strengths, weaknesses, and specific recommendations.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="container mx-auto px-4 py-16">
+          <h2 className="text-3xl font-bold text-center mb-4">What We Evaluate</h2>
+          <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
+            Comprehensive analysis across the criteria banks actually use
           </p>
-          <Link href="/signup">
-            <Button size="lg" data-testid="button-get-started">Get Started</Button>
-          </Link>
-        </div>
+          
+          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            <Card>
+              <CardHeader>
+                <TrendingUp className="h-10 w-10 text-primary mb-2" />
+                <CardTitle>Financial Viability</CardTitle>
+                <CardDescription>
+                  Cash flow projections, revenue models, and financial sustainability analysis.
+                </CardDescription>
+              </CardHeader>
+            </Card>
 
-        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          <Card>
-            <CardHeader>
-              <TrendingUp className="h-10 w-10 text-primary mb-2" />
-              <CardTitle>Comprehensive Scoring</CardTitle>
-              <CardDescription>
-                Receive detailed scores across key criteria including creditworthiness, cash flow, and market viability.
-              </CardDescription>
-            </CardHeader>
-          </Card>
+            <Card>
+              <CardHeader>
+                <Shield className="h-10 w-10 text-primary mb-2" />
+                <CardTitle>Creditworthiness</CardTitle>
+                <CardDescription>
+                  Debt capacity, collateral assessment, and repayment capability evaluation.
+                </CardDescription>
+              </CardHeader>
+            </Card>
 
-          <Card>
-            <CardHeader>
-              <Shield className="h-10 w-10 text-primary mb-2" />
-              <CardTitle>Bank-Ready Analysis</CardTitle>
-              <CardDescription>
-                Evaluation based on actual bank debt financing criteria to help you prepare for loan applications.
-              </CardDescription>
-            </CardHeader>
-          </Card>
+            <Card>
+              <CardHeader>
+                <CheckCircle className="h-10 w-10 text-primary mb-2" />
+                <CardTitle>Market Position</CardTitle>
+                <CardDescription>
+                  Industry analysis, competitive landscape, and market opportunity assessment.
+                </CardDescription>
+              </CardHeader>
+            </Card>
 
-          <Card>
-            <CardHeader>
-              <CheckCircle className="h-10 w-10 text-primary mb-2" />
-              <CardTitle>Actionable Insights</CardTitle>
-              <CardDescription>
-                Get specific recommendations to improve your business plan and increase your chances of approval.
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        </div>
+            <Card>
+              <CardHeader>
+                <Users className="h-10 w-10 text-primary mb-2" />
+                <CardTitle>Management Team</CardTitle>
+                <CardDescription>
+                  Leadership experience, expertise, and team capability evaluation.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <Award className="h-10 w-10 text-primary mb-2" />
+                <CardTitle>Business Model</CardTitle>
+                <CardDescription>
+                  Revenue strategy, scalability, and long-term growth potential.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <FileText className="h-10 w-10 text-primary mb-2" />
+                <CardTitle>Plan Quality</CardTitle>
+                <CardDescription>
+                  Completeness, clarity, and professional presentation of your plan.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </div>
+        </section>
+
+        <section className="bg-primary text-primary-foreground py-16">
+          <div className="container mx-auto px-4 text-center">
+            <h2 className="text-3xl font-bold mb-4">Ready to Know Your Score?</h2>
+            <p className="text-xl opacity-90 mb-8 max-w-2xl mx-auto">
+              Join businesses using AI Shark to improve their financing outcomes.
+            </p>
+            <Link href="/signup">
+              <Button size="lg" variant="outline" className="gap-2 bg-background/10 backdrop-blur border-primary-foreground/20 text-primary-foreground hover:bg-background/20" data-testid="button-cta-bottom">
+                Get Started Free
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+        </section>
       </main>
 
-      <footer className="border-t mt-16">
-        <div className="container mx-auto px-4 py-8 text-center text-muted-foreground">
-          <p>Powered by AI for accurate, fast business plan analysis.</p>
+      <footer className="border-t">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-primary" />
+              <span className="font-semibold">AI Shark</span>
+            </div>
+            <div className="flex items-center gap-6 text-sm text-muted-foreground">
+              <Link href="/about">
+                <span className="hover:text-foreground transition-colors cursor-pointer" data-testid="link-footer-about">About</span>
+              </Link>
+              <Link href="/education">
+                <span className="hover:text-foreground transition-colors cursor-pointer" data-testid="link-footer-education">Education</span>
+              </Link>
+              <Link href="/pricing">
+                <span className="hover:text-foreground transition-colors cursor-pointer" data-testid="link-footer-pricing">Pricing</span>
+              </Link>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Powered by AI for accurate, fast analysis.
+            </p>
+          </div>
         </div>
       </footer>
     </div>

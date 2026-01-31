@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -11,7 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, UserPlus } from "lucide-react";
+import { Loader2, UserPlus, CheckCircle } from "lucide-react";
 import { Header } from "@/components/Header";
 
 const registrationSchema = z.object({
@@ -120,6 +120,12 @@ export default function RegistrationPage() {
     registerMutation.mutate(data);
   };
 
+  useEffect(() => {
+    if (!statusLoading && statusData?.isRegistered) {
+      setLocation("/dashboard");
+    }
+  }, [statusLoading, statusData, setLocation]);
+
   if (statusLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -129,8 +135,11 @@ export default function RegistrationPage() {
   }
 
   if (statusData?.isRegistered) {
-    setLocation("/dashboard");
-    return null;
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
 
   return (
