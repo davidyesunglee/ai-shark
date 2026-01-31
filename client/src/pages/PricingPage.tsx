@@ -50,7 +50,16 @@ export default function PricingPage() {
     },
     onSuccess: (data) => {
       if (data.url) {
+        // Redirect to Stripe checkout
         window.location.href = data.url;
+      } else {
+        // No URL returned - reset state and show error
+        setProcessingTier(null);
+        toast({
+          title: "Checkout Error",
+          description: "Unable to start checkout. Please try again.",
+          variant: "destructive",
+        });
       }
     },
     onError: (error: Error) => {
@@ -60,6 +69,12 @@ export default function PricingPage() {
         description: error.message || "Failed to start checkout. Please try again.",
         variant: "destructive",
       });
+    },
+    onSettled: () => {
+      // Reset processing state after a delay to handle redirect timing
+      setTimeout(() => {
+        setProcessingTier(null);
+      }, 5000);
     },
   });
 
