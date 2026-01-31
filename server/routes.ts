@@ -44,6 +44,29 @@ export async function registerRoutes(
     });
   });
 
+  // Force Stripe resync endpoint (for fixing stale data)
+  app.post("/api/admin/stripe-resync", async (req, res) => {
+    try {
+      const adminKey = req.headers["x-admin-key"];
+      if (adminKey !== process.env.SESSION_SECRET) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      console.log("[Admin] Starting Stripe resync...");
+      const { getStripeSync } = await import("./stripeClient");
+      const stripeSync = await getStripeSync();
+      
+      // Force full resync
+      await stripeSync.syncBackfill();
+      
+      console.log("[Admin] Stripe resync complete");
+      res.json({ success: true, message: "Stripe data resynced successfully" });
+    } catch (error: any) {
+      console.error("[Admin] Stripe resync error:", error);
+      res.status(500).json({ message: error.message || "Resync failed" });
+    }
+  });
+
   await setupAuth(app);
   
   startWeeklyEmailScheduler();
@@ -282,50 +305,62 @@ export async function registerRoutes(
 
   app.get("/api/products", async (req, res) => {
     try {
-      console.log("[Products] Fetching products from stripe schema...");
-      const result = await db.execute(sql`
-        SELECT 
-          p.id as product_id,
-          p.name as product_name,
-          p.description as product_description,
-          p.metadata as product_metadata,
-          pr.id as price_id,
-          pr.unit_amount,
-          pr.currency,
-          pr.recurring
-        FROM stripe.products p
-        LEFT JOIN stripe.prices pr ON pr.product = p.id AND pr.active = true
-        WHERE p.active = true
-        ORDER BY pr.unit_amount
-      `);
-      console.log("[Products] Query returned", result.rows?.length, "rows");
-
+      console.log("[Products] Fetching products directly from Stripe API...");
+      
+      // Fetch directly from Stripe to avoid stale database cache
+      const stripe = await getUncachableStripeClient();
+      
+      // Get active products with their prices
+      const stripeProducts = await stripe.products.list({
+        active: true,
+        expand: ['data.default_price'],
+      });
+      
+      // Get active prices for these products
+      const stripePrices = await stripe.prices.list({
+        active: true,
+        limit: 100,
+      });
+      
+      // Build products with their prices
       const productsMap = new Map();
-      for (const row of result.rows as any[]) {
-        if (!productsMap.has(row.product_id)) {
-          productsMap.set(row.product_id, {
-            id: row.product_id,
-            name: row.product_name,
-            description: row.product_description,
-            metadata: row.product_metadata,
+      
+      for (const product of stripeProducts.data) {
+        // Only include products with tier metadata
+        if (product.metadata?.tier) {
+          productsMap.set(product.id, {
+            id: product.id,
+            name: product.name,
+            description: product.description || "",
+            metadata: product.metadata,
             prices: [],
           });
         }
-        if (row.price_id) {
-          productsMap.get(row.product_id).prices.push({
-            id: row.price_id,
-            unit_amount: row.unit_amount,
-            currency: row.currency,
-            recurring: row.recurring,
+      }
+      
+      // Add prices to their products
+      for (const price of stripePrices.data) {
+        const productId = typeof price.product === 'string' ? price.product : price.product.id;
+        if (productsMap.has(productId)) {
+          productsMap.get(productId).prices.push({
+            id: price.id,
+            unit_amount: price.unit_amount,
+            currency: price.currency,
+            recurring: price.recurring,
           });
         }
       }
+      
+      // Sort prices by amount
+      Array.from(productsMap.values()).forEach((product: any) => {
+        product.prices.sort((a: any, b: any) => (a.unit_amount || 0) - (b.unit_amount || 0));
+      });
 
       const products = Array.from(productsMap.values());
-      console.log("[Products] Returning", products.length, "products:", JSON.stringify(products.map(p => ({ id: p.id, name: p.name, priceIds: p.prices.map((pr: any) => pr.id) }))));
+      console.log("[Products] Returning", products.length, "products from Stripe API:", JSON.stringify(products.map(p => ({ id: p.id, name: p.name, priceIds: p.prices.map((pr: any) => pr.id) }))));
       res.json({ products });
-    } catch (error) {
-      console.error("Error fetching products:", error);
+    } catch (error: any) {
+      console.error("[Products] Error fetching from Stripe:", error.message);
       res.status(500).json({ message: "Failed to fetch products" });
     }
   });
@@ -336,13 +371,20 @@ export async function registerRoutes(
       const { priceId } = req.body;
       
       console.log("[Checkout] Starting checkout for user:", userId, "price:", priceId, "body:", JSON.stringify(req.body));
+      console.log("[Checkout] req.user object:", JSON.stringify(req.user));
 
       if (!priceId) {
         console.log("[Checkout] ERROR: No priceId provided");
         return res.status(400).json({ message: "Price ID is required" });
       }
 
+      if (!userId) {
+        console.log("[Checkout] ERROR: No userId in request");
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
       const registration = await storage.getUserRegistration(userId);
+      console.log("[Checkout] Registration lookup result:", JSON.stringify(registration));
       if (!registration) {
         console.log("[Checkout] Registration not found for user:", userId);
         return res.status(403).json({ message: "Registration required" });

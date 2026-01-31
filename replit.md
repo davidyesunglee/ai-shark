@@ -85,9 +85,10 @@ Preferred communication style: Simple, everyday language.
 
 ### Stripe Integration
 - Uses `stripe-replit-sync` for automated webhook handling and data sync
-- Products synced to `stripe.products` and `stripe.prices` tables
+- **Products fetched directly from Stripe API** (not database cache) to ensure correct price IDs
 - Webhook endpoint: `/api/stripe/webhook`
 - Checkout sessions created via `/api/checkout/create-session`
+- Admin resync endpoint: `POST /api/admin/stripe-resync` (requires x-admin-key header)
 
 ### Payment Enforcement
 - Upload endpoint checks billing profile before allowing evaluation
