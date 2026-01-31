@@ -286,17 +286,26 @@ export async function registerRoutes(
   app.get("/api/billing/status", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.id;
+      console.log("[Billing Status] userId:", userId);
+      
       const registration = await storage.getUserRegistration(userId);
+      console.log("[Billing Status] registration:", registration?.id, registration?.email);
+      
       if (!registration) {
         return res.status(403).json({ message: "Registration required" });
       }
 
       const billingProfile = await storage.getBillingProfile(registration.id);
-      res.json({
+      console.log("[Billing Status] billingProfile:", JSON.stringify(billingProfile));
+      
+      const response = {
         tier: billingProfile?.currentTier || "free",
         creditsRemaining: billingProfile?.creditsRemaining || 0,
         hasActiveSubscription: !!billingProfile?.activeSubscriptionId,
-      });
+      };
+      console.log("[Billing Status] response:", JSON.stringify(response));
+      
+      res.json(response);
     } catch (error) {
       console.error("Error fetching billing status:", error);
       res.status(500).json({ message: "Failed to fetch billing status" });
