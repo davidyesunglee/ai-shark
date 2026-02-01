@@ -112,6 +112,7 @@ export default function Dashboard() {
       const response = await fetch("/api/assessments/upload", {
         method: "POST",
         body: formData,
+        credentials: "include",
       });
       if (!response.ok) {
         const error = await response.json();
