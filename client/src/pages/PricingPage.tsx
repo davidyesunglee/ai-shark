@@ -149,7 +149,7 @@ export default function PricingPage() {
     return `$${(amount / 100).toFixed(2)}`;
   };
 
-  if (authLoading || productsLoading) {
+  if (productsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse text-muted-foreground">Loading pricing...</div>
