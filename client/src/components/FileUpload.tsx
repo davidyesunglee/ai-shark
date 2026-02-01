@@ -17,7 +17,9 @@ export function FileUpload({ onUpload, isUploading = false }: FileUploadProps) {
     }
   }, []);
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
+  const { getRootProps, getInputProps, isDragActive, fileRejections } = useDropzone({
     onDrop,
     accept: {
       "application/pdf": [".pdf"],
@@ -25,8 +27,13 @@ export function FileUpload({ onUpload, isUploading = false }: FileUploadProps) {
       "text/plain": [".txt"],
     },
     maxFiles: 1,
+    maxSize: MAX_FILE_SIZE,
     disabled: isUploading,
   });
+
+  const fileTooLarge = fileRejections.some(
+    (rejection) => rejection.errors.some((e) => e.code === "file-too-large")
+  );
 
   const handleSubmit = () => {
     if (selectedFile) {
@@ -89,8 +96,13 @@ export function FileUpload({ onUpload, isUploading = false }: FileUploadProps) {
               </p>
             </div>
             <p className="text-xs text-muted-foreground">
-              Supports PDF, DOCX, and TXT files
+              Supports PDF, DOCX, and TXT files (max 10MB)
             </p>
+            {fileTooLarge && (
+              <p className="mt-2 text-xs text-destructive font-medium">
+                File exceeds 10MB limit. Please upload a smaller file.
+              </p>
+            )}
           </div>
         )}
       </div>

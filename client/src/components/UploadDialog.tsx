@@ -21,7 +21,7 @@ export function UploadDialog({ open, onOpenChange, onUpload, isUploading }: Uplo
         <DialogHeader>
           <DialogTitle>Upload Business Plan</DialogTitle>
           <DialogDescription>
-            Upload a business plan document to receive an AI-powered assessment based on bank debt financing criteria.
+            Upload a business plan document (PDF, DOCX, or TXT, max 10MB) to receive an AI-powered assessment based on bank debt financing criteria.
           </DialogDescription>
         </DialogHeader>
         <FileUpload onUpload={onUpload} isUploading={isUploading} />
