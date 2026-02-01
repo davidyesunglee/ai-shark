@@ -45,10 +45,15 @@ async function initStripe() {
 
     const stripeSync = await getStripeSync();
 
-    const domain = process.env.REPLIT_DOMAINS?.split(",")[0];
+    // Use custom domain for webhook URL if available, otherwise fallback to Replit domain
+    const customDomain = "aishark.org";
+    const replitDomain = process.env.REPLIT_DOMAINS?.split(",")[0];
+    const domain = customDomain || replitDomain;
+    
     if (domain) {
       console.log("[Stripe] Setting up managed webhook...");
       const webhookBaseUrl = `https://${domain}`;
+      console.log(`[Stripe] Webhook URL: ${webhookBaseUrl}/api/stripe/webhook`);
       const result = await stripeSync.findOrCreateManagedWebhook(
         `${webhookBaseUrl}/api/stripe/webhook`
       );
