@@ -174,12 +174,17 @@ export async function registerRoutes(
   });
 
   app.post("/api/assessments/upload", isAuthenticated, upload.single("file"), async (req: any, res) => {
+    console.log("[Upload] Request received, user:", req.user?.id);
     try {
       if (!req.file) {
+        console.log("[Upload] No file in request");
         return res.status(400).json({ message: "No file uploaded" });
       }
 
+      console.log("[Upload] File received:", req.file.originalname, "size:", req.file.size);
+
       if (!isOpenAIConfigured()) {
+        console.log("[Upload] AI not configured");
         return res.status(503).json({ message: "AI analysis is not configured." });
       }
 
