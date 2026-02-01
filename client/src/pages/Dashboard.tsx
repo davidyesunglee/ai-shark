@@ -109,19 +109,34 @@ export default function Dashboard() {
     mutationFn: async (file: File) => {
       const formData = new FormData();
       formData.append("file", file);
-      const response = await fetch("/api/assessments/upload", {
-        method: "POST",
-        body: formData,
-        credentials: "include",
-      });
-      if (!response.ok) {
-        const error = await response.json();
-        if (error.requiresPayment) {
-          throw new Error("PAYMENT_REQUIRED:" + (error.message || "Payment required"));
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 120000);
+      
+      try {
+        const response = await fetch("/api/assessments/upload", {
+          method: "POST",
+          body: formData,
+          credentials: "include",
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+          const error = await response.json();
+          if (error.requiresPayment) {
+            throw new Error("PAYMENT_REQUIRED:" + (error.message || "Payment required"));
+          }
+          throw new Error(error.message || "Upload failed");
         }
-        throw new Error(error.message || "Upload failed");
+        return response.json();
+      } catch (err: any) {
+        clearTimeout(timeoutId);
+        if (err.name === "AbortError") {
+          throw new Error("Upload timed out. Please try again with a smaller file.");
+        }
+        throw err;
       }
-      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/assessments"] });
@@ -144,9 +159,18 @@ export default function Dashboard() {
         setLocation("/pricing");
         return;
       }
+      
+      let errorMessage = error.message || "Failed to upload the document. Please try again.";
+      let errorTitle = "Upload failed";
+      
+      if (error.message === "Failed to fetch" || error.message.includes("NetworkError")) {
+        errorTitle = "Connection Error";
+        errorMessage = "Unable to connect to the server. Please check your internet connection and try again.";
+      }
+      
       toast({
-        title: "Upload failed",
-        description: error.message || "Failed to upload the document. Please try again.",
+        title: errorTitle,
+        description: errorMessage,
         variant: "destructive",
       });
     },
