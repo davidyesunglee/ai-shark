@@ -4,6 +4,7 @@ import {
   billingProfiles,
   transactionRecords,
   creditLedger,
+  advertisingRevenue,
   type Assessment,
   type InsertAssessment,
   type UserRegistration,
@@ -14,6 +15,8 @@ import {
   type InsertTransactionRecord,
   type InsertCreditLedger,
   type PaymentTier,
+  type AdvertisingRevenue,
+  type InsertAdvertisingRevenue,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, isNull, desc, sql, gte, and } from "drizzle-orm";
@@ -29,6 +32,9 @@ export interface IStorage {
   getAllRegistrations(): Promise<UserRegistration[]>;
   getUnsentRegistrations(): Promise<UserRegistration[]>;
   markRegistrationsAsEmailed(ids: string[]): Promise<void>;
+  getAdvertisingRevenueLastWeek(): Promise<AdvertisingRevenue[]>;
+  createAdvertisingRevenue(data: InsertAdvertisingRevenue): Promise<AdvertisingRevenue>;
+  markAdvertisingRevenueAsEmailed(ids: string[]): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -222,6 +228,28 @@ export class DatabaseStorage implements IStorage {
         gte(transactionRecords.createdAt, oneWeekAgo)
       ))
       .orderBy(desc(transactionRecords.createdAt));
+  }
+
+  async getAdvertisingRevenueLastWeek(): Promise<AdvertisingRevenue[]> {
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    
+    return await db.select().from(advertisingRevenue)
+      .where(gte(advertisingRevenue.reportDate, oneWeekAgo))
+      .orderBy(desc(advertisingRevenue.reportDate));
+  }
+
+  async createAdvertisingRevenue(data: InsertAdvertisingRevenue): Promise<AdvertisingRevenue> {
+    const [result] = await db.insert(advertisingRevenue).values(data).returning();
+    return result;
+  }
+
+  async markAdvertisingRevenueAsEmailed(ids: string[]): Promise<void> {
+    for (const id of ids) {
+      await db.update(advertisingRevenue)
+        .set({ emailedAt: new Date() })
+        .where(eq(advertisingRevenue.id, id));
+    }
   }
 }
 

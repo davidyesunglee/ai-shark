@@ -3,6 +3,7 @@ import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/ca
 import { Badge } from "@/components/ui/badge";
 import { FileText, TrendingUp, Shield, CheckCircle, Clock, Users, Award, ArrowRight, Zap } from "lucide-react";
 import { Link } from "wouter";
+import { AdPlacement } from "@/components/AdPlacement";
 
 export default function LandingPage() {
   return (
@@ -210,12 +211,15 @@ export default function LandingPage() {
 
       <footer className="border-t">
         <div className="container mx-auto px-4 py-8">
+          <div className="flex justify-center mb-6">
+            <AdPlacement slot="footer" className="hidden md:flex" />
+          </div>
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
             <div className="flex items-center gap-2">
               <FileText className="h-5 w-5 text-primary" />
               <span className="font-semibold">AI Shark</span>
             </div>
-            <div className="flex items-center gap-6 text-sm text-muted-foreground">
+            <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 text-sm text-muted-foreground">
               <Link href="/about">
                 <span className="hover:text-foreground transition-colors cursor-pointer" data-testid="link-footer-about">About</span>
               </Link>
@@ -224,6 +228,12 @@ export default function LandingPage() {
               </Link>
               <Link href="/pricing">
                 <span className="hover:text-foreground transition-colors cursor-pointer" data-testid="link-footer-pricing">Pricing</span>
+              </Link>
+              <Link href="/privacy">
+                <span className="hover:text-foreground transition-colors cursor-pointer" data-testid="link-footer-privacy">Privacy Policy</span>
+              </Link>
+              <Link href="/terms">
+                <span className="hover:text-foreground transition-colors cursor-pointer" data-testid="link-footer-terms">Terms of Service</span>
               </Link>
             </div>
             <p className="text-sm text-muted-foreground">

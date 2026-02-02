@@ -333,27 +333,37 @@ interface RevenueGroup {
   transactions: any[];
 }
 
-function formatRevenueReportAsCSV(subscriptions: RevenueGroup, oneTime: RevenueGroup): string {
+interface AdRevenueData {
+  totalAmount: number;
+  totalImpressions: number;
+  totalClicks: number;
+  entries: any[];
+}
+
+function formatRevenueReportAsCSV(subscriptions: RevenueGroup, oneTime: RevenueGroup, adRevenue?: AdRevenueData): string {
   const header = "Type,Transaction Count,Total Revenue,Total Tax,Net Revenue";
   
   const subNet = (subscriptions.totalAmount - subscriptions.totalTax) / 100;
   const oneTimeNet = (oneTime.totalAmount - oneTime.totalTax) / 100;
-  const grandTotal = subNet + oneTimeNet;
+  const adNet = adRevenue ? adRevenue.totalAmount / 100 : 0;
+  const grandTotal = subNet + oneTimeNet + adNet;
   
   const rows = [
     `"Monthly Subscriptions","${subscriptions.count}","$${(subscriptions.totalAmount / 100).toFixed(2)}","$${(subscriptions.totalTax / 100).toFixed(2)}","$${subNet.toFixed(2)}"`,
     `"One-Time Payments","${oneTime.count}","$${(oneTime.totalAmount / 100).toFixed(2)}","$${(oneTime.totalTax / 100).toFixed(2)}","$${oneTimeNet.toFixed(2)}"`,
-    `"TOTAL","${subscriptions.count + oneTime.count}","$${((subscriptions.totalAmount + oneTime.totalAmount) / 100).toFixed(2)}","$${((subscriptions.totalTax + oneTime.totalTax) / 100).toFixed(2)}","$${grandTotal.toFixed(2)}"`
+    `"Advertising Revenue","${adRevenue?.entries.length || 0}","$${adNet.toFixed(2)}","$0.00","$${adNet.toFixed(2)}"`,
+    `"TOTAL","${subscriptions.count + oneTime.count + (adRevenue?.entries.length || 0)}","$${((subscriptions.totalAmount + oneTime.totalAmount) / 100 + adNet).toFixed(2)}","$${((subscriptions.totalTax + oneTime.totalTax) / 100).toFixed(2)}","$${grandTotal.toFixed(2)}"`
   ];
   
   return header + "\n" + rows.join("\n");
 }
 
-function formatRevenueReportAsHTML(subscriptions: RevenueGroup, oneTime: RevenueGroup, registrations: Map<string, any>): string {
+function formatRevenueReportAsHTML(subscriptions: RevenueGroup, oneTime: RevenueGroup, registrations: Map<string, any>, adRevenue?: AdRevenueData): string {
   const subNet = (subscriptions.totalAmount - subscriptions.totalTax) / 100;
   const oneTimeNet = (oneTime.totalAmount - oneTime.totalTax) / 100;
-  const grandTotal = subNet + oneTimeNet;
-  const totalTransactions = subscriptions.count + oneTime.count;
+  const adNet = adRevenue ? adRevenue.totalAmount / 100 : 0;
+  const grandTotal = subNet + oneTimeNet + adNet;
+  const totalTransactions = subscriptions.count + oneTime.count + (adRevenue?.entries.length || 0);
 
   let html = `
     <h2>AI Shark Weekly Revenue Report</h2>
@@ -387,16 +397,56 @@ function formatRevenueReportAsHTML(subscriptions: RevenueGroup, oneTime: Revenue
           <td style="text-align: right;">$${(oneTime.totalTax / 100).toFixed(2)}</td>
           <td style="text-align: right;"><strong>$${oneTimeNet.toFixed(2)}</strong></td>
         </tr>
+        <tr style="background-color: #e0f2fe;">
+          <td><strong>Advertising Revenue</strong></td>
+          <td style="text-align: center;">${adRevenue?.entries.length || 0}</td>
+          <td style="text-align: right;">$${adNet.toFixed(2)}</td>
+          <td style="text-align: right;">$0.00</td>
+          <td style="text-align: right;"><strong>$${adNet.toFixed(2)}</strong></td>
+        </tr>
         <tr style="background-color: #dcfce7; font-weight: bold;">
           <td>TOTAL</td>
           <td style="text-align: center;">${totalTransactions}</td>
-          <td style="text-align: right;">$${((subscriptions.totalAmount + oneTime.totalAmount) / 100).toFixed(2)}</td>
+          <td style="text-align: right;">$${((subscriptions.totalAmount + oneTime.totalAmount) / 100 + adNet).toFixed(2)}</td>
           <td style="text-align: right;">$${((subscriptions.totalTax + oneTime.totalTax) / 100).toFixed(2)}</td>
           <td style="text-align: right;">$${grandTotal.toFixed(2)}</td>
         </tr>
       </tbody>
     </table>
   `;
+  
+  // Add advertising details if any
+  if (adRevenue && adRevenue.entries.length > 0) {
+    html += `
+      <h3 style="color: #0891b2;">Advertising Revenue Details</h3>
+      <p><strong>Total Impressions:</strong> ${adRevenue.totalImpressions.toLocaleString()}</p>
+      <p><strong>Total Clicks:</strong> ${adRevenue.totalClicks.toLocaleString()}</p>
+      <p><strong>Click-Through Rate:</strong> ${adRevenue.totalImpressions > 0 ? ((adRevenue.totalClicks / adRevenue.totalImpressions) * 100).toFixed(2) : 0}%</p>
+      <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%; margin-bottom: 20px;">
+        <thead style="background-color: #e0f2fe;">
+          <tr>
+            <th>Source</th>
+            <th>Amount</th>
+            <th>Impressions</th>
+            <th>Clicks</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+    adRevenue.entries.forEach((entry: any) => {
+      html += `
+        <tr>
+          <td>${entry.source}</td>
+          <td>$${(entry.amount / 100).toFixed(2)}</td>
+          <td>${(entry.impressions || 0).toLocaleString()}</td>
+          <td>${(entry.clicks || 0).toLocaleString()}</td>
+          <td>${new Date(entry.reportDate).toLocaleDateString()}</td>
+        </tr>
+      `;
+    });
+    html += `</tbody></table>`;
+  }
 
   // Add subscription details if any
   if (subscriptions.transactions.length > 0) {
@@ -529,12 +579,21 @@ async function sendRevenueReport() {
       if (reg) registrations.set(id, reg);
     }
 
-    const csvContent = formatRevenueReportAsCSV(subscriptions, oneTime);
-    const htmlContent = formatRevenueReportAsHTML(subscriptions, oneTime, registrations);
+    // Get advertising revenue data
+    const adRevenueEntries = await storage.getAdvertisingRevenueLastWeek();
+    const adRevenue: AdRevenueData = {
+      totalAmount: adRevenueEntries.reduce((sum, e) => sum + e.amount, 0),
+      totalImpressions: adRevenueEntries.reduce((sum, e) => sum + (e.impressions || 0), 0),
+      totalClicks: adRevenueEntries.reduce((sum, e) => sum + (e.clicks || 0), 0),
+      entries: adRevenueEntries
+    };
+
+    const csvContent = formatRevenueReportAsCSV(subscriptions, oneTime, adRevenue);
+    const htmlContent = formatRevenueReportAsHTML(subscriptions, oneTime, registrations, adRevenue);
     const csvBuffer = Buffer.from(csvContent, 'utf-8');
 
     console.log(`[Revenue Report] Sending weekly report to ${REVENUE_REPORT_EMAIL}`);
-    console.log(`[Revenue Report] Subscriptions: ${subscriptions.count}, One-time: ${oneTime.count}`);
+    console.log(`[Revenue Report] Subscriptions: ${subscriptions.count}, One-time: ${oneTime.count}, Ad Revenue: $${(adRevenue.totalAmount / 100).toFixed(2)}`);
 
     const { data, error } = await resend.emails.send({
       from: FROM_EMAIL,

@@ -140,5 +140,27 @@ export const insertCreditLedgerSchema = createInsertSchema(creditLedger).omit({
 export type InsertCreditLedger = z.infer<typeof insertCreditLedgerSchema>;
 export type CreditLedgerEntry = typeof creditLedger.$inferSelect;
 
+export const advertisingRevenue = pgTable("advertising_revenue", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  source: varchar("source").notNull(),
+  amount: integer("amount").notNull(),
+  currency: varchar("currency").notNull().default("usd"),
+  impressions: integer("impressions"),
+  clicks: integer("clicks"),
+  reportDate: timestamp("report_date").notNull(),
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  emailedAt: timestamp("emailed_at"),
+});
+
+export const insertAdvertisingRevenueSchema = createInsertSchema(advertisingRevenue).omit({
+  id: true,
+  createdAt: true,
+  emailedAt: true,
+});
+
+export type InsertAdvertisingRevenue = z.infer<typeof insertAdvertisingRevenueSchema>;
+export type AdvertisingRevenue = typeof advertisingRevenue.$inferSelect;
+
 export * from "./models/chat";
 export * from "./models/auth";

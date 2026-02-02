@@ -115,6 +115,26 @@ Preferred communication style: Simple, everyday language.
 - Shows total processing fees with transaction details
 - CSV summary attachment included
 
+## Legal Pages
+- **Privacy Policy**: Available at `/privacy` - covers data collection, usage, security
+- **Terms of Service**: Available at `/terms` - covers pricing, refunds, liability, usage rules
+- Both pages include the standard disclaimer about informational purposes only
+- Required for Google AdSense approval and compliance
+
+## Advertising Revenue Tracking
+- **Database Table**: `advertising_revenue` stores all ad revenue entries
+- **Fields**: source (e.g., "Google AdSense"), amount (cents), impressions, clicks, report_date
+- **Admin Endpoint**: `POST /api/admin/advertising-revenue` (requires x-admin-key header)
+- **Weekly Revenue Report**: Includes advertising revenue alongside subscription/one-time payments
+- **Ad Placement Component**: `client/src/components/AdPlacement.tsx` - ready for AdSense integration
+- **Environment Variables for AdSense**:
+  - `VITE_ADSENSE_ENABLED`: Set to "true" to enable ad placements
+  - `VITE_ADSENSE_CLIENT_ID`: Your AdSense publisher ID (ca-pub-XXXXXXX)
+  - `VITE_ADSENSE_SLOT_HEADER`: Ad slot ID for header banner
+  - `VITE_ADSENSE_SLOT_SIDEBAR`: Ad slot ID for sidebar
+  - `VITE_ADSENSE_SLOT_FOOTER`: Ad slot ID for footer
+  - `VITE_ADSENSE_SLOT_IN_CONTENT`: Ad slot ID for in-content ads
+
 ### Key NPM Packages
 - `drizzle-orm` / `drizzle-kit`: Database ORM and migrations
 - `openai`: OpenAI API client

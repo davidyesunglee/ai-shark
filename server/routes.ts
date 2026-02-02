@@ -68,6 +68,36 @@ export async function registerRoutes(
     }
   });
 
+  // Admin endpoint to record advertising revenue (for AdSense data import)
+  app.post("/api/admin/advertising-revenue", async (req, res) => {
+    try {
+      const adminKey = req.headers["x-admin-key"];
+      if (adminKey !== process.env.SESSION_SECRET) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      const { source, amount, impressions, clicks, reportDate } = req.body;
+      
+      if (!source || amount === undefined || !reportDate) {
+        return res.status(400).json({ message: "Missing required fields: source, amount, reportDate" });
+      }
+      
+      const entry = await storage.createAdvertisingRevenue({
+        source,
+        amount: Math.round(amount * 100), // Convert to cents
+        impressions: impressions || 0,
+        clicks: clicks || 0,
+        reportDate: new Date(reportDate),
+      });
+      
+      console.log(`[Admin] Advertising revenue recorded: $${amount} from ${source}`);
+      res.json({ success: true, entry });
+    } catch (error: any) {
+      console.error("[Admin] Advertising revenue error:", error);
+      res.status(500).json({ message: error.message || "Failed to record advertising revenue" });
+    }
+  });
+
   await setupAuth(app);
   
   startWeeklyEmailScheduler();
