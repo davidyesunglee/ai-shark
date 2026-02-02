@@ -36,6 +36,14 @@ export default function AboutPage() {
           </Card>
         </div>
       </main>
+
+      <footer className="border-t mt-auto">
+        <div className="container mx-auto px-4 py-6">
+          <p className="text-xs text-muted-foreground text-center max-w-4xl mx-auto" data-testid="text-disclaimer">
+            <strong>Disclaimer:</strong> AI Shark provides analytical perspectives on business plan documentation and data for informational purposes only. Results do not imply any expectation of positive or negative outcomes from banking or financial institutions. Our assessments are not to be construed as a decision to fund or not fund any business. Always consult with qualified financial professionals before making funding decisions.
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }

@@ -94,6 +94,12 @@ export function AssessmentReport({ assessment, onBack }: AssessmentReportProps) 
           recommendations={assessment.recommendations}
         />
       </div>
+
+      <div className="mt-8 pt-6 border-t">
+        <p className="text-xs text-muted-foreground text-center" data-testid="text-disclaimer">
+          <strong>Disclaimer:</strong> This assessment provides an analytical perspective on your business plan documentation for informational purposes only. Results do not imply any expectation of positive or negative outcomes from banking or financial institutions. This report is not to be construed as a decision to fund or not fund any business. Always consult with qualified financial professionals before making funding decisions.
+        </p>
+      </div>
     </div>
   );
 }

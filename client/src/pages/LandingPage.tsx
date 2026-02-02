@@ -210,7 +210,7 @@ export default function LandingPage() {
 
       <footer className="border-t">
         <div className="container mx-auto px-4 py-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
             <div className="flex items-center gap-2">
               <FileText className="h-5 w-5 text-primary" />
               <span className="font-semibold">AI Shark</span>
@@ -228,6 +228,11 @@ export default function LandingPage() {
             </div>
             <p className="text-sm text-muted-foreground">
               Powered by AI for accurate, fast analysis.
+            </p>
+          </div>
+          <div className="border-t pt-6">
+            <p className="text-xs text-muted-foreground text-center max-w-4xl mx-auto" data-testid="text-disclaimer">
+              <strong>Disclaimer:</strong> AI Shark provides analytical perspectives on business plan documentation and data for informational purposes only. Results do not imply any expectation of positive or negative outcomes from banking or financial institutions. Our assessments are not to be construed as a decision to fund or not fund any business. Always consult with qualified financial professionals before making funding decisions.
             </p>
           </div>
         </div>
