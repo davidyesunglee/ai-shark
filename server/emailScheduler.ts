@@ -1,7 +1,9 @@
 import { storage } from "./storage";
 import { Resend } from "resend";
+import type { TransactionRecord } from "@shared/schema";
 
 const RECIPIENT_EMAIL = "vemangum@gmail.com";
+const REVENUE_REPORT_EMAIL = "aisharkphd@gmail.com";
 const FROM_EMAIL = "AI Shark <onboarding@resend.dev>";
 
 function getResend(): Resend | null {
@@ -18,6 +20,21 @@ function getNextSundayMidnight(): Date {
   const nextSunday = new Date(now);
   nextSunday.setDate(now.getDate() + daysUntilSunday);
   nextSunday.setHours(0, 0, 0, 0);
+  return nextSunday;
+}
+
+function getNextSunday10PM(): Date {
+  const now = new Date();
+  const daysUntilSunday = (7 - now.getDay()) % 7 || 7;
+  const nextSunday = new Date(now);
+  nextSunday.setDate(now.getDate() + daysUntilSunday);
+  nextSunday.setHours(22, 0, 0, 0); // 10pm
+  
+  // If it's Sunday and before 10pm, schedule for today
+  if (now.getDay() === 0 && now.getHours() < 22) {
+    nextSunday.setDate(now.getDate());
+  }
+  
   return nextSunday;
 }
 
@@ -305,4 +322,263 @@ export function startTransactionEmailScheduler() {
       sendTransactionEmail();
     }, 7 * 24 * 60 * 60 * 1000);
   }, msUntilNextSunday);
+}
+
+// Revenue Report - grouped by payment type
+interface RevenueGroup {
+  tier: string;
+  count: number;
+  totalAmount: number;
+  totalTax: number;
+  transactions: any[];
+}
+
+function formatRevenueReportAsCSV(subscriptions: RevenueGroup, oneTime: RevenueGroup): string {
+  const header = "Type,Transaction Count,Total Revenue,Total Tax,Net Revenue";
+  
+  const subNet = (subscriptions.totalAmount - subscriptions.totalTax) / 100;
+  const oneTimeNet = (oneTime.totalAmount - oneTime.totalTax) / 100;
+  const grandTotal = subNet + oneTimeNet;
+  
+  const rows = [
+    `"Monthly Subscriptions","${subscriptions.count}","$${(subscriptions.totalAmount / 100).toFixed(2)}","$${(subscriptions.totalTax / 100).toFixed(2)}","$${subNet.toFixed(2)}"`,
+    `"One-Time Payments","${oneTime.count}","$${(oneTime.totalAmount / 100).toFixed(2)}","$${(oneTime.totalTax / 100).toFixed(2)}","$${oneTimeNet.toFixed(2)}"`,
+    `"TOTAL","${subscriptions.count + oneTime.count}","$${((subscriptions.totalAmount + oneTime.totalAmount) / 100).toFixed(2)}","$${((subscriptions.totalTax + oneTime.totalTax) / 100).toFixed(2)}","$${grandTotal.toFixed(2)}"`
+  ];
+  
+  return header + "\n" + rows.join("\n");
+}
+
+function formatRevenueReportAsHTML(subscriptions: RevenueGroup, oneTime: RevenueGroup, registrations: Map<string, any>): string {
+  const subNet = (subscriptions.totalAmount - subscriptions.totalTax) / 100;
+  const oneTimeNet = (oneTime.totalAmount - oneTime.totalTax) / 100;
+  const grandTotal = subNet + oneTimeNet;
+  const totalTransactions = subscriptions.count + oneTime.count;
+
+  let html = `
+    <h2>AI Shark Weekly Revenue Report</h2>
+    <p><strong>Report Date:</strong> ${new Date().toLocaleDateString()}</p>
+    <p><strong>Total Transactions:</strong> ${totalTransactions}</p>
+    <p><strong>Total Net Revenue:</strong> $${grandTotal.toFixed(2)}</p>
+    
+    <h3 style="margin-top: 30px; color: #2563eb;">Revenue by Payment Type</h3>
+    <table border="1" cellpadding="10" cellspacing="0" style="border-collapse: collapse; width: 100%; margin-bottom: 30px;">
+      <thead style="background-color: #1e40af; color: white;">
+        <tr>
+          <th>Payment Type</th>
+          <th>Transactions</th>
+          <th>Gross Revenue</th>
+          <th>Tax Collected</th>
+          <th>Net Revenue</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="background-color: #dbeafe;">
+          <td><strong>Monthly Subscriptions</strong></td>
+          <td style="text-align: center;">${subscriptions.count}</td>
+          <td style="text-align: right;">$${(subscriptions.totalAmount / 100).toFixed(2)}</td>
+          <td style="text-align: right;">$${(subscriptions.totalTax / 100).toFixed(2)}</td>
+          <td style="text-align: right;"><strong>$${subNet.toFixed(2)}</strong></td>
+        </tr>
+        <tr style="background-color: #fef3c7;">
+          <td><strong>One-Time Payments</strong></td>
+          <td style="text-align: center;">${oneTime.count}</td>
+          <td style="text-align: right;">$${(oneTime.totalAmount / 100).toFixed(2)}</td>
+          <td style="text-align: right;">$${(oneTime.totalTax / 100).toFixed(2)}</td>
+          <td style="text-align: right;"><strong>$${oneTimeNet.toFixed(2)}</strong></td>
+        </tr>
+        <tr style="background-color: #dcfce7; font-weight: bold;">
+          <td>TOTAL</td>
+          <td style="text-align: center;">${totalTransactions}</td>
+          <td style="text-align: right;">$${((subscriptions.totalAmount + oneTime.totalAmount) / 100).toFixed(2)}</td>
+          <td style="text-align: right;">$${((subscriptions.totalTax + oneTime.totalTax) / 100).toFixed(2)}</td>
+          <td style="text-align: right;">$${grandTotal.toFixed(2)}</td>
+        </tr>
+      </tbody>
+    </table>
+  `;
+
+  // Add subscription details if any
+  if (subscriptions.transactions.length > 0) {
+    html += `
+      <h3 style="color: #2563eb;">Monthly Subscription Details</h3>
+      <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%; margin-bottom: 20px;">
+        <thead style="background-color: #dbeafe;">
+          <tr>
+            <th>Customer</th>
+            <th>Email</th>
+            <th>Amount</th>
+            <th>Tax</th>
+            <th>Status</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+    subscriptions.transactions.forEach(t => {
+      const reg = registrations.get(t.userRegistrationId);
+      html += `
+        <tr>
+          <td>${reg?.username || 'Unknown'}</td>
+          <td>${reg?.email || 'Unknown'}</td>
+          <td>$${(t.amount / 100).toFixed(2)}</td>
+          <td>$${(t.taxAmount ? t.taxAmount / 100 : 0).toFixed(2)}</td>
+          <td>${t.paymentStatus}</td>
+          <td>${t.paidAt ? new Date(t.paidAt).toLocaleDateString() : '-'}</td>
+        </tr>
+      `;
+    });
+    html += `</tbody></table>`;
+  }
+
+  // Add one-time payment details if any
+  if (oneTime.transactions.length > 0) {
+    html += `
+      <h3 style="color: #d97706;">One-Time Payment Details</h3>
+      <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%; margin-bottom: 20px;">
+        <thead style="background-color: #fef3c7;">
+          <tr>
+            <th>Customer</th>
+            <th>Email</th>
+            <th>Amount</th>
+            <th>Tax</th>
+            <th>Status</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+    oneTime.transactions.forEach(t => {
+      const reg = registrations.get(t.userRegistrationId);
+      html += `
+        <tr>
+          <td>${reg?.username || 'Unknown'}</td>
+          <td>${reg?.email || 'Unknown'}</td>
+          <td>$${(t.amount / 100).toFixed(2)}</td>
+          <td>$${(t.taxAmount ? t.taxAmount / 100 : 0).toFixed(2)}</td>
+          <td>${t.paymentStatus}</td>
+          <td>${t.paidAt ? new Date(t.paidAt).toLocaleDateString() : '-'}</td>
+        </tr>
+      `;
+    });
+    html += `</tbody></table>`;
+  }
+
+  if (totalTransactions === 0) {
+    html += `<p style="color: #666; font-style: italic;">No transactions recorded this week.</p>`;
+  }
+
+  html += `
+    <p style="margin-top: 30px; color: #666; font-size: 12px;">
+      This is an automated weekly revenue report from AI Shark.<br>
+      Summary CSV data is attached to this email.
+    </p>
+  `;
+
+  return html;
+}
+
+async function sendRevenueReport() {
+  try {
+    const resend = getResend();
+    if (!resend) {
+      console.log("[Revenue Report] Skipping - Resend not configured");
+      return;
+    }
+
+    // Get all successful transactions from the past week
+    const allTransactions = await storage.getSuccessfulTransactionsLastWeek();
+    
+    // Group by tier
+    const subscriptions: RevenueGroup = {
+      tier: "subscription",
+      count: 0,
+      totalAmount: 0,
+      totalTax: 0,
+      transactions: []
+    };
+    
+    const oneTime: RevenueGroup = {
+      tier: "one_time",
+      count: 0,
+      totalAmount: 0,
+      totalTax: 0,
+      transactions: []
+    };
+
+    allTransactions.forEach(t => {
+      if (t.tier === "subscription") {
+        subscriptions.count++;
+        subscriptions.totalAmount += t.amount || 0;
+        subscriptions.totalTax += t.taxAmount || 0;
+        subscriptions.transactions.push(t);
+      } else if (t.tier === "one_time") {
+        oneTime.count++;
+        oneTime.totalAmount += t.amount || 0;
+        oneTime.totalTax += t.taxAmount || 0;
+        oneTime.transactions.push(t);
+      }
+    });
+
+    // Get registration info for user details
+    const registrationIds = Array.from(new Set(allTransactions.map(t => t.userRegistrationId)));
+    const registrations = new Map<string, any>();
+    
+    for (const id of registrationIds) {
+      const reg = await storage.getRegistrationById(id);
+      if (reg) registrations.set(id, reg);
+    }
+
+    const csvContent = formatRevenueReportAsCSV(subscriptions, oneTime);
+    const htmlContent = formatRevenueReportAsHTML(subscriptions, oneTime, registrations);
+    const csvBuffer = Buffer.from(csvContent, 'utf-8');
+
+    console.log(`[Revenue Report] Sending weekly report to ${REVENUE_REPORT_EMAIL}`);
+    console.log(`[Revenue Report] Subscriptions: ${subscriptions.count}, One-time: ${oneTime.count}`);
+
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: [REVENUE_REPORT_EMAIL],
+      subject: `AI Shark Weekly Revenue Report - ${new Date().toLocaleDateString()}`,
+      html: htmlContent,
+      attachments: [
+        {
+          filename: `revenue_report_${new Date().toISOString().split('T')[0]}.csv`,
+          content: csvBuffer,
+        },
+      ],
+    });
+
+    if (error) {
+      console.error("[Revenue Report] Failed to send email:", error);
+      return;
+    }
+
+    console.log(`[Revenue Report] Email sent successfully! ID: ${data?.id}`);
+    
+  } catch (error) {
+    console.error("[Revenue Report] Error sending weekly email:", error);
+  }
+}
+
+export function startRevenueReportScheduler() {
+  const nextSunday10PM = getNextSunday10PM();
+  const msUntilNext = nextSunday10PM.getTime() - Date.now();
+  
+  console.log(`[Revenue Report] Started. Next report scheduled for: ${nextSunday10PM.toISOString()}`);
+  console.log(`[Revenue Report] Time until next report: ${Math.round(msUntilNext / 1000 / 60 / 60)} hours`);
+
+  setTimeout(() => {
+    sendRevenueReport();
+    
+    // Then repeat every 7 days
+    setInterval(() => {
+      sendRevenueReport();
+    }, 7 * 24 * 60 * 60 * 1000);
+  }, msUntilNext);
+}
+
+export async function triggerRevenueReportManually() {
+  console.log("[Revenue Report] Manual trigger requested");
+  await sendRevenueReport();
 }

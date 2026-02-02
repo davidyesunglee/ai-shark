@@ -16,7 +16,7 @@ import {
   type PaymentTier,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, isNull, desc, sql } from "drizzle-orm";
+import { eq, isNull, desc, sql, gte, and } from "drizzle-orm";
 
 export interface IStorage {
   getAssessment(id: string): Promise<Assessment | undefined>;
@@ -210,6 +210,18 @@ export class DatabaseStorage implements IStorage {
       .where(eq(creditLedger.userRegistrationId, userRegistrationId));
     
     return result[0]?.count || 0;
+  }
+
+  async getSuccessfulTransactionsLastWeek(): Promise<TransactionRecord[]> {
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    
+    return await db.select().from(transactionRecords)
+      .where(and(
+        eq(transactionRecords.paymentStatus, "succeeded"),
+        gte(transactionRecords.createdAt, oneWeekAgo)
+      ))
+      .orderBy(desc(transactionRecords.createdAt));
   }
 }
 

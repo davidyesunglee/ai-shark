@@ -97,9 +97,16 @@ Preferred communication style: Simple, everyday language.
 - Subscription credits reset monthly via invoice webhook
 
 ### Weekly Transaction Reports
-- Transaction data emailed to vemangum@gmail.com every Sunday
+- Transaction data emailed to vemangum@gmail.com every Sunday at midnight
 - Includes HTML summary and CSV attachment
 - Tracks user, amount, tax, tier, and payment status
+
+### Weekly Revenue Reports
+- Revenue data emailed to aisharkphd@gmail.com every Sunday at 10pm
+- Groups transactions by payment type (subscriptions vs one-time)
+- Shows totals for each tier with gross revenue, tax, and net revenue
+- Includes detailed transaction list with customer info
+- CSV summary attachment included
 
 ### Key NPM Packages
 - `drizzle-orm` / `drizzle-kit`: Database ORM and migrations
