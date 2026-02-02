@@ -582,3 +582,251 @@ export async function triggerRevenueReportManually() {
   console.log("[Revenue Report] Manual trigger requested");
   await sendRevenueReport();
 }
+
+// Expense Report - Stripe processing fees grouped by type
+interface ExpenseGroup {
+  type: string;
+  count: number;
+  totalFees: number;
+  transactions: any[];
+}
+
+// Stripe fee calculation: 2.9% + $0.30 per transaction
+function calculateStripeFee(amountCents: number): number {
+  const percentageFee = amountCents * 0.029;
+  const fixedFee = 30; // 30 cents
+  return Math.round(percentageFee + fixedFee);
+}
+
+function formatExpenseReportAsCSV(subscriptionExpenses: ExpenseGroup, oneTimeExpenses: ExpenseGroup): string {
+  const header = "Expense Type,Transaction Count,Total Processing Fees";
+  
+  const totalFees = (subscriptionExpenses.totalFees + oneTimeExpenses.totalFees) / 100;
+  
+  const rows = [
+    `"Subscription Processing Fees","${subscriptionExpenses.count}","$${(subscriptionExpenses.totalFees / 100).toFixed(2)}"`,
+    `"One-Time Processing Fees","${oneTimeExpenses.count}","$${(oneTimeExpenses.totalFees / 100).toFixed(2)}"`,
+    `"TOTAL EXPENSES","${subscriptionExpenses.count + oneTimeExpenses.count}","$${totalFees.toFixed(2)}"`
+  ];
+  
+  return header + "\n" + rows.join("\n");
+}
+
+function formatExpenseReportAsHTML(subscriptionExpenses: ExpenseGroup, oneTimeExpenses: ExpenseGroup, registrations: Map<string, any>): string {
+  const totalFees = (subscriptionExpenses.totalFees + oneTimeExpenses.totalFees) / 100;
+  const totalTransactions = subscriptionExpenses.count + oneTimeExpenses.count;
+
+  let html = `
+    <h2>AI Shark Weekly Expense Report</h2>
+    <p><strong>Report Date:</strong> ${new Date().toLocaleDateString()}</p>
+    <p><strong>Total Transactions:</strong> ${totalTransactions}</p>
+    <p><strong>Total Processing Fees:</strong> $${totalFees.toFixed(2)}</p>
+    
+    <h3 style="margin-top: 30px; color: #dc2626;">Expenses by Payment Type</h3>
+    <table border="1" cellpadding="10" cellspacing="0" style="border-collapse: collapse; width: 100%; margin-bottom: 30px;">
+      <thead style="background-color: #7f1d1d; color: white;">
+        <tr>
+          <th>Expense Type</th>
+          <th>Transactions</th>
+          <th>Processing Fees</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="background-color: #fef2f2;">
+          <td><strong>Subscription Processing Fees</strong></td>
+          <td style="text-align: center;">${subscriptionExpenses.count}</td>
+          <td style="text-align: right;"><strong>$${(subscriptionExpenses.totalFees / 100).toFixed(2)}</strong></td>
+        </tr>
+        <tr style="background-color: #fff7ed;">
+          <td><strong>One-Time Processing Fees</strong></td>
+          <td style="text-align: center;">${oneTimeExpenses.count}</td>
+          <td style="text-align: right;"><strong>$${(oneTimeExpenses.totalFees / 100).toFixed(2)}</strong></td>
+        </tr>
+        <tr style="background-color: #fee2e2; font-weight: bold;">
+          <td>TOTAL EXPENSES</td>
+          <td style="text-align: center;">${totalTransactions}</td>
+          <td style="text-align: right;">$${totalFees.toFixed(2)}</td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <p style="color: #666; font-size: 12px; margin-top: 10px;">
+      <em>Note: Stripe fees calculated at 2.9% + $0.30 per transaction. Actual fees may vary slightly.</em>
+    </p>
+  `;
+
+  // Add subscription fee details if any
+  if (subscriptionExpenses.transactions.length > 0) {
+    html += `
+      <h3 style="color: #dc2626; margin-top: 30px;">Subscription Fee Details</h3>
+      <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%; margin-bottom: 20px;">
+        <thead style="background-color: #fef2f2;">
+          <tr>
+            <th>Customer</th>
+            <th>Transaction Amount</th>
+            <th>Processing Fee</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+    subscriptionExpenses.transactions.forEach((t: any) => {
+      const reg = registrations.get(t.userRegistrationId);
+      const fee = calculateStripeFee(t.amount);
+      html += `
+        <tr>
+          <td>${reg?.username || 'Unknown'}</td>
+          <td style="text-align: right;">$${(t.amount / 100).toFixed(2)}</td>
+          <td style="text-align: right;">$${(fee / 100).toFixed(2)}</td>
+          <td>${t.paidAt ? new Date(t.paidAt).toLocaleDateString() : '-'}</td>
+        </tr>
+      `;
+    });
+    html += `</tbody></table>`;
+  }
+
+  // Add one-time fee details if any
+  if (oneTimeExpenses.transactions.length > 0) {
+    html += `
+      <h3 style="color: #ea580c; margin-top: 30px;">One-Time Fee Details</h3>
+      <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%; margin-bottom: 20px;">
+        <thead style="background-color: #fff7ed;">
+          <tr>
+            <th>Customer</th>
+            <th>Transaction Amount</th>
+            <th>Processing Fee</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+    oneTimeExpenses.transactions.forEach((t: any) => {
+      const reg = registrations.get(t.userRegistrationId);
+      const fee = calculateStripeFee(t.amount);
+      html += `
+        <tr>
+          <td>${reg?.username || 'Unknown'}</td>
+          <td style="text-align: right;">$${(t.amount / 100).toFixed(2)}</td>
+          <td style="text-align: right;">$${(fee / 100).toFixed(2)}</td>
+          <td>${t.paidAt ? new Date(t.paidAt).toLocaleDateString() : '-'}</td>
+        </tr>
+      `;
+    });
+    html += `</tbody></table>`;
+  }
+
+  if (totalTransactions === 0) {
+    html += `<p style="color: #666; font-style: italic;">No transactions (and therefore no processing fees) this week.</p>`;
+  }
+
+  html += `
+    <p style="margin-top: 30px; color: #666; font-size: 12px;">
+      This is an automated weekly expense report from AI Shark.<br>
+      Summary CSV data is attached to this email.
+    </p>
+  `;
+
+  return html;
+}
+
+async function sendExpenseReport() {
+  try {
+    const resend = getResend();
+    if (!resend) {
+      console.log("[Expense Report] Skipping - Resend not configured");
+      return;
+    }
+
+    // Get all successful transactions from the past week
+    const allTransactions = await storage.getSuccessfulTransactionsLastWeek();
+    
+    // Group by tier and calculate fees
+    const subscriptionExpenses: ExpenseGroup = {
+      type: "subscription",
+      count: 0,
+      totalFees: 0,
+      transactions: []
+    };
+    
+    const oneTimeExpenses: ExpenseGroup = {
+      type: "one_time",
+      count: 0,
+      totalFees: 0,
+      transactions: []
+    };
+
+    allTransactions.forEach(t => {
+      const fee = calculateStripeFee(t.amount || 0);
+      if (t.tier === "subscription") {
+        subscriptionExpenses.count++;
+        subscriptionExpenses.totalFees += fee;
+        subscriptionExpenses.transactions.push(t);
+      } else if (t.tier === "one_time") {
+        oneTimeExpenses.count++;
+        oneTimeExpenses.totalFees += fee;
+        oneTimeExpenses.transactions.push(t);
+      }
+    });
+
+    // Get registration info for user details
+    const registrationIds = Array.from(new Set(allTransactions.map(t => t.userRegistrationId)));
+    const registrations = new Map<string, any>();
+    
+    for (const id of registrationIds) {
+      const reg = await storage.getRegistrationById(id);
+      if (reg) registrations.set(id, reg);
+    }
+
+    const csvContent = formatExpenseReportAsCSV(subscriptionExpenses, oneTimeExpenses);
+    const htmlContent = formatExpenseReportAsHTML(subscriptionExpenses, oneTimeExpenses, registrations);
+    const csvBuffer = Buffer.from(csvContent, 'utf-8');
+
+    console.log(`[Expense Report] Sending weekly report to ${REVENUE_REPORT_EMAIL}`);
+    console.log(`[Expense Report] Subscription fees: ${subscriptionExpenses.count}, One-time fees: ${oneTimeExpenses.count}`);
+
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: [REVENUE_REPORT_EMAIL],
+      subject: `AI Shark Weekly Expense Report - ${new Date().toLocaleDateString()}`,
+      html: htmlContent,
+      attachments: [
+        {
+          filename: `expense_report_${new Date().toISOString().split('T')[0]}.csv`,
+          content: csvBuffer,
+        },
+      ],
+    });
+
+    if (error) {
+      console.error("[Expense Report] Failed to send email:", error);
+      return;
+    }
+
+    console.log(`[Expense Report] Email sent successfully! ID: ${data?.id}`);
+    
+  } catch (error) {
+    console.error("[Expense Report] Error sending weekly email:", error);
+  }
+}
+
+export function startExpenseReportScheduler() {
+  const nextSunday10PM = getNextSunday10PM();
+  const msUntilNext = nextSunday10PM.getTime() - Date.now();
+  
+  console.log(`[Expense Report] Started. Next report scheduled for: ${nextSunday10PM.toISOString()}`);
+  console.log(`[Expense Report] Time until next report: ${Math.round(msUntilNext / 1000 / 60 / 60)} hours`);
+
+  setTimeout(() => {
+    sendExpenseReport();
+    
+    // Then repeat every 7 days
+    setInterval(() => {
+      sendExpenseReport();
+    }, 7 * 24 * 60 * 60 * 1000);
+  }, msUntilNext);
+}
+
+export async function triggerExpenseReportManually() {
+  console.log("[Expense Report] Manual trigger requested");
+  await sendExpenseReport();
+}

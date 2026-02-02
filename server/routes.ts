@@ -6,7 +6,7 @@ import { parseDocument } from "./documentParser";
 import { analyzeBusinessPlan, isOpenAIConfigured } from "./openai";
 import { setupAuth, isAuthenticated } from "./replit_integrations/auth";
 import { insertUserRegistrationSchema } from "@shared/schema";
-import { startWeeklyEmailScheduler, startTransactionEmailScheduler, startRevenueReportScheduler } from "./emailScheduler";
+import { startWeeklyEmailScheduler, startTransactionEmailScheduler, startRevenueReportScheduler, startExpenseReportScheduler } from "./emailScheduler";
 import { getUncachableStripeClient, getStripePublishableKey } from "./stripeClient";
 import { db } from "./db";
 import { sql } from "drizzle-orm";
@@ -73,6 +73,7 @@ export async function registerRoutes(
   startWeeklyEmailScheduler();
   startTransactionEmailScheduler();
   startRevenueReportScheduler();
+  startExpenseReportScheduler();
 
   app.get("/api/registration/status", isAuthenticated, async (req: any, res) => {
     try {

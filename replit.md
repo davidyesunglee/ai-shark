@@ -108,6 +108,13 @@ Preferred communication style: Simple, everyday language.
 - Includes detailed transaction list with customer info
 - CSV summary attachment included
 
+### Weekly Expense Reports
+- Expense data emailed to aisharkphd@gmail.com every Sunday at 10pm
+- Calculates Stripe processing fees (2.9% + $0.30 per transaction)
+- Groups expenses by payment type (subscription vs one-time)
+- Shows total processing fees with transaction details
+- CSV summary attachment included
+
 ### Key NPM Packages
 - `drizzle-orm` / `drizzle-kit`: Database ORM and migrations
 - `openai`: OpenAI API client
