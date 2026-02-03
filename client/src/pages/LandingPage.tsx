@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FileText, TrendingUp, Shield, CheckCircle, Clock, Users, Award, ArrowRight, Zap } from "lucide-react";
+import { TrendingUp, Shield, CheckCircle, Clock, Users, Award, ArrowRight, Zap, FileText } from "lucide-react";
 import { Link } from "wouter";
 import { AdPlacement } from "@/components/AdPlacement";
+import logoImage from "@assets/AI_Shark_logo_1770083549283.png";
 
 export default function LandingPage() {
   return (
@@ -11,8 +12,8 @@ export default function LandingPage() {
       <header className="border-b sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <FileText className="h-6 w-6 text-primary" />
-            <span className="font-semibold text-lg" data-testid="text-app-title">AI Shark</span>
+            <img src={logoImage} alt="AI Shark Logo" className="h-10 w-auto" data-testid="img-logo" />
+            <span className="font-semibold text-lg hidden sm:inline" data-testid="text-app-title">AI Shark</span>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             <Link href="/about">
@@ -216,7 +217,7 @@ export default function LandingPage() {
           </div>
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
             <div className="flex items-center gap-2">
-              <FileText className="h-5 w-5 text-primary" />
+              <img src={logoImage} alt="AI Shark Logo" className="h-8 w-auto" data-testid="img-footer-logo" />
               <span className="font-semibold">AI Shark</span>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 text-sm text-muted-foreground">
