@@ -136,6 +136,41 @@ export async function registerRoutes(
     }
   });
 
+  // Admin feedback monitoring endpoint
+  app.get("/api/admin/feedback", async (req, res) => {
+    try {
+      const adminKey = req.headers["x-admin-key"];
+      if (adminKey !== process.env.SESSION_SECRET) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      const allFeedback = await storage.getAllFeedback();
+      res.json(allFeedback);
+    } catch (error: any) {
+      console.error("[Admin Feedback] Error:", error);
+      res.status(500).json({ message: error.message || "Failed to fetch feedback" });
+    }
+  });
+
+  // Admin mark feedback as resolved
+  app.patch("/api/admin/feedback/:id", async (req, res) => {
+    try {
+      const adminKey = req.headers["x-admin-key"];
+      if (adminKey !== process.env.SESSION_SECRET) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      const { id } = req.params;
+      const { resolved } = req.body;
+      
+      const updated = await storage.updateFeedback(id, { resolved });
+      res.json({ success: true, feedback: updated });
+    } catch (error: any) {
+      console.error("[Admin Feedback] Update error:", error);
+      res.status(500).json({ message: error.message || "Failed to update feedback" });
+    }
+  });
+
   await setupAuth(app);
   
   startWeeklyEmailScheduler();

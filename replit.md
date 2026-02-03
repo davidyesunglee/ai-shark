@@ -124,10 +124,14 @@ Preferred communication style: Simple, everyday language.
 ## Customer Feedback System
 - **Contact Page**: Available at `/contact` - customers can submit feedback, bug reports, feature requests, support requests
 - **Satisfaction Survey**: Appears after viewing assessment reports - 5-star rating with optional comments
+- **Admin Monitoring**: Available at `/admin/feedback` - real-time dashboard with filtering, stats, and resolution tracking
 - **Database Table**: `customer_feedback` stores all feedback entries
-- **Fields**: email, name, feedback_type (general/bug/feature/support/satisfaction), subject, message, rating, assessment_id
+- **Fields**: email, name, feedback_type (general/bug/feature/support/satisfaction), subject, message, rating, assessment_id, resolved
 - **Email Notifications**: New feedback triggers instant email notification to vemangum@gmail.com
-- **API Endpoint**: `POST /api/feedback` (public, no authentication required)
+- **API Endpoints**:
+  - `POST /api/feedback` (public, no authentication required)
+  - `GET /api/admin/feedback` (requires x-admin-key header)
+  - `PATCH /api/admin/feedback/:id` (requires x-admin-key header) - update resolved status
 
 ## Advertising Revenue Tracking
 - **Database Table**: `advertising_revenue` stores all ad revenue entries

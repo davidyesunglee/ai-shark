@@ -40,6 +40,7 @@ export interface IStorage {
   markAdvertisingRevenueAsEmailed(ids: string[]): Promise<void>;
   createCustomerFeedback(data: InsertCustomerFeedback): Promise<CustomerFeedback>;
   getAllFeedback(): Promise<CustomerFeedback[]>;
+  updateFeedback(id: string, updates: Partial<CustomerFeedback>): Promise<CustomerFeedback | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -265,6 +266,14 @@ export class DatabaseStorage implements IStorage {
   async getAllFeedback(): Promise<CustomerFeedback[]> {
     return await db.select().from(customerFeedback)
       .orderBy(desc(customerFeedback.createdAt));
+  }
+
+  async updateFeedback(id: string, updates: Partial<CustomerFeedback>): Promise<CustomerFeedback | undefined> {
+    const [result] = await db.update(customerFeedback)
+      .set(updates)
+      .where(eq(customerFeedback.id, id))
+      .returning();
+    return result || undefined;
   }
 }
 
