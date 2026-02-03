@@ -4,6 +4,7 @@ import { ScoreRing } from "./ScoreRing";
 import { StatusBadge, type AssessmentStatus } from "./StatusBadge";
 import { CriteriaBreakdown, type CriterionScore } from "./CriteriaBreakdown";
 import { ReportSummary } from "./ReportSummary";
+import { SatisfactionSurvey } from "./SatisfactionSurvey";
 import { ArrowLeft, FileText, Calendar, Download } from "lucide-react";
 
 export interface FullAssessment {
@@ -93,6 +94,10 @@ export function AssessmentReport({ assessment, onBack }: AssessmentReportProps) 
           weaknesses={assessment.weaknesses}
           recommendations={assessment.recommendations}
         />
+      </div>
+
+      <div className="mt-6">
+        <SatisfactionSurvey assessmentId={assessment.id} />
       </div>
 
       <div className="mt-8 pt-6 border-t">

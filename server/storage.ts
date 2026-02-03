@@ -5,6 +5,7 @@ import {
   transactionRecords,
   creditLedger,
   advertisingRevenue,
+  customerFeedback,
   type Assessment,
   type InsertAssessment,
   type UserRegistration,
@@ -17,6 +18,8 @@ import {
   type PaymentTier,
   type AdvertisingRevenue,
   type InsertAdvertisingRevenue,
+  type CustomerFeedback,
+  type InsertCustomerFeedback,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, isNull, desc, sql, gte, and } from "drizzle-orm";
@@ -35,6 +38,8 @@ export interface IStorage {
   getAdvertisingRevenueLastWeek(): Promise<AdvertisingRevenue[]>;
   createAdvertisingRevenue(data: InsertAdvertisingRevenue): Promise<AdvertisingRevenue>;
   markAdvertisingRevenueAsEmailed(ids: string[]): Promise<void>;
+  createCustomerFeedback(data: InsertCustomerFeedback): Promise<CustomerFeedback>;
+  getAllFeedback(): Promise<CustomerFeedback[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -250,6 +255,16 @@ export class DatabaseStorage implements IStorage {
         .set({ emailedAt: new Date() })
         .where(eq(advertisingRevenue.id, id));
     }
+  }
+
+  async createCustomerFeedback(data: InsertCustomerFeedback): Promise<CustomerFeedback> {
+    const [result] = await db.insert(customerFeedback).values(data as any).returning();
+    return result;
+  }
+
+  async getAllFeedback(): Promise<CustomerFeedback[]> {
+    return await db.select().from(customerFeedback)
+      .orderBy(desc(customerFeedback.createdAt));
   }
 }
 

@@ -121,6 +121,14 @@ Preferred communication style: Simple, everyday language.
 - Both pages include the standard disclaimer about informational purposes only
 - Required for Google AdSense approval and compliance
 
+## Customer Feedback System
+- **Contact Page**: Available at `/contact` - customers can submit feedback, bug reports, feature requests, support requests
+- **Satisfaction Survey**: Appears after viewing assessment reports - 5-star rating with optional comments
+- **Database Table**: `customer_feedback` stores all feedback entries
+- **Fields**: email, name, feedback_type (general/bug/feature/support/satisfaction), subject, message, rating, assessment_id
+- **Email Notifications**: New feedback triggers instant email notification to vemangum@gmail.com
+- **API Endpoint**: `POST /api/feedback` (public, no authentication required)
+
 ## Advertising Revenue Tracking
 - **Database Table**: `advertising_revenue` stores all ad revenue entries
 - **Fields**: source (e.g., "Google AdSense"), amount (cents), impressions, clicks, report_date

@@ -5,7 +5,7 @@ import multer from "multer";
 import { parseDocument } from "./documentParser";
 import { analyzeBusinessPlan, isOpenAIConfigured } from "./openai";
 import { setupAuth, isAuthenticated } from "./replit_integrations/auth";
-import { insertUserRegistrationSchema } from "@shared/schema";
+import { insertUserRegistrationSchema, insertCustomerFeedbackSchema } from "@shared/schema";
 import { startWeeklyEmailScheduler, startTransactionEmailScheduler, startRevenueReportScheduler, startExpenseReportScheduler } from "./emailScheduler";
 import { getUncachableStripeClient, getStripePublishableKey } from "./stripeClient";
 import { db } from "./db";
@@ -95,6 +95,44 @@ export async function registerRoutes(
     } catch (error: any) {
       console.error("[Admin] Advertising revenue error:", error);
       res.status(500).json({ message: error.message || "Failed to record advertising revenue" });
+    }
+  });
+
+  // Customer feedback endpoint (public - no auth required)
+  app.post("/api/feedback", async (req, res) => {
+    try {
+      const validatedData = insertCustomerFeedbackSchema.parse(req.body);
+      const feedback = await storage.createCustomerFeedback(validatedData);
+      
+      // Send email notification for new feedback
+      try {
+        const { Resend } = await import("resend");
+        const resend = new Resend(process.env.RESEND_API_KEY);
+        
+        await resend.emails.send({
+          from: "AI Shark <onboarding@resend.dev>",
+          to: "vemangum@gmail.com",
+          subject: `New Customer Feedback: ${validatedData.feedbackType} - ${validatedData.subject}`,
+          html: `
+            <h2>New Customer Feedback Received</h2>
+            <p><strong>From:</strong> ${validatedData.name} (${validatedData.email})</p>
+            <p><strong>Type:</strong> ${validatedData.feedbackType}</p>
+            <p><strong>Subject:</strong> ${validatedData.subject}</p>
+            <p><strong>Message:</strong></p>
+            <p>${validatedData.message}</p>
+            <hr>
+            <p><em>Submitted at: ${new Date().toISOString()}</em></p>
+          `,
+        });
+        console.log("[Feedback] Email notification sent");
+      } catch (emailError) {
+        console.error("[Feedback] Failed to send email notification:", emailError);
+      }
+      
+      res.json({ success: true, feedback });
+    } catch (error: any) {
+      console.error("[Feedback] Error:", error);
+      res.status(400).json({ message: error.message || "Failed to submit feedback" });
     }
   });
 

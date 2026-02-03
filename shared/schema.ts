@@ -162,5 +162,32 @@ export const insertAdvertisingRevenueSchema = createInsertSchema(advertisingReve
 export type InsertAdvertisingRevenue = z.infer<typeof insertAdvertisingRevenueSchema>;
 export type AdvertisingRevenue = typeof advertisingRevenue.$inferSelect;
 
+export type FeedbackType = "general" | "bug" | "feature" | "support" | "satisfaction";
+
+export const customerFeedback = pgTable("customer_feedback", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id"),
+  email: varchar("email").notNull(),
+  name: varchar("name"),
+  feedbackType: text("feedback_type").notNull().$type<FeedbackType>().default("general"),
+  subject: varchar("subject"),
+  message: text("message").notNull(),
+  rating: integer("rating"),
+  assessmentId: varchar("assessment_id"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  emailedAt: timestamp("emailed_at"),
+  resolved: boolean("resolved").default(false),
+});
+
+export const insertCustomerFeedbackSchema = createInsertSchema(customerFeedback).omit({
+  id: true,
+  createdAt: true,
+  emailedAt: true,
+  resolved: true,
+});
+
+export type InsertCustomerFeedback = z.infer<typeof insertCustomerFeedbackSchema>;
+export type CustomerFeedback = typeof customerFeedback.$inferSelect;
+
 export * from "./models/chat";
 export * from "./models/auth";

@@ -16,6 +16,7 @@ import PaymentSuccessPage from "@/pages/PaymentSuccessPage";
 import VerifyEmailPage from "@/pages/VerifyEmailPage";
 import PrivacyPolicyPage from "@/pages/PrivacyPolicyPage";
 import TermsOfServicePage from "@/pages/TermsOfServicePage";
+import ContactPage from "@/pages/ContactPage";
 import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
 
@@ -36,6 +37,7 @@ function Router() {
       <Route path="/education" component={EducationPage} />
       <Route path="/privacy" component={PrivacyPolicyPage} />
       <Route path="/terms" component={TermsOfServicePage} />
+      <Route path="/contact" component={ContactPage} />
       <Route path="/login">
         {isAuthenticated ? <Redirect to="/" /> : <LoginPage />}
       </Route>

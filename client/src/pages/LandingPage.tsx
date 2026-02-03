@@ -236,6 +236,9 @@ export default function LandingPage() {
               <Link href="/terms">
                 <span className="hover:text-foreground transition-colors cursor-pointer" data-testid="link-footer-terms">Terms of Service</span>
               </Link>
+              <Link href="/contact">
+                <span className="hover:text-foreground transition-colors cursor-pointer" data-testid="link-footer-contact">Contact</span>
+              </Link>
             </div>
             <p className="text-sm text-muted-foreground">
               Powered by AI for accurate, fast analysis.
