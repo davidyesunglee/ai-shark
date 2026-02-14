@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { FileText, Loader2 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
@@ -17,6 +18,7 @@ export default function SignupPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,6 +36,15 @@ export default function SignupPage() {
       toast({
         title: "Password too short",
         description: "Password must be at least 8 characters.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!agreedToTerms) {
+      toast({
+        title: "Terms of Use required",
+        description: "Please agree to the Terms of Use and Privacy Policy to create an account.",
         variant: "destructive",
       });
       return;
@@ -158,10 +169,28 @@ export default function SignupPage() {
                   data-testid="input-confirm-password"
                 />
               </div>
+              <div className="flex items-start gap-2">
+                <Checkbox
+                  id="terms"
+                  checked={agreedToTerms}
+                  onCheckedChange={(checked) => setAgreedToTerms(checked === true)}
+                  data-testid="checkbox-terms"
+                />
+                <label htmlFor="terms" className="text-sm text-muted-foreground leading-tight cursor-pointer">
+                  I agree to the{" "}
+                  <Link href="/terms">
+                    <span className="text-primary hover:underline">Terms of Use</span>
+                  </Link>{" "}
+                  and{" "}
+                  <Link href="/privacy">
+                    <span className="text-primary hover:underline">Privacy Policy</span>
+                  </Link>
+                </label>
+              </div>
               <Button 
                 type="submit" 
                 className="w-full" 
-                disabled={isSigningUp}
+                disabled={isSigningUp || !agreedToTerms}
                 data-testid="button-signup"
               >
                 {isSigningUp ? (
