@@ -3,8 +3,18 @@ import { Resend } from "resend";
 import type { TransactionRecord } from "@shared/schema";
 
 const RECIPIENT_EMAIL = "vemangum@gmail.com";
-const REVENUE_REPORT_EMAIL = "aisharkphd@gmail.com";
+const REVENUE_REPORT_EMAIL = "vemangum@gmail.com";
 const FROM_EMAIL = "AI Shark <onboarding@resend.dev>";
+
+const MAX_TIMEOUT_MS = 2147483647;
+
+function safeSetTimeout(fn: () => void, ms: number): void {
+  if (ms > MAX_TIMEOUT_MS) {
+    setTimeout(() => safeSetTimeout(fn, ms - MAX_TIMEOUT_MS), MAX_TIMEOUT_MS);
+  } else {
+    setTimeout(fn, Math.max(0, ms));
+  }
+}
 
 function getResend(): Resend | null {
   if (!process.env.RESEND_API_KEY) {
@@ -163,7 +173,7 @@ export function startWeeklyEmailScheduler() {
   console.log(`[Email Scheduler] Started. Next email scheduled for: ${nextSunday.toISOString()}`);
   console.log(`[Email Scheduler] Time until next email: ${Math.round(msUntilNextSunday / 1000 / 60 / 60)} hours`);
 
-  setTimeout(() => {
+  safeSetTimeout(() => {
     sendWeeklyEmail();
     
     setInterval(() => {
@@ -315,7 +325,7 @@ export function startTransactionEmailScheduler() {
   
   console.log(`[Transaction Email] Started. Next email scheduled for: ${nextSunday.toISOString()}`);
 
-  setTimeout(() => {
+  safeSetTimeout(() => {
     sendTransactionEmail();
     
     setInterval(() => {
@@ -627,10 +637,9 @@ export function startRevenueReportScheduler() {
   console.log(`[Revenue Report] Started. Next report scheduled for: ${nextSunday10PM.toISOString()}`);
   console.log(`[Revenue Report] Time until next report: ${Math.round(msUntilNext / 1000 / 60 / 60)} hours`);
 
-  setTimeout(() => {
+  safeSetTimeout(() => {
     sendRevenueReport();
     
-    // Then repeat every 7 days
     setInterval(() => {
       sendRevenueReport();
     }, 7 * 24 * 60 * 60 * 1000);
@@ -875,10 +884,9 @@ export function startExpenseReportScheduler() {
   console.log(`[Expense Report] Started. Next report scheduled for: ${nextSunday10PM.toISOString()}`);
   console.log(`[Expense Report] Time until next report: ${Math.round(msUntilNext / 1000 / 60 / 60)} hours`);
 
-  setTimeout(() => {
+  safeSetTimeout(() => {
     sendExpenseReport();
     
-    // Then repeat every 7 days
     setInterval(() => {
       sendExpenseReport();
     }, 7 * 24 * 60 * 60 * 1000);

@@ -202,7 +202,7 @@ export default function LandingPage() {
             </p>
             <Link href="/signup">
               <Button size="lg" variant="outline" className="gap-2 bg-background/10 backdrop-blur border-primary-foreground/20 text-primary-foreground hover:bg-background/20" data-testid="button-cta-bottom">
-                Get Started Free
+                Get Started
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>

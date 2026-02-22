@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, ArrowLeft, ExternalLink, TrendingUp, DollarSign, Shield, Scale, Target, Users } from "lucide-react";
+import { ArrowLeft, ExternalLink, TrendingUp, DollarSign, Shield, Scale, Target, Users } from "lucide-react";
 import { Link } from "wouter";
+import logoImage from "@assets/AI_Shark_logo_1770083549283.png";
 
 const criteria = [
   {
@@ -125,10 +126,12 @@ export default function EducationPage() {
     <div className="min-h-screen bg-background">
       <header className="border-b">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <FileText className="h-6 w-6 text-primary" />
-            <span className="font-semibold text-lg" data-testid="text-app-title">AI Shark</span>
-          </div>
+          <Link href="/">
+            <div className="flex items-center gap-2 cursor-pointer">
+              <img src={logoImage} alt="AI Shark Logo" className="h-8 w-auto" data-testid="img-logo" />
+              <span className="font-semibold text-lg" data-testid="text-app-title">AI Shark</span>
+            </div>
+          </Link>
           <Link href="/">
             <Button variant="ghost" data-testid="button-back-home">
               <ArrowLeft className="mr-2 h-4 w-4" />

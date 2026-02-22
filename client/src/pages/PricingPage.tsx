@@ -7,7 +7,9 @@ import { Check, Star, Zap, Shield, CreditCard } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/use-auth";
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
+import { ArrowLeft } from "lucide-react";
+import logoImage from "@assets/AI_Shark_logo_1770083549283.png";
 
 interface Price {
   id: string;
@@ -159,6 +161,33 @@ export default function PricingPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <header className="border-b sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
+          <Link href="/">
+            <div className="flex items-center gap-2 cursor-pointer">
+              <img src={logoImage} alt="AI Shark Logo" className="h-8 w-auto" data-testid="img-logo" />
+              <span className="font-semibold text-lg hidden sm:inline" data-testid="text-app-title">AI Shark</span>
+            </div>
+          </Link>
+          <div className="flex items-center gap-2">
+            {user ? (
+              <Link href="/dashboard">
+                <Button variant="ghost" data-testid="link-dashboard">Dashboard</Button>
+              </Link>
+            ) : (
+              <>
+                <Link href="/login">
+                  <Button variant="ghost" data-testid="link-login">Sign In</Button>
+                </Link>
+                <Link href="/signup">
+                  <Button data-testid="link-signup">Sign Up</Button>
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+      </header>
+
       <div className="container mx-auto px-4 py-12">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-4">Choose Your Plan</h1>
@@ -238,9 +267,9 @@ export default function PricingPage() {
                       variant="outline"
                       className="w-full"
                       data-testid="button-register-free"
-                      onClick={() => setLocation(user ? "/dashboard" : "/register")}
+                      onClick={() => setLocation(user ? "/dashboard" : "/signup")}
                     >
-                      {user ? "Go to Dashboard" : "Register Free"}
+                      {user ? "Go to Dashboard" : "Sign Up Free"}
                     </Button>
                   ) : isCurrentPlan ? (
                     <Button variant="secondary" className="w-full" disabled>

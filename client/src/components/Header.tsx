@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
-import { FileText, Plus, LogOut, CreditCard } from "lucide-react";
+import { Plus, LogOut, CreditCard } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Link } from "wouter";
+import logoImage from "@assets/AI_Shark_logo_1770083549283.png";
 
 interface HeaderProps {
   onNewAssessment?: () => void;
@@ -13,15 +14,15 @@ export function Header({ onNewAssessment }: HeaderProps) {
 
   return (
     <header className="sticky top-0 z-50 flex h-16 items-center justify-between gap-4 border-b bg-background px-6">
-      <div className="flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary">
-          <FileText className="h-5 w-5 text-primary-foreground" />
+      <Link href="/">
+        <div className="flex items-center gap-3 cursor-pointer">
+          <img src={logoImage} alt="AI Shark Logo" className="h-9 w-auto" data-testid="img-logo" />
+          <div>
+            <h1 className="text-lg font-semibold">AI Shark</h1>
+            <p className="text-xs text-muted-foreground">Bank Debt Financing Criteria</p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-lg font-semibold">AI Shark</h1>
-          <p className="text-xs text-muted-foreground">Bank Debt Financing Criteria</p>
-        </div>
-      </div>
+      </Link>
       <div className="flex items-center gap-2">
         {user && (
           <span className="text-sm text-muted-foreground hidden sm:inline" data-testid="text-user-name">
