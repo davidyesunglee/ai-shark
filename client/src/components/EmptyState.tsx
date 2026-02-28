@@ -9,9 +9,9 @@ interface EmptyStateProps {
 
 export function EmptyState({ onUpload, needsPayment = false }: EmptyStateProps) {
   return (
-    <div className="flex min-h-[400px] flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 text-center">
+    <div className="flex min-h-[400px] flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 text-center" role="region" aria-label="No assessments yet">
       <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-        <FileText className="h-8 w-8 text-primary" />
+        <FileText className="h-8 w-8 text-primary" aria-hidden="true" />
       </div>
       <h3 className="mt-4 text-lg font-semibold">Ready to Evaluate Your Business Plan</h3>
       <p className="mt-2 max-w-md text-sm text-muted-foreground">
@@ -26,20 +26,20 @@ export function EmptyState({ onUpload, needsPayment = false }: EmptyStateProps) 
           </p>
           <Link href="/pricing">
             <Button data-testid="button-get-plan">
-              <CreditCard className="mr-2 h-4 w-4" />
+              <CreditCard className="mr-2 h-4 w-4" aria-hidden="true" />
               View Plans
-              <ArrowRight className="ml-2 h-4 w-4" />
+              <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
             </Button>
           </Link>
         </div>
       ) : (
         <Button className="mt-6" onClick={onUpload} data-testid="button-upload-first">
-          <Upload className="mr-2 h-4 w-4" />
+          <Upload className="mr-2 h-4 w-4" aria-hidden="true" />
           Upload Business Plan
         </Button>
       )}
 
-      <div className="mt-8 grid grid-cols-3 gap-6 text-center max-w-lg">
+      <div className="mt-8 grid grid-cols-3 gap-6 text-center max-w-lg" aria-label="Supported file formats">
         <div>
           <p className="text-2xl font-bold text-primary">PDF</p>
           <p className="text-xs text-muted-foreground">Documents</p>

@@ -231,8 +231,9 @@ export default function Dashboard() {
 
   if (isCheckingRegistration) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="min-h-screen bg-background flex items-center justify-center" role="status" aria-label="Loading">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" aria-hidden="true" />
+        <span className="sr-only">Loading dashboard...</span>
       </div>
     );
   }
@@ -242,12 +243,13 @@ export default function Dashboard() {
       return (
         <div className="min-h-screen bg-background">
           <Header />
-          <main className="mx-auto max-w-6xl px-6 py-8">
+          <main className="mx-auto max-w-6xl px-6 py-8" role="status" aria-label="Loading assessment">
             <div className="space-y-6">
               <Skeleton className="h-8 w-64" />
               <Skeleton className="h-48 w-full" />
               <Skeleton className="h-64 w-full" />
             </div>
+            <span className="sr-only">Loading assessment report...</span>
           </main>
         </div>
       );
@@ -259,7 +261,7 @@ export default function Dashboard() {
           <Header />
           <main className="mx-auto max-w-6xl px-6 py-8">
             <div className="text-center">
-              <p className="text-muted-foreground">Assessment not found</p>
+              <p className="text-muted-foreground" role="alert">Assessment not found</p>
             </div>
           </main>
         </div>
@@ -271,7 +273,7 @@ export default function Dashboard() {
         <div className="min-h-screen bg-background">
           <Header />
           <main className="mx-auto max-w-6xl px-6 py-8">
-            <div className="text-center space-y-4">
+            <div className="text-center space-y-4" role="alert">
               <p className="text-lg font-semibold text-destructive">Analysis Failed</p>
               <p className="text-muted-foreground">
                 Unable to analyze "{fullAssessment.businessName}". Please try uploading the document again.
@@ -294,8 +296,8 @@ export default function Dashboard() {
         <div className="min-h-screen bg-background">
           <Header />
           <main className="mx-auto max-w-6xl px-6 py-8">
-            <div className="text-center space-y-4">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
+            <div className="text-center space-y-4" role="status" aria-live="polite">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" aria-hidden="true" />
               <p className="text-lg font-semibold">Analyzing Business Plan</p>
               <p className="text-muted-foreground">
                 "{fullAssessment.businessName}" is being analyzed. This may take a minute.
@@ -345,14 +347,17 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background">
+      <a href="#main-content" className="skip-to-content">
+        Skip to main content
+      </a>
       <Header onNewAssessment={() => setUploadOpen(true)} />
 
-      <main className="mx-auto max-w-7xl px-6 py-8">
+      <main id="main-content" className="mx-auto max-w-7xl px-6 py-8">
         <div className="space-y-8">
           {needsPayment && (
-            <div className="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-lg p-4 flex flex-wrap items-center justify-between gap-4" data-testid="banner-payment-required">
+            <div className="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-lg p-4 flex flex-wrap items-center justify-between gap-4" role="alert" data-testid="banner-payment-required">
               <div className="flex items-center gap-3">
-                <CreditCard className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                <CreditCard className="h-5 w-5 text-amber-600 dark:text-amber-400" aria-hidden="true" />
                 <div>
                   <p className="font-medium text-amber-800 dark:text-amber-200">
                     {billingStatus?.creditsRemaining === 0 
@@ -372,33 +377,37 @@ export default function Dashboard() {
             </div>
           )}
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <StatsCard
-              title="Total Assessments"
-              value={assessments.length}
-              icon={FileText}
-            />
-            <StatsCard title="Completed" value={completedCount} icon={CheckCircle} />
-            <StatsCard
-              title="In Progress"
-              value={assessments.filter((a) => a.status === "analyzing").length}
-              icon={Clock}
-            />
-            <StatsCard
-              title="Average Score"
-              value={avgScore > 0 ? avgScore.toFixed(1) : "-"}
-              icon={TrendingUp}
-            />
-          </div>
+          <section aria-label="Assessment statistics">
+            <h2 className="sr-only">Statistics</h2>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <StatsCard
+                title="Total Assessments"
+                value={assessments.length}
+                icon={FileText}
+              />
+              <StatsCard title="Completed" value={completedCount} icon={CheckCircle} />
+              <StatsCard
+                title="In Progress"
+                value={assessments.filter((a) => a.status === "analyzing").length}
+                icon={Clock}
+              />
+              <StatsCard
+                title="Average Score"
+                value={avgScore > 0 ? avgScore.toFixed(1) : "-"}
+                icon={TrendingUp}
+              />
+            </div>
+          </section>
 
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Recent Assessments</h2>
+          <section aria-label="Recent assessments">
+            <h2 className="text-xl font-semibold mb-4">Recent Assessments</h2>
 
             {isLoading ? (
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" role="status" aria-label="Loading assessments">
                 {[1, 2, 3].map((i) => (
                   <Skeleton key={i} className="h-48 w-full" />
                 ))}
+                <span className="sr-only">Loading assessments...</span>
               </div>
             ) : mappedAssessments.length === 0 ? (
               <EmptyState onUpload={() => setUploadOpen(true)} needsPayment={needsPayment} />
@@ -414,7 +423,7 @@ export default function Dashboard() {
                 ))}
               </div>
             )}
-          </div>
+          </section>
         </div>
       </main>
 
@@ -425,7 +434,7 @@ export default function Dashboard() {
         isUploading={isUploading}
       />
 
-      <footer className="border-t mt-12">
+      <footer className="border-t mt-12" role="contentinfo">
         <div className="container mx-auto px-4 py-6">
           <p className="text-xs text-muted-foreground text-center max-w-4xl mx-auto" data-testid="text-disclaimer">
             <strong>Disclaimer:</strong> AI Shark provides analytical perspectives on business plan documentation and data for informational purposes only. Results do not imply any expectation of positive or negative outcomes from banking or financial institutions. Our assessments are not to be construed as a decision to fund or not fund any business. Always consult with qualified financial professionals before making funding decisions.

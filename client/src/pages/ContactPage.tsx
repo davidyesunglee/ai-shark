@@ -71,7 +71,10 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50">
+      <a href="#main-content" className="skip-to-content">
+        Skip to main content
+      </a>
+      <header className="border-b sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50" role="banner">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
           <Link href="/">
             <div className="flex items-center gap-2 cursor-pointer">
@@ -79,19 +82,21 @@ export default function ContactPage() {
               <span className="font-semibold text-lg hidden sm:inline">AI Shark</span>
             </div>
           </Link>
-          <Link href="/">
-            <Button variant="ghost" data-testid="button-back-home">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Home
-            </Button>
-          </Link>
+          <nav aria-label="Main navigation">
+            <Link href="/">
+              <Button variant="ghost" data-testid="button-back-home">
+                <ArrowLeft className="h-4 w-4 mr-2" aria-hidden="true" />
+                Back to Home
+              </Button>
+            </Link>
+          </nav>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-12">
+      <main id="main-content" className="container mx-auto px-4 py-12">
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-8">
-            <Mail className="h-12 w-12 text-primary mx-auto mb-4" />
+            <Mail className="h-12 w-12 text-primary mx-auto mb-4" aria-hidden="true" />
             <h1 className="text-3xl font-bold mb-2" data-testid="text-contact-title">Contact Us</h1>
             <p className="text-muted-foreground">
               We'd love to hear from you! Share your feedback, report issues, or request new features.
@@ -107,7 +112,7 @@ export default function ContactPage() {
             </CardHeader>
             <CardContent>
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6" aria-label="Contact form">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
@@ -116,7 +121,7 @@ export default function ContactPage() {
                         <FormItem>
                           <FormLabel>Name</FormLabel>
                           <FormControl>
-                            <Input placeholder="Your name" {...field} data-testid="input-name" />
+                            <Input placeholder="Your name" {...field} autoComplete="name" data-testid="input-name" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -129,7 +134,7 @@ export default function ContactPage() {
                         <FormItem>
                           <FormLabel>Email</FormLabel>
                           <FormControl>
-                            <Input type="email" placeholder="your@email.com" {...field} data-testid="input-email" />
+                            <Input type="email" placeholder="your@email.com" {...field} autoComplete="email" data-testid="input-email" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -153,7 +158,7 @@ export default function ContactPage() {
                             {feedbackTypes.map((type) => (
                               <SelectItem key={type.value} value={type.value}>
                                 <div className="flex items-center gap-2">
-                                  <type.icon className="h-4 w-4" />
+                                  <type.icon className="h-4 w-4" aria-hidden="true" />
                                   {type.label}
                                 </div>
                               </SelectItem>
@@ -208,7 +213,7 @@ export default function ContactPage() {
                       "Sending..."
                     ) : (
                       <>
-                        <Send className="h-4 w-4 mr-2" />
+                        <Send className="h-4 w-4 mr-2" aria-hidden="true" />
                         Send Feedback
                       </>
                     )}
@@ -220,7 +225,7 @@ export default function ContactPage() {
 
           <div className="mt-8 text-center text-sm text-muted-foreground">
             <p>You can also reach us directly at:</p>
-            <a href="mailto:support@aishark.org" className="text-primary hover:underline">
+            <a href="mailto:support@aishark.org" className="text-primary hover:underline" aria-label="Email support at support@aishark.org">
               support@aishark.org
             </a>
           </div>

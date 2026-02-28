@@ -26,8 +26,9 @@ function Router() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen" data-testid="loading-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="flex items-center justify-center min-h-screen" data-testid="loading-screen" role="status" aria-label="Loading application">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" aria-hidden="true" />
+        <span className="sr-only">Loading application...</span>
       </div>
     );
   }

@@ -32,9 +32,10 @@ export function ThemeToggle() {
       size="icon"
       variant="ghost"
       onClick={toggle}
+      aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
       data-testid="button-theme-toggle"
     >
-      {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+      {isDark ? <Sun className="h-4 w-4" aria-hidden="true" /> : <Moon className="h-4 w-4" aria-hidden="true" />}
     </Button>
   );
 }

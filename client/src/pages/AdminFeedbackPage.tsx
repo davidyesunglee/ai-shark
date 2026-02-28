@@ -42,11 +42,11 @@ interface Feedback {
 }
 
 const feedbackTypeIcons: Record<string, React.ReactNode> = {
-  general: <MessageSquare className="h-4 w-4" />,
-  bug: <Bug className="h-4 w-4" />,
-  feature: <Lightbulb className="h-4 w-4" />,
-  support: <HelpCircle className="h-4 w-4" />,
-  satisfaction: <Star className="h-4 w-4" />,
+  general: <MessageSquare className="h-4 w-4" aria-hidden="true" />,
+  bug: <Bug className="h-4 w-4" aria-hidden="true" />,
+  feature: <Lightbulb className="h-4 w-4" aria-hidden="true" />,
+  support: <HelpCircle className="h-4 w-4" aria-hidden="true" />,
+  satisfaction: <Star className="h-4 w-4" aria-hidden="true" />,
 };
 
 const feedbackTypeLabels: Record<string, string> = {
@@ -125,7 +125,7 @@ export default function AdminFeedbackPage() {
           <Card className="max-w-md mx-auto">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Eye className="h-5 w-5" />
+                <Eye className="h-5 w-5" aria-hidden="true" />
                 Admin Access Required
               </CardTitle>
             </CardHeader>
@@ -162,7 +162,7 @@ export default function AdminFeedbackPage() {
             disabled={isRefetching}
             data-testid="button-refresh"
           >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isRefetching ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`h-4 w-4 mr-2 ${isRefetching ? 'animate-spin' : ''}`} aria-hidden="true" />
             Refresh
           </Button>
         </div>
@@ -175,7 +175,7 @@ export default function AdminFeedbackPage() {
                   <p className="text-sm text-muted-foreground">Total Feedback</p>
                   <p className="text-2xl font-bold">{stats.total}</p>
                 </div>
-                <MessageSquare className="h-8 w-8 text-muted-foreground" />
+                <MessageSquare className="h-8 w-8 text-muted-foreground" aria-hidden="true" />
               </div>
             </CardContent>
           </Card>
@@ -186,7 +186,7 @@ export default function AdminFeedbackPage() {
                   <p className="text-sm text-muted-foreground">Pending</p>
                   <p className="text-2xl font-bold text-yellow-600">{stats.pending}</p>
                 </div>
-                <Clock className="h-8 w-8 text-yellow-600" />
+                <Clock className="h-8 w-8 text-yellow-600" aria-hidden="true" />
               </div>
             </CardContent>
           </Card>
@@ -197,7 +197,7 @@ export default function AdminFeedbackPage() {
                   <p className="text-sm text-muted-foreground">Resolved</p>
                   <p className="text-2xl font-bold text-green-600">{stats.resolved}</p>
                 </div>
-                <CheckCircle className="h-8 w-8 text-green-600" />
+                <CheckCircle className="h-8 w-8 text-green-600" aria-hidden="true" />
               </div>
             </CardContent>
           </Card>
@@ -208,7 +208,7 @@ export default function AdminFeedbackPage() {
                   <p className="text-sm text-muted-foreground">Avg Rating</p>
                   <p className="text-2xl font-bold">{stats.avgRating.toFixed(1)}/5</p>
                 </div>
-                <Star className="h-8 w-8 text-yellow-500 fill-yellow-500" />
+                <Star className="h-8 w-8 text-yellow-500 fill-yellow-500" aria-hidden="true" />
               </div>
             </CardContent>
           </Card>
@@ -217,7 +217,7 @@ export default function AdminFeedbackPage() {
         <Card className="mb-6">
           <CardContent className="pt-6">
             <div className="flex flex-wrap gap-4 items-center">
-              <Filter className="h-4 w-4 text-muted-foreground" />
+              <Filter className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
               <Select value={filterType} onValueChange={setFilterType}>
                 <SelectTrigger className="w-[180px]" data-testid="select-filter-type">
                   <SelectValue placeholder="Filter by type" />
@@ -261,7 +261,7 @@ export default function AdminFeedbackPage() {
         ) : filteredFeedback.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">
-              <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" aria-hidden="true" />
               <p className="text-muted-foreground">No feedback entries found</p>
             </CardContent>
           </Card>
@@ -279,19 +279,19 @@ export default function AdminFeedbackPage() {
                         </Badge>
                         {item.rating && (
                           <Badge variant="outline" className="gap-1">
-                            <Star className="h-3 w-3 fill-yellow-500 text-yellow-500" />
+                            <Star className="h-3 w-3 fill-yellow-500 text-yellow-500" aria-hidden="true" />
                             {item.rating}/5
                           </Badge>
                         )}
                         <Badge variant={item.resolved ? "secondary" : "outline"}>
                           {item.resolved ? (
                             <>
-                              <CheckCircle className="h-3 w-3 mr-1" />
+                              <CheckCircle className="h-3 w-3 mr-1" aria-hidden="true" />
                               Resolved
                             </>
                           ) : (
                             <>
-                              <Clock className="h-3 w-3 mr-1" />
+                              <Clock className="h-3 w-3 mr-1" aria-hidden="true" />
                               Pending
                             </>
                           )}

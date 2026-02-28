@@ -10,6 +10,20 @@ The application serves as a utility tool for financial professionals to quickly 
 
 Preferred communication style: Simple, everyday language.
 
+## ADA / WCAG 2.1 Accessibility Compliance
+- **Skip navigation**: "Skip to main content" link on all pages (hidden until focused)
+- **ARIA landmarks**: `role="banner"` on headers, `role="contentinfo"` on footers, `<nav aria-label>` for navigation
+- **ARIA labels**: All icon-only buttons (logout, theme toggle, delete, dismiss, back) have descriptive `aria-label`
+- **Decorative icons**: All decorative icons use `aria-hidden="true"` to hide from screen readers
+- **Focus indicators**: Global `:focus-visible` outline style (2px solid ring color) for keyboard navigation
+- **Form accessibility**: Labels linked via `htmlFor`, `aria-required`, `aria-describedby` for hints, `autoComplete` attributes
+- **Loading states**: `role="status"` and `aria-live` regions with `sr-only` text for screen readers
+- **Error alerts**: `role="alert"` on error messages and payment banners
+- **Score visualization**: SVGs use `role="img"` and `aria-label` with text descriptions; progress bars use `role="progressbar"` with `aria-valuenow`/`aria-valuemax`
+- **Star rating**: Uses `fieldset`/`legend` with `aria-pressed` on each star button
+- **Color independence**: Scores include text labels ("Strong", "Moderate", "Needs improvement") alongside color coding
+- **Semantic HTML**: Proper heading hierarchy, `<main>`, `<section>` with `aria-labelledby`, `<time>` elements, `<nav>` elements
+
 ## System Architecture
 
 ### Frontend Architecture

@@ -124,7 +124,10 @@ const criteria = [
 export default function EducationPage() {
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b">
+      <a href="#main-content" className="skip-to-content">
+        Skip to main content
+      </a>
+      <header className="border-b" role="banner">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
           <Link href="/">
             <div className="flex items-center gap-2 cursor-pointer">
@@ -132,16 +135,18 @@ export default function EducationPage() {
               <span className="font-semibold text-lg" data-testid="text-app-title">AI Shark</span>
             </div>
           </Link>
-          <Link href="/">
-            <Button variant="ghost" data-testid="button-back-home">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back
-            </Button>
-          </Link>
+          <nav aria-label="Main navigation">
+            <Link href="/">
+              <Button variant="ghost" data-testid="button-back-home">
+                <ArrowLeft className="mr-2 h-4 w-4" aria-hidden="true" />
+                Back
+              </Button>
+            </Link>
+          </nav>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-12">
+      <main id="main-content" className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <h1 className="text-3xl font-bold tracking-tight mb-4" data-testid="text-education-title">
@@ -158,7 +163,7 @@ export default function EducationPage() {
                 <CardHeader>
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary/10">
-                      <criterion.icon className="h-5 w-5 text-primary" />
+                      <criterion.icon className="h-5 w-5 text-primary" aria-hidden="true" />
                     </div>
                     <div>
                       <CardTitle>{criterion.name}</CardTitle>
@@ -198,7 +203,7 @@ export default function EducationPage() {
                           data-testid={`link-reference-${criterion.id}-${index}`}
                         >
                           {ref.name}
-                          <ExternalLink className="h-3 w-3" />
+                          <ExternalLink className="h-3 w-3" aria-hidden="true" />
                         </a>
                       ))}
                     </div>
@@ -241,7 +246,7 @@ export default function EducationPage() {
         </div>
       </main>
 
-      <footer className="border-t mt-12">
+      <footer className="border-t mt-12" role="contentinfo">
         <div className="container mx-auto px-4 py-6">
           <p className="text-xs text-muted-foreground text-center max-w-4xl mx-auto" data-testid="text-disclaimer">
             <strong>Disclaimer:</strong> AI Shark provides analytical perspectives on business plan documentation and data for informational purposes only. Results do not imply any expectation of positive or negative outcomes from banking or financial institutions. Our assessments are not to be construed as a decision to fund or not fund any business. Always consult with qualified financial professionals before making funding decisions.

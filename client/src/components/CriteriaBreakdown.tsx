@@ -45,7 +45,7 @@ export function CriteriaBreakdown({ criteria }: CriteriaBreakdownProps) {
               <div className="flex flex-1 items-center justify-between gap-4 pr-4">
                 <div className="flex items-center gap-3">
                   <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10">
-                    <Icon className="h-4 w-4 text-primary" />
+                    <Icon className="h-4 w-4 text-primary" aria-hidden="true" />
                   </div>
                   <span className="font-medium">{criterion.name}</span>
                 </div>

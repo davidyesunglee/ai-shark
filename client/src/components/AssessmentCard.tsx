@@ -21,11 +21,11 @@ interface AssessmentCardProps {
 
 export function AssessmentCard({ assessment, onView, onDelete }: AssessmentCardProps) {
   return (
-    <Card className="hover-elevate">
+    <Card className="hover-elevate" role="article" aria-label={`Assessment: ${assessment.businessName}`}>
       <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0 pb-3">
         <div className="flex items-start gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary/10">
-            <FileText className="h-5 w-5 text-primary" />
+            <FileText className="h-5 w-5 text-primary" aria-hidden="true" />
           </div>
           <div className="min-w-0 flex-1">
             <h3 className="truncate font-semibold" data-testid={`text-business-name-${assessment.id}`}>
@@ -56,16 +56,17 @@ export function AssessmentCard({ assessment, onView, onDelete }: AssessmentCardP
             disabled={assessment.status === "analyzing"}
             data-testid={`button-view-${assessment.id}`}
           >
-            <Eye className="mr-1 h-4 w-4" />
+            <Eye className="mr-1 h-4 w-4" aria-hidden="true" />
             View Report
           </Button>
           <Button
             variant="ghost"
             size="icon"
             onClick={() => onDelete(assessment.id)}
+            aria-label={`Delete assessment for ${assessment.businessName}`}
             data-testid={`button-delete-${assessment.id}`}
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash2 className="h-4 w-4" aria-hidden="true" />
           </Button>
         </div>
       </CardContent>

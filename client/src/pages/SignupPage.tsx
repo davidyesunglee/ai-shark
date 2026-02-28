@@ -70,7 +70,6 @@ export default function SignupPage() {
           const parsed = JSON.parse(error.message.split(": ").slice(1).join(": "));
           if (parsed.message) message = parsed.message;
         } catch {
-          // Keep the default message
         }
       }
       toast({
@@ -83,7 +82,10 @@ export default function SignupPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <header className="border-b">
+      <a href="#main-content" className="skip-to-content">
+        Skip to main content
+      </a>
+      <header className="border-b" role="banner">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
           <Link href="/">
             <div className="flex items-center gap-2 cursor-pointer">
@@ -91,18 +93,20 @@ export default function SignupPage() {
               <span className="font-semibold text-lg" data-testid="text-app-title">AI Shark</span>
             </div>
           </Link>
-          <div className="flex items-center gap-2">
-            <Link href="/about">
-              <Button variant="ghost" data-testid="link-about">About</Button>
-            </Link>
-            <Link href="/login">
-              <Button variant="outline" data-testid="link-login">Sign In</Button>
-            </Link>
-          </div>
+          <nav aria-label="Main navigation">
+            <div className="flex items-center gap-2">
+              <Link href="/about">
+                <Button variant="ghost" data-testid="link-about">About</Button>
+              </Link>
+              <Link href="/login">
+                <Button variant="outline" data-testid="link-login">Sign In</Button>
+              </Link>
+            </div>
+          </nav>
         </div>
       </header>
 
-      <main className="flex-1 flex items-center justify-center px-4 py-8">
+      <main id="main-content" className="flex-1 flex items-center justify-center px-4 py-8">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl" data-testid="text-signup-title">Create Account</CardTitle>
@@ -111,7 +115,7 @@ export default function SignupPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4" aria-label="Create account form">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">First Name</Label>
@@ -120,6 +124,7 @@ export default function SignupPage() {
                     placeholder="John"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
+                    autoComplete="given-name"
                     data-testid="input-first-name"
                   />
                 </div>
@@ -130,6 +135,7 @@ export default function SignupPage() {
                     placeholder="Doe"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
+                    autoComplete="family-name"
                     data-testid="input-last-name"
                   />
                 </div>
@@ -143,6 +149,8 @@ export default function SignupPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  autoComplete="email"
+                  aria-required="true"
                   data-testid="input-email"
                 />
               </div>
@@ -155,8 +163,12 @@ export default function SignupPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  autoComplete="new-password"
+                  aria-required="true"
+                  aria-describedby="password-hint"
                   data-testid="input-password"
                 />
+                <p id="password-hint" className="text-xs text-muted-foreground">Must be at least 8 characters</p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">Confirm Password</Label>
@@ -167,6 +179,8 @@ export default function SignupPage() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
+                  autoComplete="new-password"
+                  aria-required="true"
                   data-testid="input-confirm-password"
                 />
               </div>
@@ -175,6 +189,7 @@ export default function SignupPage() {
                   id="terms"
                   checked={agreedToTerms}
                   onCheckedChange={(checked) => setAgreedToTerms(checked === true)}
+                  aria-required="true"
                   data-testid="checkbox-terms"
                 />
                 <label htmlFor="terms" className="text-sm text-muted-foreground leading-tight cursor-pointer">
@@ -196,7 +211,7 @@ export default function SignupPage() {
               >
                 {isSigningUp ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
                     Creating account...
                   </>
                 ) : (

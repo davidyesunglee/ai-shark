@@ -13,7 +13,7 @@ export function ReportSummary({ strengths, weaknesses, recommendations }: Report
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <CheckCircle className="h-5 w-5 text-green-500" />
+            <CheckCircle className="h-5 w-5 text-green-500" aria-hidden="true" />
             Strengths
           </CardTitle>
         </CardHeader>
@@ -32,7 +32,7 @@ export function ReportSummary({ strengths, weaknesses, recommendations }: Report
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <AlertTriangle className="h-5 w-5 text-yellow-500" />
+            <AlertTriangle className="h-5 w-5 text-yellow-500" aria-hidden="true" />
             Areas for Improvement
           </CardTitle>
         </CardHeader>

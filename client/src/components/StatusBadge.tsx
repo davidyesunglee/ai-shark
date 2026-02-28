@@ -39,8 +39,8 @@ export function StatusBadge({ status }: StatusBadgeProps) {
   const Icon = config.icon;
 
   return (
-    <Badge variant={config.variant} className="gap-1">
-      <Icon className={`h-3 w-3 ${config.iconClass}`} />
+    <Badge variant={config.variant} className="gap-1" aria-label={`Status: ${config.label}`}>
+      <Icon className={`h-3 w-3 ${config.iconClass}`} aria-hidden="true" />
       {config.label}
     </Badge>
   );

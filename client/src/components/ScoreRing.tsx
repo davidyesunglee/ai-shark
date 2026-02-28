@@ -29,13 +29,20 @@ export function ScoreRing({ score, size = "md", showLabel = true }: ScoreRingPro
     return "#ef4444";
   };
 
+  const getScoreLabel = () => {
+    if (score >= 75) return "Strong";
+    if (score >= 50) return "Moderate";
+    return "Needs improvement";
+  };
+
   return (
-    <div className="relative inline-flex items-center justify-center">
+    <div className="relative inline-flex items-center justify-center" role="img" aria-label={`Score: ${score} out of 100 - ${getScoreLabel()}`}>
       <svg
         width={width}
         height={width}
         viewBox={`0 0 ${width} ${width}`}
         className="transform -rotate-90"
+        aria-hidden="true"
       >
         <circle
           cx={width / 2}
@@ -60,7 +67,7 @@ export function ScoreRing({ score, size = "md", showLabel = true }: ScoreRingPro
         />
       </svg>
       {showLabel && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <div className="absolute inset-0 flex flex-col items-center justify-center" aria-hidden="true">
           <span className={`font-mono font-semibold ${fontSize} ${getColor()}`}>
             {score}
           </span>

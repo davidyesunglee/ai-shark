@@ -32,7 +32,6 @@ export default function PricingPage() {
   const [, setLocation] = useLocation();
   const [processingTier, setProcessingTier] = useState<string | null>(null);
 
-  // Reset processing state when component mounts (e.g., returning from Stripe)
   useEffect(() => {
     setProcessingTier(null);
   }, []);
@@ -57,10 +56,8 @@ export default function PricingPage() {
     },
     onSuccess: (data) => {
       if (data.url) {
-        // Redirect to Stripe checkout
         window.location.href = data.url;
       } else {
-        // No URL returned - reset state and show error
         setProcessingTier(null);
         toast({
           title: "Checkout Error",
@@ -78,7 +75,6 @@ export default function PricingPage() {
       });
     },
     onSettled: () => {
-      // Reset processing state after a delay to handle redirect timing
       setTimeout(() => {
         setProcessingTier(null);
       }, 5000);
@@ -153,7 +149,7 @@ export default function PricingPage() {
 
   if (productsLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" role="status" aria-label="Loading pricing">
         <div className="animate-pulse text-muted-foreground">Loading pricing...</div>
       </div>
     );
@@ -161,7 +157,10 @@ export default function PricingPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50">
+      <a href="#main-content" className="skip-to-content">
+        Skip to main content
+      </a>
+      <header className="border-b sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50" role="banner">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
           <Link href="/">
             <div className="flex items-center gap-2 cursor-pointer">
@@ -169,26 +168,28 @@ export default function PricingPage() {
               <span className="font-semibold text-lg hidden sm:inline" data-testid="text-app-title">AI Shark</span>
             </div>
           </Link>
-          <div className="flex items-center gap-2">
-            {user ? (
-              <Link href="/dashboard">
-                <Button variant="ghost" data-testid="link-dashboard">Dashboard</Button>
-              </Link>
-            ) : (
-              <>
-                <Link href="/login">
-                  <Button variant="ghost" data-testid="link-login">Sign In</Button>
+          <nav aria-label="Main navigation">
+            <div className="flex items-center gap-2">
+              {user ? (
+                <Link href="/dashboard">
+                  <Button variant="ghost" data-testid="link-dashboard">Dashboard</Button>
                 </Link>
-                <Link href="/signup">
-                  <Button data-testid="link-signup">Sign Up</Button>
-                </Link>
-              </>
-            )}
-          </div>
+              ) : (
+                <>
+                  <Link href="/login">
+                    <Button variant="ghost" data-testid="link-login">Sign In</Button>
+                  </Link>
+                  <Link href="/signup">
+                    <Button data-testid="link-signup">Sign Up</Button>
+                  </Link>
+                </>
+              )}
+            </div>
+          </nav>
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-12">
+      <main id="main-content" className="container mx-auto px-4 py-12">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-4">Choose Your Plan</h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
@@ -199,11 +200,11 @@ export default function PricingPage() {
 
         <div className="flex items-center justify-center gap-6 mb-8">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Shield className="h-4 w-4 text-green-500" />
+            <Shield className="h-4 w-4 text-green-500" aria-hidden="true" />
             <span>PCI Compliant</span>
           </div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <CreditCard className="h-4 w-4 text-blue-500" />
+            <CreditCard className="h-4 w-4 text-blue-500" aria-hidden="true" />
             <span>Secure Payments via Stripe</span>
           </div>
         </div>
@@ -220,11 +221,13 @@ export default function PricingPage() {
                 key={plan.tier}
                 data-testid={`card-plan-${plan.tier}`}
                 className={`relative flex flex-col ${plan.popular ? "border-primary shadow-lg scale-105" : ""}`}
+                role="region"
+                aria-label={`${plan.name} plan - ${price ? formatPrice(price.unit_amount) : plan.price} ${plan.period}`}
               >
                 {plan.popular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                     <Badge className="bg-primary">
-                      <Star className="h-3 w-3 mr-1" />
+                      <Star className="h-3 w-3 mr-1" aria-hidden="true" />
                       Most Popular
                     </Badge>
                   </div>
@@ -245,16 +248,16 @@ export default function PricingPage() {
                 </CardHeader>
 
                 <CardContent className="flex-1">
-                  <ul className="space-y-3">
+                  <ul className="space-y-3" aria-label={`${plan.name} features`}>
                     {plan.features.map((feature, i) => (
                       <li key={i} className="flex items-start gap-2">
-                        <Check className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                        <Check className="h-5 w-5 text-green-500 shrink-0 mt-0.5" aria-hidden="true" />
                         <span className="text-sm">{feature}</span>
                       </li>
                     ))}
                     {plan.limitations?.map((limitation, i) => (
                       <li key={`limit-${i}`} className="flex items-start gap-2 text-muted-foreground">
-                        <span className="h-5 w-5 text-center shrink-0">-</span>
+                        <span className="h-5 w-5 text-center shrink-0" aria-hidden="true">-</span>
                         <span className="text-sm">{limitation}</span>
                       </li>
                     ))}
@@ -272,7 +275,7 @@ export default function PricingPage() {
                       {user ? "Go to Dashboard" : "Sign Up Free"}
                     </Button>
                   ) : isCurrentPlan ? (
-                    <Button variant="secondary" className="w-full" disabled>
+                    <Button variant="secondary" className="w-full" disabled aria-label={`${plan.name} - Current Plan`}>
                       Current Plan
                     </Button>
                   ) : (
@@ -286,7 +289,7 @@ export default function PricingPage() {
                         "Processing..."
                       ) : (
                         <>
-                          <Zap className="h-4 w-4 mr-2" />
+                          <Zap className="h-4 w-4 mr-2" aria-hidden="true" />
                           {isSubscription ? "Subscribe Now" : "Buy Now"}
                         </>
                       )}
@@ -298,8 +301,8 @@ export default function PricingPage() {
           })}
         </div>
 
-        <div className="mt-16 max-w-3xl mx-auto">
-          <h2 className="text-2xl font-bold text-center mb-8">Frequently Asked Questions</h2>
+        <section className="mt-16 max-w-3xl mx-auto" aria-labelledby="faq-title">
+          <h2 id="faq-title" className="text-2xl font-bold text-center mb-8">Frequently Asked Questions</h2>
           
           <div className="space-y-6">
             <div>
@@ -334,14 +337,14 @@ export default function PricingPage() {
               </p>
             </div>
           </div>
-        </div>
+        </section>
 
         <div className="mt-16 pt-8 border-t">
           <p className="text-xs text-muted-foreground text-center max-w-4xl mx-auto" data-testid="text-disclaimer">
             <strong>Disclaimer:</strong> AI Shark provides analytical perspectives on business plan documentation and data for informational purposes only. Results do not imply any expectation of positive or negative outcomes from banking or financial institutions. Our assessments are not to be construed as a decision to fund or not fund any business. Always consult with qualified financial professionals before making funding decisions.
           </p>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

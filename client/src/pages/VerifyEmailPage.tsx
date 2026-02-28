@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { Link, useSearch } from "wouter";
+import logoImage from "@assets/AI_Shark_logo_1770083549283.png";
 
 export default function VerifyEmailPage() {
   const searchString = useSearch();
@@ -38,46 +39,49 @@ export default function VerifyEmailPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <header className="border-b">
+      <a href="#main-content" className="skip-to-content">
+        Skip to main content
+      </a>
+      <header className="border-b" role="banner">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
           <Link href="/">
             <div className="flex items-center gap-2 cursor-pointer">
-              <FileText className="h-6 w-6 text-primary" />
+              <img src={logoImage} alt="AI Shark Logo" className="h-8 w-auto" data-testid="img-logo" />
               <span className="font-semibold text-lg" data-testid="text-app-title">AI Shark</span>
             </div>
           </Link>
         </div>
       </header>
 
-      <main className="flex-1 flex items-center justify-center px-4 py-8">
+      <main id="main-content" className="flex-1 flex items-center justify-center px-4 py-8">
         <Card className="w-full max-w-md text-center">
           <CardHeader>
             {status === "loading" && (
-              <>
-                <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
+              <div role="status" aria-live="polite">
+                <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" aria-hidden="true" />
                 <CardTitle data-testid="text-verify-title">Verifying Email...</CardTitle>
                 <CardDescription data-testid="text-verify-description">
                   Please wait while we verify your email address.
                 </CardDescription>
-              </>
+              </div>
             )}
             {status === "success" && (
-              <>
-                <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
+              <div role="status" aria-live="polite">
+                <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" aria-hidden="true" />
                 <CardTitle data-testid="text-verify-title">Email Verified!</CardTitle>
                 <CardDescription data-testid="text-verify-description">
                   {message}
                 </CardDescription>
-              </>
+              </div>
             )}
             {status === "error" && (
-              <>
-                <XCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+              <div role="alert">
+                <XCircle className="h-12 w-12 text-destructive mx-auto mb-4" aria-hidden="true" />
                 <CardTitle data-testid="text-verify-title">Verification Failed</CardTitle>
                 <CardDescription data-testid="text-verify-description">
                   {message}
                 </CardDescription>
-              </>
+              </div>
             )}
           </CardHeader>
           <CardContent>

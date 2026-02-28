@@ -128,16 +128,18 @@ export default function RegistrationPage() {
 
   if (statusLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="min-h-screen bg-background flex items-center justify-center" role="status" aria-live="polite">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" aria-hidden="true" />
+        <span className="sr-only">Loading registration status...</span>
       </div>
     );
   }
 
   if (statusData?.isRegistered) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="min-h-screen bg-background flex items-center justify-center" role="status" aria-live="polite">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" aria-hidden="true" />
+        <span className="sr-only">Redirecting to dashboard...</span>
       </div>
     );
   }
@@ -149,7 +151,7 @@ export default function RegistrationPage() {
         <Card>
           <CardHeader className="text-center">
             <div className="mx-auto mb-4 w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-              <UserPlus className="h-6 w-6 text-primary" />
+              <UserPlus className="h-6 w-6 text-primary" aria-hidden="true" />
             </div>
             <CardTitle className="text-2xl">Complete Your Registration</CardTitle>
             <CardDescription>
@@ -402,7 +404,7 @@ export default function RegistrationPage() {
                 >
                   {registerMutation.isPending ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
                       Registering...
                     </>
                   ) : (

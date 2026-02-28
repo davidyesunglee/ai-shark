@@ -7,7 +7,10 @@ import logoImage from "@assets/AI_Shark_logo_1770083549283.png";
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b">
+      <a href="#main-content" className="skip-to-content">
+        Skip to main content
+      </a>
+      <header className="border-b" role="banner">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
           <Link href="/">
             <div className="flex items-center gap-2 cursor-pointer">
@@ -15,16 +18,18 @@ export default function AboutPage() {
               <span className="font-semibold text-lg" data-testid="text-app-title">AI Shark</span>
             </div>
           </Link>
-          <Link href="/">
-            <Button variant="ghost" data-testid="button-back-home">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back
-            </Button>
-          </Link>
+          <nav aria-label="Main navigation">
+            <Link href="/">
+              <Button variant="ghost" data-testid="button-back-home">
+                <ArrowLeft className="mr-2 h-4 w-4" aria-hidden="true" />
+                Back
+              </Button>
+            </Link>
+          </nav>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-16">
+      <main id="main-content" className="container mx-auto px-4 py-16">
         <div className="max-w-3xl mx-auto">
           <h1 className="text-3xl font-bold tracking-tight mb-8 text-center" data-testid="text-about-title">
             About AI Shark
@@ -40,7 +45,7 @@ export default function AboutPage() {
         </div>
       </main>
 
-      <footer className="border-t mt-auto">
+      <footer className="border-t mt-auto" role="contentinfo">
         <div className="container mx-auto px-4 py-6">
           <p className="text-xs text-muted-foreground text-center max-w-4xl mx-auto" data-testid="text-disclaimer">
             <strong>Disclaimer:</strong> AI Shark provides analytical perspectives on business plan documentation and data for informational purposes only. Results do not imply any expectation of positive or negative outcomes from banking or financial institutions. Our assessments are not to be construed as a decision to fund or not fund any business. Always consult with qualified financial professionals before making funding decisions.

@@ -30,25 +30,25 @@ export function AssessmentReport({ assessment, onBack }: AssessmentReportProps) 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={onBack} data-testid="button-back">
-          <ArrowLeft className="h-5 w-5" />
+        <Button variant="ghost" size="icon" onClick={onBack} aria-label="Back to dashboard" data-testid="button-back">
+          <ArrowLeft className="h-5 w-5" aria-hidden="true" />
         </Button>
         <div className="flex-1">
           <h1 className="text-2xl font-semibold">{assessment.businessName}</h1>
           <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
             <span className="flex items-center gap-1">
-              <FileText className="h-4 w-4" />
+              <FileText className="h-4 w-4" aria-hidden="true" />
               {assessment.fileName}
             </span>
             <span className="flex items-center gap-1">
-              <Calendar className="h-4 w-4" />
-              {assessment.uploadDate}
+              <Calendar className="h-4 w-4" aria-hidden="true" />
+              <time>{assessment.uploadDate}</time>
             </span>
           </div>
         </div>
         <StatusBadge status={assessment.status} />
         <Button variant="outline" data-testid="button-export">
-          <Download className="mr-2 h-4 w-4" />
+          <Download className="mr-2 h-4 w-4" aria-hidden="true" />
           Export
         </Button>
       </div>
@@ -82,19 +82,19 @@ export function AssessmentReport({ assessment, onBack }: AssessmentReportProps) 
         </Card>
       </div>
 
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Detailed Criteria Analysis</h2>
+      <section aria-labelledby="criteria-heading">
+        <h2 id="criteria-heading" className="text-xl font-semibold mb-4">Detailed Criteria Analysis</h2>
         <CriteriaBreakdown criteria={assessment.criteria} />
-      </div>
+      </section>
 
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Assessment Summary</h2>
+      <section aria-labelledby="summary-heading">
+        <h2 id="summary-heading" className="text-xl font-semibold mb-4">Assessment Summary</h2>
         <ReportSummary
           strengths={assessment.strengths}
           weaknesses={assessment.weaknesses}
           recommendations={assessment.recommendations}
         />
-      </div>
+      </section>
 
       <div className="mt-6">
         <SatisfactionSurvey assessmentId={assessment.id} />

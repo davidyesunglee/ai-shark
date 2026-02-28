@@ -17,7 +17,7 @@ export function FileUpload({ onUpload, isUploading = false }: FileUploadProps) {
     }
   }, []);
 
-  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+  const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
   const { getRootProps, getInputProps, isDragActive, fileRejections } = useDropzone({
     onDrop,
@@ -54,14 +54,17 @@ export function FileUpload({ onUpload, isUploading = false }: FileUploadProps) {
           ${isDragActive ? "border-primary bg-primary/5" : "border-muted-foreground/25 hover:border-primary/50"}
           ${isUploading ? "cursor-not-allowed opacity-50" : ""}
         `}
+        role="button"
+        tabIndex={0}
+        aria-label={selectedFile ? `Selected file: ${selectedFile.name}. Click to change file.` : "Drop zone for business plan upload. Click or drag a file here."}
         data-testid="dropzone-upload"
       >
-        <input {...getInputProps()} data-testid="input-file-upload" />
+        <input {...getInputProps()} aria-label="Choose a business plan file to upload" data-testid="input-file-upload" />
         
         {selectedFile ? (
           <div className="flex flex-col items-center gap-3 text-center">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-              <FileText className="h-8 w-8 text-primary" />
+              <FileText className="h-8 w-8 text-primary" aria-hidden="true" />
             </div>
             <div>
               <p className="font-medium">{selectedFile.name}</p>
@@ -76,16 +79,17 @@ export function FileUpload({ onUpload, isUploading = false }: FileUploadProps) {
                 e.stopPropagation();
                 clearFile();
               }}
+              aria-label={`Remove selected file ${selectedFile.name}`}
               data-testid="button-clear-file"
             >
-              <X className="mr-1 h-4 w-4" />
+              <X className="mr-1 h-4 w-4" aria-hidden="true" />
               Remove
             </Button>
           </div>
         ) : (
           <div className="flex flex-col items-center gap-3 text-center">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-              <Upload className="h-8 w-8 text-muted-foreground" />
+              <Upload className="h-8 w-8 text-muted-foreground" aria-hidden="true" />
             </div>
             <div>
               <p className="font-medium">
@@ -99,7 +103,7 @@ export function FileUpload({ onUpload, isUploading = false }: FileUploadProps) {
               Supports PDF, DOCX, and TXT files (max 10MB)
             </p>
             {fileTooLarge && (
-              <p className="mt-2 text-xs text-destructive font-medium">
+              <p className="mt-2 text-xs text-destructive font-medium" role="alert">
                 File exceeds 10MB limit. Please upload a smaller file.
               </p>
             )}
