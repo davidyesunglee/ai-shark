@@ -19,6 +19,7 @@ import TermsOfServicePage from "@/pages/TermsOfServicePage";
 import ContactPage from "@/pages/ContactPage";
 import AdminFeedbackPage from "@/pages/AdminFeedbackPage";
 import { useAuth } from "@/hooks/use-auth";
+import { AccessibilityToolbar } from "@/components/AccessibilityToolbar";
 import { Loader2 } from "lucide-react";
 
 function Router() {
@@ -70,6 +71,7 @@ function App() {
       <TooltipProvider>
         <Toaster />
         <Router />
+        <AccessibilityToolbar />
       </TooltipProvider>
     </QueryClientProvider>
   );

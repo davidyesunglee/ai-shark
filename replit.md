@@ -23,6 +23,7 @@ Preferred communication style: Simple, everyday language.
 - **Star rating**: Uses `fieldset`/`legend` with `aria-pressed` on each star button
 - **Color independence**: Scores include text labels ("Strong", "Moderate", "Needs improvement") alongside color coding
 - **Semantic HTML**: Proper heading hierarchy, `<main>`, `<section>` with `aria-labelledby`, `<time>` elements, `<nav>` elements
+- **Accessibility Toolbar**: Floating button (bottom-right) with text-to-speech (Web Speech API) and font size adjuster (Small 14px / Default 16px / Large 18px / Extra Large 20px), persisted via localStorage
 
 ## System Architecture
 
