@@ -4,7 +4,7 @@ import type { TransactionRecord } from "@shared/schema";
 
 const RECIPIENT_EMAIL = "vemangum@gmail.com";
 const REVENUE_REPORT_EMAIL = "vemangum@gmail.com";
-const FROM_EMAIL = "AI Shark <onboarding@resend.dev>";
+const FROM_EMAIL = "AI Shark <info@aishark.org>";
 
 const MAX_TIMEOUT_MS = 2147483647;
 

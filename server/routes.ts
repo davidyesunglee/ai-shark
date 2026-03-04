@@ -110,7 +110,7 @@ export async function registerRoutes(
         const resend = new Resend(process.env.RESEND_API_KEY);
         
         await resend.emails.send({
-          from: "AI Shark <onboarding@resend.dev>",
+          from: "AI Shark <info@aishark.org>",
           to: "vemangum@gmail.com",
           subject: `New Customer Feedback: ${validatedData.feedbackType} - ${validatedData.subject}`,
           html: `
