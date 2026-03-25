@@ -897,3 +897,305 @@ export async function triggerExpenseReportManually() {
   console.log("[Expense Report] Manual trigger requested");
   await sendExpenseReport();
 }
+
+// ─── Weekly Site & Competitor Report ──────────────────────────────────────────
+
+function getNextSunday8PM(): Date {
+  const now = new Date();
+  const daysUntilSunday = (7 - now.getDay()) % 7 || 7;
+  const nextSunday = new Date(now);
+  nextSunday.setDate(now.getDate() + daysUntilSunday);
+  nextSunday.setHours(20, 0, 0, 0);
+  if (now.getDay() === 0 && now.getHours() < 20) {
+    nextSunday.setDate(now.getDate());
+  }
+  return nextSunday;
+}
+
+async function sendWeeklySiteReport() {
+  const resend = getResend();
+  if (!resend) return;
+
+  try {
+    const [registrations, weeklyAssessments, allAssessments, weeklyTransactions, allFeedback] = await Promise.all([
+      storage.getAllRegistrations(),
+      storage.getAssessmentsLastWeek(),
+      storage.getAllAssessments(),
+      storage.getSuccessfulTransactionsLastWeek(),
+      storage.getAllFeedback(),
+    ]);
+
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    const newUsersThisWeek = registrations.filter(r => new Date(r.registeredAt) >= oneWeekAgo);
+    const completedAssessmentsThisWeek = weeklyAssessments.filter(a => a.status === "complete");
+    const failedAssessmentsThisWeek = weeklyAssessments.filter(a => a.status === "failed");
+    const weeklyRevenueCents = weeklyTransactions.reduce((sum, t) => sum + t.amount, 0);
+    const weeklyTaxCents = weeklyTransactions.reduce((sum, t) => sum + (t.taxAmount || 0), 0);
+    const unresolvedFeedback = allFeedback.filter(f => !f.resolved);
+    const avgScore = completedAssessmentsThisWeek.length > 0
+      ? Math.round(completedAssessmentsThisWeek.reduce((sum, a) => sum + (a.overallScore || 0), 0) / completedAssessmentsThisWeek.length)
+      : null;
+
+    const now = new Date();
+    const weekStr = now.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+
+    const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a2e; background: #f8f9fa; margin: 0; padding: 24px; }
+  .container { max-width: 720px; margin: 0 auto; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+  .header { background: linear-gradient(135deg, #0f3460 0%, #16213e 100%); color: #fff; padding: 28px 32px; }
+  .header h1 { margin: 0; font-size: 22px; font-weight: 800; }
+  .header p { margin: 4px 0 0; opacity: 0.8; font-size: 14px; }
+  .body { padding: 28px 32px; }
+  .section { margin-bottom: 28px; }
+  .section h2 { font-size: 16px; color: #0f3460; border-left: 4px solid #e94560; padding-left: 10px; margin: 0 0 14px; }
+  .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .stat-card { background: #f0f4ff; border-radius: 8px; padding: 14px 16px; text-align: center; }
+  .stat-card .num { font-size: 28px; font-weight: 800; color: #0f3460; }
+  .stat-card .label { font-size: 11px; color: #666; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: #0f3460; color: #fff; padding: 8px 12px; text-align: left; }
+  td { padding: 7px 12px; border-bottom: 1px solid #eee; }
+  tr:last-child td { border-bottom: none; }
+  .competitor-table td:first-child { font-weight: 600; }
+  .badge { display: inline-block; border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 600; }
+  .badge-green { background: #dcfce7; color: #15803d; }
+  .badge-yellow { background: #fef9c3; color: #854d0e; }
+  .badge-red { background: #fee2e2; color: #b91c1c; }
+  .badge-blue { background: #dbeafe; color: #1d4ed8; }
+  .footer { background: #f0f4ff; padding: 16px 32px; font-size: 11px; color: #888; }
+  ul { padding-left: 18px; margin: 8px 0; }
+  li { margin-bottom: 5px; color: #555; font-size: 13px; }
+  .highlight { background: #fff7ed; border-left: 3px solid #f97316; padding: 10px 14px; border-radius: 0 6px 6px 0; margin-bottom: 10px; font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>AI Shark Weekly Site Report</h1>
+    <p>Week ending ${weekStr} &nbsp;|&nbsp; aishark.org</p>
+  </div>
+  <div class="body">
+
+    <div class="section">
+      <h2>This Week at a Glance</h2>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="num">${newUsersThisWeek.length}</div>
+          <div class="label">New Users</div>
+        </div>
+        <div class="stat-card">
+          <div class="num">${completedAssessmentsThisWeek.length}</div>
+          <div class="label">Assessments Done</div>
+        </div>
+        <div class="stat-card">
+          <div class="num">$${(weeklyRevenueCents / 100).toFixed(2)}</div>
+          <div class="label">Revenue (gross)</div>
+        </div>
+        <div class="stat-card">
+          <div class="num">${registrations.length}</div>
+          <div class="label">Total Users</div>
+        </div>
+        <div class="stat-card">
+          <div class="num">${allAssessments.filter(a => a.status === "complete").length}</div>
+          <div class="label">Total Assessments</div>
+        </div>
+        <div class="stat-card">
+          <div class="num">${avgScore !== null ? avgScore : "N/A"}</div>
+          <div class="label">Avg Score This Week</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Assessment Activity</h2>
+      <table>
+        <thead><tr><th>Metric</th><th>This Week</th><th>All Time</th></tr></thead>
+        <tbody>
+          <tr><td>Assessments Submitted</td><td>${weeklyAssessments.length}</td><td>${allAssessments.length}</td></tr>
+          <tr><td>Assessments Completed</td><td>${completedAssessmentsThisWeek.length}</td><td>${allAssessments.filter(a => a.status === "complete").length}</td></tr>
+          <tr><td>Assessments Failed/Pending</td><td>${failedAssessmentsThisWeek.length}</td><td>${allAssessments.filter(a => a.status !== "complete").length}</td></tr>
+          ${avgScore !== null ? `<tr><td>Average Score</td><td>${avgScore}/100</td><td>—</td></tr>` : ""}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <h2>Revenue This Week</h2>
+      <table>
+        <thead><tr><th>Tier</th><th>Count</th><th>Gross</th><th>Tax</th><th>Net</th></tr></thead>
+        <tbody>
+          ${(() => {
+            const subs = weeklyTransactions.filter(t => t.tier === "subscription");
+            const oneTime = weeklyTransactions.filter(t => t.tier === "one_time");
+            const subGross = subs.reduce((s, t) => s + t.amount, 0);
+            const subTax = subs.reduce((s, t) => s + (t.taxAmount || 0), 0);
+            const otGross = oneTime.reduce((s, t) => s + t.amount, 0);
+            const otTax = oneTime.reduce((s, t) => s + (t.taxAmount || 0), 0);
+            return `
+              <tr><td>Monthly ($6.99/mo)</td><td>${subs.length}</td><td>$${(subGross/100).toFixed(2)}</td><td>$${(subTax/100).toFixed(2)}</td><td>$${((subGross-subTax)/100).toFixed(2)}</td></tr>
+              <tr><td>One-time ($13.99)</td><td>${oneTime.length}</td><td>$${(otGross/100).toFixed(2)}</td><td>$${(otTax/100).toFixed(2)}</td><td>$${((otGross-otTax)/100).toFixed(2)}</td></tr>
+              <tr style="font-weight:700;background:#f0f4ff;"><td>Total</td><td>${weeklyTransactions.length}</td><td>$${(weeklyRevenueCents/100).toFixed(2)}</td><td>$${(weeklyTaxCents/100).toFixed(2)}</td><td>$${((weeklyRevenueCents-weeklyTaxCents)/100).toFixed(2)}</td></tr>
+            `;
+          })()}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <h2>Customer Feedback</h2>
+      <table>
+        <thead><tr><th>Metric</th><th>Count</th></tr></thead>
+        <tbody>
+          <tr><td>Total Feedback Items</td><td>${allFeedback.length}</td></tr>
+          <tr><td>Unresolved Items</td><td>${unresolvedFeedback.length}</td></tr>
+          <tr><td>Bug Reports</td><td>${allFeedback.filter(f => f.feedbackType === "bug" && !f.resolved).length} unresolved</td></tr>
+          <tr><td>Feature Requests</td><td>${allFeedback.filter(f => f.feedbackType === "feature" && !f.resolved).length} unresolved</td></tr>
+        </tbody>
+      </table>
+      ${unresolvedFeedback.length > 0 ? `
+      <p style="margin-top:10px;font-size:12px;color:#888;">
+        Review unresolved feedback at: <strong>aishark.org/admin/feedback</strong>
+      </p>` : ""}
+    </div>
+
+    <div class="section">
+      <h2>New Users This Week</h2>
+      ${newUsersThisWeek.length === 0 ? "<p style='color:#888;font-size:13px;'>No new registrations this week.</p>" : `
+      <table>
+        <thead><tr><th>Name</th><th>Email</th><th>Company</th><th>Industry</th><th>Joined</th></tr></thead>
+        <tbody>
+          ${newUsersThisWeek.map(u => `
+            <tr>
+              <td>${u.username}</td>
+              <td>${u.email}</td>
+              <td>${u.companyName || '—'}</td>
+              <td>${u.industry || '—'}</td>
+              <td>${new Date(u.registeredAt).toLocaleDateString()}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>`}
+    </div>
+
+    <div class="section">
+      <h2>Competitive Benchmark — Top Competitors (Traffic-Based)</h2>
+      <table class="competitor-table">
+        <thead><tr><th>Competitor</th><th>Traffic Rank</th><th>Key Features</th><th>Pricing</th><th>AI Shark Gap</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>LivePlan</td>
+            <td><span class="badge badge-red">#1 (Comscore)</span></td>
+            <td>500+ templates, QuickBooks sync, 5-yr forecasts, milestone tracking</td>
+            <td>$15-30/mo</td>
+            <td>Templates, QB integration</td>
+          </tr>
+          <tr>
+            <td>Enloop</td>
+            <td><span class="badge badge-yellow">#2</span></td>
+            <td>Free tier, auto-text gen, 16 financial ratios, real-time scoring</td>
+            <td>Free – $39.95/mo</td>
+            <td>Free tier offering</td>
+          </tr>
+          <tr>
+            <td>IdeaProof</td>
+            <td><span class="badge badge-yellow">#3</span></td>
+            <td>50+ criteria, TAM/SAM/SOM, 120-sec analysis, brand strategy</td>
+            <td>Premium tiers</td>
+            <td>Brand strategy tools</td>
+          </tr>
+          <tr>
+            <td>PrometAI</td>
+            <td><span class="badge badge-blue">#4</span></td>
+            <td>SWOT, investor-ready plans, financial forecasting</td>
+            <td>Free trial + premium</td>
+            <td>Investor pitch mode</td>
+          </tr>
+          <tr>
+            <td><strong>AI Shark</strong></td>
+            <td><span class="badge badge-green">Growing</span></td>
+            <td>10-criteria AI scoring, SWOT, market analysis, 6 financial ratios, PDF export, bank debt focus</td>
+            <td>$6.99/mo or $13.99</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <h2>Recommended Actions for Next Week</h2>
+      <ul>
+        <li>Review and resolve any unresolved customer feedback (<strong>${unresolvedFeedback.length} items pending</strong>)</li>
+        <li>Consider adding a <strong>free trial tier</strong> (1 evaluation) to compete with Enloop's free offering and reduce signup friction</li>
+        <li>Explore <strong>business plan templates</strong> to compete with LivePlan's 500+ template library</li>
+        <li>Add <strong>financial projection builder</strong> (3-5 year P&amp;L, cash flow) to match LivePlan and Enloop features</li>
+        <li>Monitor Google AdSense approval status and set up ad placements to generate ad revenue alongside subscriptions</li>
+        <li>Consider <strong>investor pitch mode</strong> — a separate scoring context for VC/angel investor presentations (like PrometAI)</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2>Platform Health</h2>
+      <div class="highlight">
+        Check live site health at: <a href="https://aishark.org/api/health">aishark.org/api/health</a>
+      </div>
+      <ul>
+        <li>Authentication: Email/password with bcrypt (12 rounds)</li>
+        <li>AI Engine: Gemini 2.5 Flash via Replit AI Integrations</li>
+        <li>Payment: Stripe live account (subscription + one-time)</li>
+        <li>Email: Resend API from info@aishark.org</li>
+        <li>Database: PostgreSQL via Replit + Drizzle ORM</li>
+        <li>ADA/WCAG 2.1: Compliant across all pages</li>
+      </ul>
+    </div>
+
+  </div>
+  <div class="footer">
+    AI Shark Weekly Site Report | Generated automatically every Sunday at 8pm | <a href="mailto:info@aishark.org">info@aishark.org</a>
+  </div>
+</div>
+</body>
+</html>`;
+
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: [REVENUE_REPORT_EMAIL],
+      subject: `AI Shark Weekly Site Report — ${weekStr}`,
+      html,
+    });
+
+    if (error) {
+      console.error("[Site Report] Failed to send email:", error);
+      return;
+    }
+
+    console.log(`[Site Report] Weekly site report sent successfully! ID: ${data?.id}`);
+  } catch (error) {
+    console.error("[Site Report] Error sending weekly site report:", error);
+  }
+}
+
+export function startWeeklySiteReportScheduler() {
+  const nextTime = getNextSunday8PM();
+  const msUntilNext = nextTime.getTime() - Date.now();
+
+  console.log(`[Site Report] Started. Next report: ${nextTime.toISOString()}`);
+  console.log(`[Site Report] Time until next report: ${Math.round(msUntilNext / 1000 / 60 / 60)} hours`);
+
+  safeSetTimeout(() => {
+    sendWeeklySiteReport();
+    setInterval(() => {
+      sendWeeklySiteReport();
+    }, 7 * 24 * 60 * 60 * 1000);
+  }, msUntilNext);
+}
+
+export async function triggerSiteReportManually() {
+  console.log("[Site Report] Manual trigger requested");
+  await sendWeeklySiteReport();
+}

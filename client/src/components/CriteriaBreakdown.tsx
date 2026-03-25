@@ -6,7 +6,11 @@ import {
   Shield, 
   Scale, 
   BarChart3, 
-  Users 
+  Users,
+  LineChart,
+  DollarSign,
+  AlertTriangle,
+  Sword
 } from "lucide-react";
 
 export interface CriterionScore {
@@ -28,6 +32,10 @@ const iconMap: Record<string, typeof CreditCard> = {
   debt_equity: Scale,
   market_viability: BarChart3,
   management: Users,
+  financial_projections: LineChart,
+  revenue_model: DollarSign,
+  industry_risk: AlertTriangle,
+  competitive_position: Sword,
 };
 
 export function CriteriaBreakdown({ criteria }: CriteriaBreakdownProps) {

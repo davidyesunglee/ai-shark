@@ -41,6 +41,8 @@ export interface IStorage {
   createCustomerFeedback(data: InsertCustomerFeedback): Promise<CustomerFeedback>;
   getAllFeedback(): Promise<CustomerFeedback[]>;
   updateFeedback(id: string, updates: Partial<CustomerFeedback>): Promise<CustomerFeedback | undefined>;
+  getAssessmentsLastWeek(): Promise<Assessment[]>;
+  getAllAssessments(): Promise<Assessment[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -274,6 +276,19 @@ export class DatabaseStorage implements IStorage {
       .where(eq(customerFeedback.id, id))
       .returning();
     return result || undefined;
+  }
+
+  async getAssessmentsLastWeek(): Promise<Assessment[]> {
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    return await db.select().from(assessments)
+      .where(gte(assessments.uploadDate, oneWeekAgo))
+      .orderBy(desc(assessments.uploadDate));
+  }
+
+  async getAllAssessments(): Promise<Assessment[]> {
+    return await db.select().from(assessments)
+      .orderBy(desc(assessments.uploadDate));
   }
 }
 

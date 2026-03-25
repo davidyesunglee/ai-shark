@@ -1,10 +1,22 @@
-# Business Plan Assessor
+# AI Shark — Business Plan Assessor
 
 ## Overview
 
-A professional web application that evaluates business plans against bank debt financing criteria using AI-powered analysis. Users upload business plan documents (PDF, DOCX, or TXT), and the system provides comprehensive assessments including overall scores, criterion-by-criterion breakdowns, strengths, weaknesses, and recommendations.
+A professional web application (aishark.org) that evaluates business plans against bank debt financing criteria using Gemini AI-powered analysis. Users upload business plan documents (PDF, DOCX, or TXT), and the system provides comprehensive assessments including:
+- Overall score (0-100) + Lender Readiness Grade (A through F)
+- 10-dimension criteria breakdown (creditworthiness, cash flow, collateral, debt/equity, market viability, management, financial projections, revenue model, industry risk, competitive position)
+- SWOT Analysis (Strengths, Weaknesses, Opportunities, Threats)
+- Market Analysis (target market, market size, competitive position, growth potential)
+- 6 Key Financial Ratios (DSCR, current ratio, gross margin, D/E, break-even, owner equity)
+- Actionable strengths, weaknesses, and recommendations
+- PDF export of full report (browser print-to-PDF)
 
-The application serves as a utility tool for financial professionals to quickly evaluate business plan viability for bank lending decisions.
+## Competitive Position (Traffic-Based Ranking)
+1. **LivePlan** — #1 by traffic, $15-30/mo, 500+ templates, QuickBooks integration
+2. **Enloop** — #2, free tier, 16 financial ratios, real-time scoring
+3. **IdeaProof** — #3, 50+ criteria, TAM/SAM/SOM, 120-second analysis
+4. **PrometAI** — #4, SWOT analysis, investor-ready plans
+5. **AI Shark** — Growing, unique bank debt financing focus, 10 AI criteria, SWOT, PDF export
 
 ## User Preferences
 
@@ -129,6 +141,13 @@ Preferred communication style: Simple, everyday language.
 - Groups expenses by payment type (subscription vs one-time)
 - Shows total processing fees with transaction details
 - CSV summary attachment included
+
+### Weekly Site & Competitor Report
+- Emailed to vemangum@gmail.com every Sunday at 8pm
+- Admin endpoint: `POST /api/admin/trigger-site-report` (requires x-admin-key header)
+- Includes: new users this week, assessment stats, revenue breakdown, customer feedback summary, new user list
+- Competitor benchmark table (LivePlan, Enloop, IdeaProof, PrometAI vs AI Shark) by traffic rank
+- Recommended actions for the following week based on gaps vs. competitors
 
 ## Legal Pages
 - **Privacy Policy**: Available at `/privacy` - covers data collection, usage, security

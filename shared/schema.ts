@@ -44,6 +44,32 @@ export const criterionScoreSchema = z.object({
 
 export type CriterionScore = z.infer<typeof criterionScoreSchema>;
 
+export const swotSchema = z.object({
+  strengths: z.array(z.string()),
+  weaknesses: z.array(z.string()),
+  opportunities: z.array(z.string()),
+  threats: z.array(z.string()),
+});
+
+export type SwotAnalysis = z.infer<typeof swotSchema>;
+
+export const marketAnalysisSchema = z.object({
+  targetMarket: z.string(),
+  marketSize: z.string(),
+  competitivePosition: z.string(),
+  growthPotential: z.string(),
+});
+
+export type MarketAnalysis = z.infer<typeof marketAnalysisSchema>;
+
+export const financialRatioSchema = z.object({
+  name: z.string(),
+  value: z.string(),
+  assessment: z.string(),
+});
+
+export type FinancialRatio = z.infer<typeof financialRatioSchema>;
+
 export const assessments = pgTable("assessments", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull(),
@@ -53,11 +79,15 @@ export const assessments = pgTable("assessments", {
   uploadDate: timestamp("upload_date").defaultNow().notNull(),
   status: text("status").notNull().$type<AssessmentStatus>().default("analyzing"),
   overallScore: integer("overall_score"),
+  lenderReadinessGrade: varchar("lender_readiness_grade"),
   executiveSummary: text("executive_summary"),
   criteria: jsonb("criteria").$type<CriterionScore[]>(),
   strengths: jsonb("strengths").$type<string[]>(),
   weaknesses: jsonb("weaknesses").$type<string[]>(),
   recommendations: jsonb("recommendations").$type<string[]>(),
+  swot: jsonb("swot").$type<SwotAnalysis>(),
+  marketAnalysis: jsonb("market_analysis").$type<MarketAnalysis>(),
+  financialRatios: jsonb("financial_ratios").$type<FinancialRatio[]>(),
 });
 
 export const insertAssessmentSchema = createInsertSchema(assessments).omit({

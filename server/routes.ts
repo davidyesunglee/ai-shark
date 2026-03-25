@@ -6,7 +6,7 @@ import { parseDocument } from "./documentParser";
 import { analyzeBusinessPlan, isOpenAIConfigured } from "./openai";
 import { setupAuth, isAuthenticated } from "./replit_integrations/auth";
 import { insertUserRegistrationSchema, insertCustomerFeedbackSchema } from "@shared/schema";
-import { startWeeklyEmailScheduler, startTransactionEmailScheduler, startRevenueReportScheduler, startExpenseReportScheduler } from "./emailScheduler";
+import { startWeeklyEmailScheduler, startTransactionEmailScheduler, startRevenueReportScheduler, startExpenseReportScheduler, startWeeklySiteReportScheduler, triggerSiteReportManually } from "./emailScheduler";
 import { getUncachableStripeClient, getStripePublishableKey } from "./stripeClient";
 import { db } from "./db";
 import { sql } from "drizzle-orm";
@@ -177,6 +177,7 @@ export async function registerRoutes(
   startTransactionEmailScheduler();
   startRevenueReportScheduler();
   startExpenseReportScheduler();
+  startWeeklySiteReportScheduler();
 
   app.get("/api/registration/status", isAuthenticated, async (req: any, res) => {
     try {
@@ -240,6 +241,20 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Error triggering email:", error);
       res.status(500).json({ message: "Failed to trigger email" });
+    }
+  });
+
+  app.post("/api/admin/trigger-site-report", async (req, res) => {
+    try {
+      const adminKey = req.headers["x-admin-key"];
+      if (adminKey !== process.env.SESSION_SECRET) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      await triggerSiteReportManually();
+      res.json({ success: true, message: "Weekly site report triggered successfully" });
+    } catch (error: any) {
+      console.error("Error triggering site report:", error);
+      res.status(500).json({ message: error.message || "Failed to trigger site report" });
     }
   });
 
@@ -696,11 +711,15 @@ async function analyzeInBackground(assessmentId: string, content: string) {
     await storage.updateAssessment(assessmentId, {
       status: "complete",
       overallScore: result.overallScore,
+      lenderReadinessGrade: result.lenderReadinessGrade,
       executiveSummary: result.executiveSummary,
       criteria: result.criteria,
       strengths: result.strengths,
       weaknesses: result.weaknesses,
       recommendations: result.recommendations,
+      swot: result.swot,
+      marketAnalysis: result.marketAnalysis,
+      financialRatios: result.financialRatios,
     });
 
     console.log(`Analysis complete for assessment ${assessmentId}`);
