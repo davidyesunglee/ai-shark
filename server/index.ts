@@ -93,19 +93,63 @@ app.post(
         return res.status(500).json({ error: "Webhook processing error" });
       }
 
-      // Process with StripeSync for data syncing (this validates the signature)
-      await WebhookHandlers.processWebhook(req.body as Buffer, sig);
-      
-      // Parse the event body for our custom billing logic
-      const eventBody = JSON.parse(req.body.toString());
-      console.log("[Webhook] Processing event:", eventBody.type);
-      
+      // Parse event body up-front so we can decide what to do
+      let eventBody: any;
+      try {
+        eventBody = JSON.parse(req.body.toString());
+      } catch (parseErr: any) {
+        console.error("[Stripe] Webhook body parse error:", parseErr.message);
+        return res.status(400).json({ error: "Invalid payload" });
+      }
+
+      const eventType = eventBody?.type as string | undefined;
+
+      // Some Stripe events (e.g. invoice.upcoming) are previews without an
+      // object id, which the sync library cannot insert into Postgres. We
+      // skip syncing those events but still acknowledge them so Stripe does
+      // not keep retrying and eventually disable the webhook.
+      const skipSyncEvents = new Set<string>([
+        "invoice.upcoming",
+      ]);
+
+      if (!skipSyncEvents.has(eventType ?? "")) {
+        try {
+          // Process with StripeSync for data syncing (this validates the signature)
+          await WebhookHandlers.processWebhook(req.body as Buffer, sig);
+        } catch (syncError: any) {
+          const msg = String(syncError?.message ?? "");
+          const isSignatureError =
+            syncError?.type === "StripeSignatureVerificationError" ||
+            /signature|No signatures found/i.test(msg);
+
+          if (isSignatureError) {
+            // Bad signature: reject so Stripe knows the request was tampered with
+            console.error("[Stripe] Webhook signature verification failed:", msg);
+            return res.status(400).json({ error: "Invalid signature" });
+          }
+
+          // Non-signature sync error (e.g. schema/insert issues for events the
+          // library doesn't fully support). Log it but continue so we still
+          // run our billing logic and return 200 to Stripe.
+          console.warn(
+            `[Stripe] Sync error (non-fatal) for event ${eventType ?? "unknown"}:`,
+            msg,
+          );
+        }
+      } else {
+        console.log(`[Webhook] Skipping sync for non-syncable event: ${eventType}`);
+      }
+
+      console.log("[Webhook] Processing event:", eventType);
       await processBillingWebhook(eventBody);
-      
+
       res.status(200).json({ received: true });
     } catch (error: any) {
       console.error("[Stripe] Webhook error:", error.message);
-      res.status(400).json({ error: "Webhook processing error" });
+      // Return 200 so Stripe stops retrying — we've already logged the error.
+      // Returning 4xx caused Stripe to retry indefinitely and threaten to
+      // disable the webhook on April 23, 2026.
+      res.status(200).json({ received: true, warning: "internal error logged" });
     }
   }
 );
