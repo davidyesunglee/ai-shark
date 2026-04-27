@@ -149,6 +149,20 @@ Preferred communication style: Simple, everyday language.
 - Competitor benchmark table (LivePlan, Enloop, IdeaProof, PrometAI vs AI Shark) by traffic rank
 - Recommended actions for the following week based on gaps vs. competitors
 
+## SEO & Discoverability
+- **robots.txt**: Served at `/robots.txt` — allows public pages, blocks `/admin`, `/dashboard`, `/api`, `/payment/success`, `/verify-email`, `/register`. Blocks GPTBot/ClaudeBot/CCBot from training scrapers. Points to sitemap.
+- **sitemap.xml**: Served at `/sitemap.xml` — dynamically generated, includes all 9 public pages with priority and changefreq.
+- **Meta tags in `client/index.html`**:
+  - SEO-optimized title and description targeting "business plan assessment", "bank loan business plan", "DSCR", "lender readiness grade"
+  - Keyword meta tag, author, robots directives, canonical URL
+  - Open Graph tags (Facebook, LinkedIn) — site name, type, URL, title, description, image
+  - Twitter Card tags (summary_large_image)
+  - Theme color, apple-touch-icon
+- **JSON-LD Structured Data** (3 schemas in `client/index.html` for rich snippets):
+  - `Organization` — company name, URL, logo, contact email
+  - `SoftwareApplication` — application name, category, description, pricing offers ($13.99 one-time, $6.99/month subscription)
+  - `FAQPage` — 5 FAQ entries (how it works, file types, pricing, lender grade explanation, disclaimer) — eligible for Google rich-result FAQ snippets
+
 ## Legal Pages
 - **Privacy Policy**: Available at `/privacy` - covers data collection, usage, security
 - **Terms of Service**: Available at `/terms` - covers pricing, refunds, liability, usage rules
