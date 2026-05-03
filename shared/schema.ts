@@ -219,5 +219,27 @@ export const insertCustomerFeedbackSchema = createInsertSchema(customerFeedback)
 export type InsertCustomerFeedback = z.infer<typeof insertCustomerFeedbackSchema>;
 export type CustomerFeedback = typeof customerFeedback.$inferSelect;
 
+// ── Site visits & clicks tracking ──────────────────────────────────
+export type SiteEventType = "visit" | "click";
+
+export const siteEvents = pgTable("site_events", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  eventType: text("event_type").notNull().$type<SiteEventType>().default("visit"),
+  path: varchar("path").notNull(),
+  label: varchar("label"),
+  referrer: text("referrer"),
+  userAgent: text("user_agent"),
+  ipHash: varchar("ip_hash"),
+  occurredAt: timestamp("occurred_at").defaultNow().notNull(),
+});
+
+export const insertSiteEventSchema = createInsertSchema(siteEvents).omit({
+  id: true,
+  occurredAt: true,
+});
+
+export type InsertSiteEvent = z.infer<typeof insertSiteEventSchema>;
+export type SiteEvent = typeof siteEvents.$inferSelect;
+
 export * from "./models/chat";
 export * from "./models/auth";

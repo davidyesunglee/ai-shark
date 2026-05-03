@@ -1,3 +1,4 @@
+import { useSEO } from "@/lib/useSEO";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -471,6 +472,11 @@ const marketItems = [
 ];
 
 export default function EducationPage() {
+  useSEO({
+    title: "Education — Bank Loan & SBA Financing Guide for Business Plans | AI Shark",
+    description: "Learn the 10 lender criteria, key financial ratios (DSCR, current ratio, D/E), SWOT analysis, and how to write a bank-ready business plan. Free educational resource from AI Shark.",
+    canonical: "/education",
+  });
   return (
     <div className="min-h-screen bg-background">
       <a href="#main-content" className="skip-to-content">

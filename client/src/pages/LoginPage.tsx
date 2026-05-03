@@ -8,8 +8,14 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import logoImage from "@assets/AI_Shark_logo_1770083549283.png";
+import { useSEO } from "@/lib/useSEO";
 
 export default function LoginPage() {
+  useSEO({
+    title: "Sign In — AI Shark",
+    description: "Sign in to your AI Shark account to upload business plans and view your assessments.",
+    canonical: "/login",
+  });
   const [, setLocation] = useLocation();
   const { login, isLoggingIn } = useAuth();
   const { toast } = useToast();

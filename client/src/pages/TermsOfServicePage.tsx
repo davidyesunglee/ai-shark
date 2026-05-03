@@ -3,8 +3,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
 import logoImage from "@assets/AI_Shark_logo_1770083549283.png";
+import { useSEO } from "@/lib/useSEO";
 
 export default function TermsOfServicePage() {
+  useSEO({
+    title: "Terms of Service — AI Shark",
+    description: "AI Shark terms of service. Pricing, refunds, liability disclaimers, and acceptable use rules for our AI business plan assessment platform.",
+    canonical: "/terms",
+  });
   return (
     <div className="min-h-screen bg-background">
       <a href="#main-content" className="skip-to-content">

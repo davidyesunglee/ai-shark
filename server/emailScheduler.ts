@@ -1199,3 +1199,216 @@ export async function triggerSiteReportManually() {
   console.log("[Site Report] Manual trigger requested");
   await sendWeeklySiteReport();
 }
+
+// ──────────────────────────────────────────────────────────────────────
+// Weekly Site Visits & Clicks Report
+// Sends every Monday 9am with the previous 7 days of page views and CTA clicks.
+// ──────────────────────────────────────────────────────────────────────
+
+function getNextMonday9AM(): Date {
+  const now = new Date();
+  const next = new Date(now);
+  const day = now.getDay(); // 0=Sun..6=Sat
+  const daysUntilMonday = ((1 - day + 7) % 7) || 7;
+  next.setDate(now.getDate() + daysUntilMonday);
+  next.setHours(9, 0, 0, 0);
+  // If it's Monday before 9am, schedule for today
+  if (day === 1 && now.getHours() < 9) {
+    next.setDate(now.getDate());
+  }
+  return next;
+}
+
+async function sendWeeklyVisitsReport() {
+  try {
+    const resend = getResend();
+    if (!resend) {
+      console.log("[Visits Report] Skipping - Resend not configured");
+      return;
+    }
+
+    const events = await storage.getSiteEventsLastWeek();
+    const visits = events.filter(e => e.eventType === "visit");
+    const clicks = events.filter(e => e.eventType === "click");
+
+    // Aggregate visits by path
+    const visitsByPath = new Map<string, { total: number; unique: Set<string> }>();
+    for (const v of visits) {
+      const key = v.path || "/";
+      if (!visitsByPath.has(key)) {
+        visitsByPath.set(key, { total: 0, unique: new Set<string>() });
+      }
+      const entry = visitsByPath.get(key)!;
+      entry.total++;
+      if (v.ipHash) entry.unique.add(v.ipHash);
+    }
+
+    // Aggregate clicks by label
+    const clicksByLabel = new Map<string, number>();
+    for (const c of clicks) {
+      const key = c.label || "(unlabeled)";
+      clicksByLabel.set(key, (clicksByLabel.get(key) || 0) + 1);
+    }
+
+    // Aggregate visits by day
+    const visitsByDay = new Map<string, number>();
+    for (const v of visits) {
+      const d = new Date(v.occurredAt).toISOString().split("T")[0];
+      visitsByDay.set(d, (visitsByDay.get(d) || 0) + 1);
+    }
+
+    // Aggregate top referrers
+    const referrerCounts = new Map<string, number>();
+    for (const v of visits) {
+      if (!v.referrer) continue;
+      try {
+        const host = new URL(v.referrer).hostname.replace(/^www\./, "");
+        if (host === "aishark.org") continue;
+        referrerCounts.set(host, (referrerCounts.get(host) || 0) + 1);
+      } catch {}
+    }
+
+    const totalVisits = visits.length;
+    const uniqueVisitors = new Set(visits.map(v => v.ipHash).filter(Boolean)).size;
+    const totalClicks = clicks.length;
+    const weekStr = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+
+    const sortedPaths = Array.from(visitsByPath.entries())
+      .sort((a, b) => b[1].total - a[1].total);
+    const sortedClicks = Array.from(clicksByLabel.entries())
+      .sort((a, b) => b[1] - a[1]);
+    const sortedReferrers = Array.from(referrerCounts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10);
+    const sortedDays = Array.from(visitsByDay.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]));
+
+    // CSV summary
+    const csvLines: string[] = [];
+    csvLines.push("SECTION,Path/Label,Total,Unique");
+    csvLines.push(`SUMMARY,Total Visits,${totalVisits},`);
+    csvLines.push(`SUMMARY,Unique Visitors,${uniqueVisitors},`);
+    csvLines.push(`SUMMARY,Total Clicks,${totalClicks},`);
+    csvLines.push("");
+    csvLines.push("PAGE VISITS,Path,Visits,Unique Visitors");
+    for (const [path, e] of sortedPaths) {
+      csvLines.push(`PAGE VISITS,"${path}",${e.total},${e.unique.size}`);
+    }
+    csvLines.push("");
+    csvLines.push("CLICKS,Label,Count,");
+    for (const [label, count] of sortedClicks) {
+      csvLines.push(`CLICKS,"${label}",${count},`);
+    }
+    csvLines.push("");
+    csvLines.push("REFERRERS,Domain,Visits,");
+    for (const [host, count] of sortedReferrers) {
+      csvLines.push(`REFERRERS,"${host}",${count},`);
+    }
+    const csv = csvLines.join("\n");
+
+    const html = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><style>
+  body{font-family:Inter,Arial,sans-serif;color:#1f2937;background:#f9fafb;margin:0;padding:24px;}
+  .wrap{max-width:760px;margin:0 auto;background:#fff;padding:32px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
+  h1{color:#0a4d8c;margin:0 0 4px;font-size:24px;}
+  h2{color:#0a4d8c;margin:28px 0 12px;font-size:18px;border-bottom:2px solid #e5e7eb;padding-bottom:6px;}
+  .meta{color:#6b7280;font-size:13px;margin-bottom:16px;}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:20px 0;}
+  .stat{background:#f0f7ff;border:1px solid #cfe3ff;border-radius:8px;padding:14px;text-align:center;}
+  .stat .num{font-size:28px;font-weight:700;color:#0a4d8c;}
+  .stat .lab{font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.4px;margin-top:4px;}
+  table{border-collapse:collapse;width:100%;font-size:14px;}
+  th,td{border:1px solid #e5e7eb;padding:8px 10px;text-align:left;}
+  th{background:#f3f4f6;font-weight:600;}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;}
+  .empty{color:#9ca3af;font-style:italic;font-size:13px;}
+  .footer{color:#9ca3af;font-size:12px;text-align:center;margin-top:24px;}
+</style></head><body><div class="wrap">
+  <h1>AI Shark — Weekly Site Visits &amp; Clicks Report</h1>
+  <div class="meta">Week ending ${weekStr} · aishark.org</div>
+
+  <div class="stats">
+    <div class="stat"><div class="num">${totalVisits.toLocaleString()}</div><div class="lab">Page Visits</div></div>
+    <div class="stat"><div class="num">${uniqueVisitors.toLocaleString()}</div><div class="lab">Unique Visitors</div></div>
+    <div class="stat"><div class="num">${totalClicks.toLocaleString()}</div><div class="lab">CTA Clicks</div></div>
+  </div>
+
+  <h2>Visits by Day</h2>
+  ${sortedDays.length === 0 ? `<p class="empty">No visits recorded this week.</p>` : `
+  <table>
+    <thead><tr><th>Date</th><th class="num">Visits</th></tr></thead>
+    <tbody>
+      ${sortedDays.map(([d, n]) => `<tr><td>${d}</td><td class="num">${n.toLocaleString()}</td></tr>`).join("")}
+    </tbody>
+  </table>`}
+
+  <h2>Top Pages</h2>
+  ${sortedPaths.length === 0 ? `<p class="empty">No page views recorded.</p>` : `
+  <table>
+    <thead><tr><th>Path</th><th class="num">Visits</th><th class="num">Unique Visitors</th></tr></thead>
+    <tbody>
+      ${sortedPaths.map(([p, e]) => `<tr><td>${p}</td><td class="num">${e.total.toLocaleString()}</td><td class="num">${e.unique.size.toLocaleString()}</td></tr>`).join("")}
+    </tbody>
+  </table>`}
+
+  <h2>Top CTA Clicks</h2>
+  ${sortedClicks.length === 0 ? `<p class="empty">No CTA clicks tracked yet. Use the trackClick() helper on key buttons (Sign Up, Pricing, Upload) to populate this list.</p>` : `
+  <table>
+    <thead><tr><th>Label</th><th class="num">Clicks</th></tr></thead>
+    <tbody>
+      ${sortedClicks.map(([l, n]) => `<tr><td>${l}</td><td class="num">${n.toLocaleString()}</td></tr>`).join("")}
+    </tbody>
+  </table>`}
+
+  <h2>Top External Referrers</h2>
+  ${sortedReferrers.length === 0 ? `<p class="empty">No external referrers recorded this week.</p>` : `
+  <table>
+    <thead><tr><th>Domain</th><th class="num">Visits</th></tr></thead>
+    <tbody>
+      ${sortedReferrers.map(([h, n]) => `<tr><td>${h}</td><td class="num">${n.toLocaleString()}</td></tr>`).join("")}
+    </tbody>
+  </table>`}
+
+  <div class="footer">
+    Automated weekly report from AI Shark · sent every Monday at 9am · CSV summary attached
+  </div>
+</div></body></html>`;
+
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: [RECIPIENT_EMAIL],
+      subject: `AI Shark Weekly Visits & Clicks Report — ${weekStr}`,
+      html,
+      attachments: [
+        {
+          filename: `visits_clicks_${new Date().toISOString().split("T")[0]}.csv`,
+          content: Buffer.from(csv, "utf-8"),
+        },
+      ],
+    });
+
+    if (error) {
+      console.error("[Visits Report] Failed to send email:", error);
+      return;
+    }
+    console.log(`[Visits Report] Sent successfully! ID: ${data?.id} · ${totalVisits} visits, ${uniqueVisitors} unique, ${totalClicks} clicks`);
+  } catch (error) {
+    console.error("[Visits Report] Error:", error);
+  }
+}
+
+export function startWeeklyVisitsReportScheduler() {
+  const next = getNextMonday9AM();
+  const ms = next.getTime() - Date.now();
+  console.log(`[Visits Report] Started. Next report scheduled for: ${next.toISOString()}`);
+  console.log(`[Visits Report] Time until next report: ${Math.round(ms / 1000 / 60 / 60)} hours`);
+  safeSetTimeout(() => {
+    sendWeeklyVisitsReport();
+    setInterval(() => sendWeeklyVisitsReport(), 7 * 24 * 60 * 60 * 1000);
+  }, ms);
+}
+
+export async function triggerVisitsReportManually() {
+  console.log("[Visits Report] Manual trigger requested");
+  await sendWeeklyVisitsReport();
+}

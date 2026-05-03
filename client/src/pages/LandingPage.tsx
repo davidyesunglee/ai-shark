@@ -5,8 +5,14 @@ import { TrendingUp, Shield, CheckCircle, Clock, Users, Award, ArrowRight, Zap, 
 import { Link } from "wouter";
 import { AdPlacement } from "@/components/AdPlacement";
 import logoImage from "@assets/AI_Shark_logo_1770083549283.png";
+import { useSEO, trackClick } from "@/lib/useSEO";
 
 export default function LandingPage() {
+  useSEO({
+    title: "AI Shark — AI Business Plan Assessment for Bank Loans & SBA Financing",
+    description: "Score your business plan against the 10 criteria banks use for loan approval. Get a Lender Readiness Grade (A–F), SWOT, market analysis, and 6 financial ratios in minutes — from $13.99.",
+    canonical: "/",
+  });
   return (
     <div className="min-h-screen bg-background">
       <a href="#main-content" className="skip-to-content">
@@ -60,13 +66,13 @@ export default function LandingPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Link href="/signup">
-                <Button size="lg" className="gap-2" data-testid="button-get-started">
+                <Button size="lg" className="gap-2" data-testid="button-get-started" onClick={() => trackClick("hero_get_started")}>
                   Get Your Score Now
                   <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </Button>
               </Link>
               <Link href="/pricing">
-                <Button size="lg" variant="outline" data-testid="button-view-pricing">
+                <Button size="lg" variant="outline" data-testid="button-view-pricing" onClick={() => trackClick("hero_view_pricing")}>
                   View Pricing
                 </Button>
               </Link>
@@ -206,7 +212,7 @@ export default function LandingPage() {
               Join businesses using AI Shark to improve their financing outcomes.
             </p>
             <Link href="/signup">
-              <Button size="lg" variant="outline" className="gap-2 bg-background/10 backdrop-blur border-primary-foreground/20 text-primary-foreground hover:bg-background/20" data-testid="button-cta-bottom">
+              <Button size="lg" variant="outline" className="gap-2 bg-background/10 backdrop-blur border-primary-foreground/20 text-primary-foreground hover:bg-background/20" data-testid="button-cta-bottom" onClick={() => trackClick("bottom_cta_get_started")}>
                 Get Started
                 <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </Button>

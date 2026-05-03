@@ -13,6 +13,7 @@ import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import logoImage from "@assets/AI_Shark_logo_1770083549283.png";
+import { useSEO } from "@/lib/useSEO";
 
 const feedbackSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -25,6 +26,11 @@ const feedbackSchema = z.object({
 type FeedbackFormData = z.infer<typeof feedbackSchema>;
 
 export default function ContactPage() {
+  useSEO({
+    title: "Contact AI Shark — Support, Feedback & Bug Reports",
+    description: "Contact the AI Shark team. Submit feedback, report a bug, request a feature, or get support for your business plan assessment.",
+    canonical: "/contact",
+  });
   const { toast } = useToast();
   
   const form = useForm<FeedbackFormData>({

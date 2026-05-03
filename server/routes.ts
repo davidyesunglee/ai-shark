@@ -6,7 +6,8 @@ import { parseDocument } from "./documentParser";
 import { analyzeBusinessPlan, isOpenAIConfigured } from "./openai";
 import { setupAuth, isAuthenticated } from "./replit_integrations/auth";
 import { insertUserRegistrationSchema, insertCustomerFeedbackSchema } from "@shared/schema";
-import { startWeeklyEmailScheduler, startTransactionEmailScheduler, startRevenueReportScheduler, startExpenseReportScheduler, startWeeklySiteReportScheduler, triggerSiteReportManually } from "./emailScheduler";
+import { startWeeklyEmailScheduler, startTransactionEmailScheduler, startRevenueReportScheduler, startExpenseReportScheduler, startWeeklySiteReportScheduler, triggerSiteReportManually, startWeeklyVisitsReportScheduler, triggerVisitsReportManually } from "./emailScheduler";
+import crypto from "crypto";
 import { getUncachableStripeClient, getStripePublishableKey } from "./stripeClient";
 import { db } from "./db";
 import { sql } from "drizzle-orm";
@@ -20,6 +21,124 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+
+  // ── Site visits & clicks tracking ──────────────────────────────────
+  // Server-side page-view tracking. Records only HTML page navigations
+  // (not API calls, not static assets, not bots). IPs are hashed for privacy.
+  const TRACKED_PAGE_PATHS = new Set([
+    "/", "/pricing", "/education", "/about", "/contact",
+    "/privacy", "/terms", "/login", "/signup", "/register",
+    "/dashboard", "/payment/success", "/verify-email",
+  ]);
+  const BOT_REGEX = /bot|crawler|spider|crawling|facebookexternalhit|slurp|mediapartners|googlebot|bingbot|baiduspider|yandex|duckduckbot|applebot|gptbot|claudebot|ccbot/i;
+  const VISITS_HASH_SALT = process.env.SESSION_SECRET || "ai-shark-default-salt";
+
+  app.use((req, _res, next) => {
+    try {
+      if (req.method !== "GET") return next();
+      const path = req.path;
+      // Only track top-level page paths the user can navigate to
+      if (!TRACKED_PAGE_PATHS.has(path)) return next();
+      // Skip API/static (already filtered above, but extra safety)
+      if (path.startsWith("/api") || path.startsWith("/assets")) return next();
+      // Skip bots
+      const ua = (req.headers["user-agent"] as string) || "";
+      if (BOT_REGEX.test(ua)) return next();
+      // Skip prefetch / non-HTML asks
+      const accept = (req.headers["accept"] as string) || "";
+      if (accept && !accept.includes("text/html") && !accept.includes("*/*")) {
+        return next();
+      }
+
+      const ip = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.ip || "";
+      const ipHash = ip
+        ? crypto.createHash("sha256").update(VISITS_HASH_SALT + ip).digest("hex").substring(0, 32)
+        : null;
+
+      // Fire-and-forget — never delay request
+      storage.recordSiteEvent({
+        eventType: "visit",
+        path,
+        label: null as any,
+        referrer: (req.headers["referer"] as string) || null as any,
+        userAgent: ua.substring(0, 500) || null as any,
+        ipHash: ipHash as any,
+      }).catch(() => {});
+    } catch {
+      // Never block requests on tracking errors
+    }
+    next();
+  });
+
+  // SPA pageview tracking — Wouter route changes don't hit the server, so
+  // the client beacons the new path here on each in-app navigation.
+  app.post("/api/track-pageview", async (req, res) => {
+    try {
+      const path = String(req.body?.path || "/").substring(0, 200);
+      if (!TRACKED_PAGE_PATHS.has(path)) return res.status(204).end();
+      const ua = (req.headers["user-agent"] as string) || "";
+      if (BOT_REGEX.test(ua)) return res.status(204).end();
+      const ip = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.ip || "";
+      const ipHash = ip
+        ? crypto.createHash("sha256").update(VISITS_HASH_SALT + ip).digest("hex").substring(0, 32)
+        : null;
+      const clientReferrer = typeof req.body?.referrer === "string" ? req.body.referrer.substring(0, 500) : null;
+      await storage.recordSiteEvent({
+        eventType: "visit",
+        path,
+        label: null as any,
+        referrer: clientReferrer as any,
+        userAgent: ua.substring(0, 500) || null as any,
+        ipHash: ipHash as any,
+      });
+      res.status(204).end();
+    } catch (err: any) {
+      console.error("[Track Pageview] error:", err.message);
+      res.status(204).end();
+    }
+  });
+
+  // Lightweight click-tracking endpoint used by the trackClick() client helper
+  app.post("/api/track-click", async (req, res) => {
+    try {
+      const label = String(req.body?.label || "").substring(0, 100);
+      const path = String(req.body?.path || "/").substring(0, 200);
+      if (!label) return res.status(204).end();
+      const ua = (req.headers["user-agent"] as string) || "";
+      if (BOT_REGEX.test(ua)) return res.status(204).end();
+      const ip = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.ip || "";
+      const ipHash = ip
+        ? crypto.createHash("sha256").update(VISITS_HASH_SALT + ip).digest("hex").substring(0, 32)
+        : null;
+      await storage.recordSiteEvent({
+        eventType: "click",
+        path,
+        label,
+        referrer: (req.headers["referer"] as string) || null as any,
+        userAgent: ua.substring(0, 500) || null as any,
+        ipHash: ipHash as any,
+      });
+      res.status(204).end();
+    } catch (err: any) {
+      console.error("[Track Click] error:", err.message);
+      res.status(204).end();
+    }
+  });
+
+  // Admin: trigger weekly visits/clicks report manually
+  app.post("/api/admin/trigger-visits-report", async (req, res) => {
+    try {
+      const adminKey = req.headers["x-admin-key"];
+      if (adminKey !== process.env.SESSION_SECRET) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      await triggerVisitsReportManually();
+      res.json({ success: true, message: "Visits report sent" });
+    } catch (error: any) {
+      console.error("[Admin] Visits report error:", error);
+      res.status(500).json({ message: error.message || "Failed" });
+    }
+  });
 
   // ── SEO: robots.txt and sitemap.xml ─────────────────────────────────
   // These are served from Express so they work in both dev and production
@@ -237,6 +356,7 @@ ${pages
   startRevenueReportScheduler();
   startExpenseReportScheduler();
   startWeeklySiteReportScheduler();
+  startWeeklyVisitsReportScheduler();
 
   app.get("/api/registration/status", isAuthenticated, async (req: any, res) => {
     try {

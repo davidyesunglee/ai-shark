@@ -8,9 +8,15 @@ import { Loader2 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
+import { useSEO } from "@/lib/useSEO";
 import logoImage from "@assets/AI_Shark_logo_1770083549283.png";
 
 export default function SignupPage() {
+  useSEO({
+    title: "Sign Up — Create Your AI Shark Account",
+    description: "Create a free AI Shark account to assess your business plan against bank lending criteria. Get started in 60 seconds.",
+    canonical: "/signup",
+  });
   const [, setLocation] = useLocation();
   const { signup, isSigningUp } = useAuth();
   const { toast } = useToast();

@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Link, useLocation } from "wouter";
 import { ArrowLeft } from "lucide-react";
 import logoImage from "@assets/AI_Shark_logo_1770083549283.png";
+import { useSEO } from "@/lib/useSEO";
 
 interface Price {
   id: string;
@@ -27,6 +28,11 @@ interface Product {
 }
 
 export default function PricingPage() {
+  useSEO({
+    title: "Pricing — AI Shark Business Plan Assessment | $6.99/mo or $13.99",
+    description: "Affordable AI business plan assessment pricing. One-time evaluation $13.99 or monthly subscription $6.99/mo with 2 evaluations. Includes Lender Readiness Grade, SWOT, financial ratios, and PDF export.",
+    canonical: "/pricing",
+  });
   const { toast } = useToast();
   const { user, isLoading: authLoading } = useAuth();
   const [, setLocation] = useLocation();

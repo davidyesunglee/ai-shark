@@ -3,8 +3,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
 import logoImage from "@assets/AI_Shark_logo_1770083549283.png";
+import { useSEO } from "@/lib/useSEO";
 
 export default function AboutPage() {
+  useSEO({
+    title: "About AI Shark — AI-Powered Business Plan Assessment for Bank Lending",
+    description: "Learn about AI Shark, the AI assessment platform that scores business plans against the 10 criteria commercial bank loan officers use for debt financing decisions.",
+    canonical: "/about",
+  });
   return (
     <div className="min-h-screen bg-background">
       <a href="#main-content" className="skip-to-content">

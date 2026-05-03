@@ -6,6 +6,9 @@ import {
   creditLedger,
   advertisingRevenue,
   customerFeedback,
+  siteEvents,
+  type SiteEvent,
+  type InsertSiteEvent,
   type Assessment,
   type InsertAssessment,
   type UserRegistration,
@@ -289,6 +292,23 @@ export class DatabaseStorage implements IStorage {
   async getAllAssessments(): Promise<Assessment[]> {
     return await db.select().from(assessments)
       .orderBy(desc(assessments.uploadDate));
+  }
+
+  // ── Site events (visits + clicks) ────────────────────────────────
+  async recordSiteEvent(event: InsertSiteEvent): Promise<void> {
+    try {
+      await db.insert(siteEvents).values(event as any);
+    } catch (e) {
+      console.error("[SiteEvent] insert failed:", (e as Error).message);
+    }
+  }
+
+  async getSiteEventsLastWeek(): Promise<SiteEvent[]> {
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    return await db.select().from(siteEvents)
+      .where(gte(siteEvents.occurredAt, oneWeekAgo))
+      .orderBy(desc(siteEvents.occurredAt));
   }
 }
 

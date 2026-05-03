@@ -3,8 +3,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
 import logoImage from "@assets/AI_Shark_logo_1770083549283.png";
+import { useSEO } from "@/lib/useSEO";
 
 export default function PrivacyPolicyPage() {
+  useSEO({
+    title: "Privacy Policy — AI Shark",
+    description: "AI Shark privacy policy. Learn how we collect, use, store, and protect your data when you use our AI business plan assessment service.",
+    canonical: "/privacy",
+  });
   return (
     <div className="min-h-screen bg-background">
       <a href="#main-content" className="skip-to-content">
