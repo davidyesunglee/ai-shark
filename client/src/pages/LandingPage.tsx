@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { TrendingUp, Shield, Clock, Users, Award, ArrowRight, Zap, FileText, Landmark, Scale, Target, BarChart3, CircleDollarSign, ShieldAlert, Trophy } from "lucide-react";
 import { Link } from "wouter";
 import { AdPlacement } from "@/components/AdPlacement";
@@ -290,6 +291,46 @@ export default function LandingPage() {
                 </Button>
               </Link>
             </div>
+          </div>
+        </section>
+
+        <section className="container mx-auto px-4 py-16" aria-labelledby="faq-title">
+          <h2 id="faq-title" className="text-3xl font-bold text-center mb-4">Frequently Asked Questions</h2>
+          <p className="text-center text-muted-foreground mb-10 max-w-2xl mx-auto">
+            Everything you need to know before you get your score.
+          </p>
+          <div className="max-w-3xl mx-auto">
+            <Accordion type="single" collapsible className="w-full">
+              {[
+                {
+                  q: "How does AI Shark assess my business plan?",
+                  a: "AI Shark uses Gemini AI to analyze your business plan across 10 criteria that commercial bank loan officers use: creditworthiness, cash flow, collateral, debt-to-equity, market viability, management team, financial projections, revenue model, industry risk, and competitive position. You receive an overall score (0–100), a lender readiness grade (A–F), SWOT analysis, market analysis, six key financial ratios, strengths, weaknesses, and actionable recommendations.",
+                },
+                {
+                  q: "What file types can I upload?",
+                  a: "You can upload PDF, DOCX, or TXT files up to 10 MB. Most banks and SBA lenders prefer PDF format for business plans.",
+                },
+                {
+                  q: "How much does AI Shark cost?",
+                  a: "A one-time assessment costs $13.99. A monthly subscription costs $6.99 per month and includes two business plan evaluations per month. Both options give you full access to the lender readiness grade, SWOT analysis, financial ratios, and PDF export.",
+                },
+                {
+                  q: "What is a lender readiness grade?",
+                  a: "The Lender Readiness Grade is a letter grade (A through F) that summarizes how prepared your business plan is for bank debt financing. Grade A indicates an exceptional candidate where bank approval is highly likely, while Grade F indicates significant gaps that would prevent debt financing approval.",
+                },
+                {
+                  q: "Will using AI Shark guarantee a bank loan approval?",
+                  a: "No. AI Shark provides analytical perspectives on your business plan for informational purposes only. The assessment does not imply any expectation of positive or negative outcomes from banking institutions and is not a guarantee of funding. Always consult with qualified financial professionals before making funding decisions.",
+                },
+              ].map((item, i) => (
+                <AccordionItem key={i} value={`faq-${i}`} data-testid={`faq-item-${i}`}>
+                  <AccordionTrigger className="text-left" data-testid={`faq-question-${i}`}>{item.q}</AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground leading-relaxed" data-testid={`faq-answer-${i}`}>
+                    {item.a}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
           </div>
         </section>
 
