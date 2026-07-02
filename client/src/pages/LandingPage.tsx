@@ -243,6 +243,45 @@ export default function LandingPage() {
               })}
             </div>
 
+            <div className="max-w-5xl mx-auto mt-14">
+              <h3 className="text-xl font-bold text-center mb-2">What AI Shark Catches</h3>
+              <p className="text-center text-sm text-muted-foreground mb-8 max-w-2xl mx-auto">
+                Illustrative examples of the kinds of issues the analysis flags in a business plan.
+              </p>
+              <div className="grid sm:grid-cols-3 gap-6" role="list">
+                {[
+                  {
+                    icon: BarChart3,
+                    label: "Cash Flow",
+                    body: "A debt-service coverage ratio below 1.25× — a common lender concern.",
+                  },
+                  {
+                    icon: Scale,
+                    label: "Capital Structure",
+                    body: "A debt-to-equity ratio that signals the business is over-leveraged.",
+                  },
+                  {
+                    icon: Target,
+                    label: "Projections",
+                    body: "Revenue forecasts with assumptions that lack supporting evidence.",
+                  },
+                ].map((item, i) => {
+                  const Icon = item.icon;
+                  return (
+                    <div key={i} role="listitem" className="flex gap-3 text-left" data-testid={`example-finding-${i}`}>
+                      <div className="mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                        <Icon className="h-4 w-4 text-primary" aria-hidden="true" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-sm mb-1">{item.label}</p>
+                        <p className="text-sm leading-relaxed text-muted-foreground">{item.body}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
             <div className="text-center mt-10">
               <Link href="/sample">
                 <Button variant="outline" size="lg" className="gap-2" data-testid="button-view-sample" onClick={() => trackClick("testimonials_view_sample")}>
