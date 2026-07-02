@@ -353,8 +353,17 @@ export default function LandingPage() {
         </section>
       </main>
 
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 backdrop-blur p-3 pr-20 md:hidden" data-testid="sticky-cta-mobile">
+        <a href="#free-preview" className="block">
+          <Button size="lg" className="w-full gap-2" data-testid="button-sticky-get-started" onClick={() => trackClick("sticky_get_started")}>
+            Get Your Free Score
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </Button>
+        </a>
+      </div>
+
       <footer className="border-t" role="contentinfo">
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 pt-8 pb-28 md:pb-8">
           <div className="flex justify-center mb-6">
             <AdPlacement slot="footer" className="hidden md:flex" />
           </div>
