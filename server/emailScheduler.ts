@@ -56,7 +56,7 @@ function formatRegistrationsAsCSV(registrations: any[]): string {
   }
 
   const rows = registrations.map(r => 
-    `"${r.username}","${r.email}","${r.phoneNumber}","${r.streetAddress}","${r.city}","${r.state}","${r.zipCode}","${r.country}","${r.companyName || ''}","${r.jobTitle || ''}","${r.industry || ''}","${r.companySize || ''}","${r.howDidYouHear || ''}","${r.registeredAt}"`
+    `"${r.username}","${r.email}","${r.phoneNumber || ''}","${r.streetAddress || ''}","${r.city || ''}","${r.state || ''}","${r.zipCode || ''}","${r.country || ''}","${r.companyName || ''}","${r.jobTitle || ''}","${r.industry || ''}","${r.companySize || ''}","${r.howDidYouHear || ''}","${r.registeredAt}"`
   );
   
   return header + "\n" + rows.join("\n");
@@ -92,9 +92,9 @@ function formatRegistrationsAsHTML(registrations: any[]): string {
       <tr>
         <td>${r.username}</td>
         <td>${r.email}</td>
-        <td>${r.phoneNumber}</td>
-        <td>${r.city}</td>
-        <td>${r.state}</td>
+        <td>${r.phoneNumber || '-'}</td>
+        <td>${r.city || '-'}</td>
+        <td>${r.state || '-'}</td>
         <td>${r.companyName || '-'}</td>
         <td>${r.industry || '-'}</td>
         <td>${new Date(r.registeredAt).toLocaleDateString()}</td>

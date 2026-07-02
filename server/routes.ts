@@ -541,7 +541,7 @@ ${pages
       
       const csvHeader = "ID,Username,Email,Phone,Street Address,City,State,Zip,Country,Company,Job Title,Industry,Company Size,How Heard,Registered At\n";
       const csvRows = registrations.map(r => 
-        `"${r.id}","${r.username}","${r.email}","${r.phoneNumber}","${r.streetAddress}","${r.city}","${r.state}","${r.zipCode}","${r.country}","${r.companyName || ''}","${r.jobTitle || ''}","${r.industry || ''}","${r.companySize || ''}","${r.howDidYouHear || ''}","${r.registeredAt}"`
+        `"${r.id}","${r.username}","${r.email}","${r.phoneNumber || ''}","${r.streetAddress || ''}","${r.city || ''}","${r.state || ''}","${r.zipCode || ''}","${r.country || ''}","${r.companyName || ''}","${r.jobTitle || ''}","${r.industry || ''}","${r.companySize || ''}","${r.howDidYouHear || ''}","${r.registeredAt}"`
       ).join("\n");
       
       res.setHeader("Content-Type", "text/csv");

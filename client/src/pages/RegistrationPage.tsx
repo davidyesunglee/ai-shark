@@ -17,12 +17,7 @@ import { Header } from "@/components/Header";
 const registrationSchema = z.object({
   username: z.string().min(2, "Username must be at least 2 characters"),
   email: z.string().email("Please enter a valid email address"),
-  phoneNumber: z.string().min(10, "Please enter a valid phone number"),
-  streetAddress: z.string().min(5, "Please enter your street address"),
-  city: z.string().min(2, "Please enter your city"),
-  state: z.string().min(2, "Please enter your state"),
-  zipCode: z.string().min(5, "Please enter a valid zip code"),
-  country: z.string().default("United States"),
+  phoneNumber: z.string().optional(),
   companyName: z.string().optional(),
   jobTitle: z.string().optional(),
   industry: z.string().optional(),
@@ -81,11 +76,6 @@ export default function RegistrationPage() {
       username: "",
       email: "",
       phoneNumber: "",
-      streetAddress: "",
-      city: "",
-      state: "",
-      zipCode: "",
-      country: "United States",
       companyName: "",
       jobTitle: "",
       industry: "",
@@ -155,7 +145,7 @@ export default function RegistrationPage() {
             </div>
             <CardTitle className="text-2xl">Complete Your Registration</CardTitle>
             <CardDescription>
-              Please provide your information to access the business plan assessment tool
+              Just your name and email to get started — takes 30 seconds
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -199,7 +189,7 @@ export default function RegistrationPage() {
                     name="phoneNumber"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Phone Number *</FormLabel>
+                        <FormLabel>Phone Number (optional)</FormLabel>
                         <FormControl>
                           <Input data-testid="input-phone" type="tel" placeholder="(555) 123-4567" {...field} />
                         </FormControl>
@@ -207,82 +197,6 @@ export default function RegistrationPage() {
                       </FormItem>
                     )}
                   />
-                </div>
-
-                <div className="space-y-4">
-                  <h3 className="font-medium text-lg">Address</h3>
-                  
-                  <FormField
-                    control={form.control}
-                    name="streetAddress"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Street Address *</FormLabel>
-                        <FormControl>
-                          <Input data-testid="input-street" placeholder="123 Main Street" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="city"
-                      render={({ field }) => (
-                        <FormItem className="col-span-2 md:col-span-1">
-                          <FormLabel>City *</FormLabel>
-                          <FormControl>
-                            <Input data-testid="input-city" placeholder="New York" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="state"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>State *</FormLabel>
-                          <FormControl>
-                            <Input data-testid="input-state" placeholder="NY" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="zipCode"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Zip Code *</FormLabel>
-                          <FormControl>
-                            <Input data-testid="input-zip" placeholder="10001" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="country"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Country</FormLabel>
-                          <FormControl>
-                            <Input data-testid="input-country" placeholder="United States" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
                 </div>
 
                 <div className="space-y-4">
