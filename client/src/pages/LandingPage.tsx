@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, Shield, Clock, Users, Award, ArrowRight, Zap, FileText, Star, Landmark, Scale, Target, BarChart3, CircleDollarSign, ShieldAlert, Trophy } from "lucide-react";
+import { TrendingUp, Shield, Clock, Users, Award, ArrowRight, Zap, FileText, Landmark, Scale, Target, BarChart3, CircleDollarSign, ShieldAlert, Trophy } from "lucide-react";
 import { Link } from "wouter";
 import { AdPlacement } from "@/components/AdPlacement";
 import { TeaserWidget } from "@/components/TeaserWidget";
@@ -200,47 +200,47 @@ export default function LandingPage() {
 
         <section className="bg-muted/50 py-16" aria-labelledby="testimonials-title">
           <div className="container mx-auto px-4">
-            <h2 id="testimonials-title" className="text-3xl font-bold text-center mb-4">What Business Owners Say</h2>
+            <h2 id="testimonials-title" className="text-3xl font-bold text-center mb-4">Built to Think Like a Lender</h2>
             <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
-              Founders use AI Shark to spot the gaps lenders care about — before they apply.
+              AI Shark reviews your plan the way a bank would — so you can fix the gaps that matter before you apply.
             </p>
 
-            <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto" role="list">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto" role="list">
               {[
                 {
-                  quote:
-                    "AI Shark flagged that our debt-service coverage was too thin before we ever walked into the bank. We fixed our projections and got approved on the first try.",
-                  name: "Marcus L.",
-                  role: "Founder, specialty food distributor",
+                  icon: Landmark,
+                  title: "Real bank criteria",
+                  body: "Scored against the same 10 debt-financing factors lenders actually weigh.",
                 },
                 {
-                  quote:
-                    "The 10-point breakdown read exactly like the checklist our loan officer used. It was like seeing our application through the bank's eyes.",
-                  name: "Priya S.",
-                  role: "Owner, boutique fitness studio",
+                  icon: Clock,
+                  title: "Results in minutes",
+                  body: "Upload your plan and get a full breakdown in under a minute — no account needed to start.",
                 },
                 {
-                  quote:
-                    "I got a clear score and a list of exactly what to fix in minutes. Way cheaper than a consultant and honestly just as useful.",
-                  name: "David R.",
-                  role: "Co-founder, logistics startup",
+                  icon: Shield,
+                  title: "Private & secure",
+                  body: "Your plan is stored securely and never shared with third parties.",
                 },
-              ].map((t, i) => (
-                <Card key={i} role="listitem" data-testid={`card-testimonial-${i}`}>
-                  <CardHeader>
-                    <div className="flex gap-0.5 mb-3" aria-label="5 out of 5 stars">
-                      {[0, 1, 2, 3, 4].map((s) => (
-                        <Star key={s} className="h-4 w-4 fill-yellow-400 text-yellow-400" aria-hidden="true" />
-                      ))}
-                    </div>
-                    <p className="text-sm leading-relaxed text-foreground mb-4">"{t.quote}"</p>
-                    <div>
-                      <p className="font-semibold text-sm" data-testid={`text-testimonial-name-${i}`}>{t.name}</p>
-                      <p className="text-xs text-muted-foreground">{t.role}</p>
-                    </div>
-                  </CardHeader>
-                </Card>
-              ))}
+                {
+                  icon: CircleDollarSign,
+                  title: "A fraction of a consultant",
+                  body: "The depth of a paid review, starting at just $13.99 per report.",
+                },
+              ].map((item, i) => {
+                const Icon = item.icon;
+                return (
+                  <Card key={i} role="listitem" data-testid={`card-trust-${i}`} className="text-center">
+                    <CardHeader>
+                      <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10">
+                        <Icon className="h-5 w-5 text-primary" aria-hidden="true" />
+                      </div>
+                      <p className="font-semibold text-sm mb-1" data-testid={`text-trust-title-${i}`}>{item.title}</p>
+                      <p className="text-sm leading-relaxed text-muted-foreground">{item.body}</p>
+                    </CardHeader>
+                  </Card>
+                );
+              })}
             </div>
 
             <div className="text-center mt-10">
@@ -251,9 +251,6 @@ export default function LandingPage() {
                 </Button>
               </Link>
             </div>
-            <p className="text-center text-xs text-muted-foreground mt-6" data-testid="text-testimonials-disclosure">
-              Illustrative examples of typical customer outcomes.
-            </p>
           </div>
         </section>
 
