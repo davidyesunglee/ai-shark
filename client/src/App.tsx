@@ -15,6 +15,8 @@ import EducationPage from "@/pages/EducationPage";
 import RegistrationPage from "@/pages/RegistrationPage";
 import PricingPage from "@/pages/PricingPage";
 import SamplePage from "@/pages/SamplePage";
+import GuidesPage from "@/pages/GuidesPage";
+import GuidePage from "@/pages/GuidePage";
 import PaymentSuccessPage from "@/pages/PaymentSuccessPage";
 import VerifyEmailPage from "@/pages/VerifyEmailPage";
 import PrivacyPolicyPage from "@/pages/PrivacyPolicyPage";
@@ -45,6 +47,8 @@ function Router() {
     <Switch>
       <Route path="/about" component={AboutPage} />
       <Route path="/education" component={EducationPage} />
+      <Route path="/guides" component={GuidesPage} />
+      <Route path="/guides/:slug" component={GuidePage} />
       <Route path="/privacy" component={PrivacyPolicyPage} />
       <Route path="/terms" component={TermsOfServicePage} />
       <Route path="/contact" component={ContactPage} />

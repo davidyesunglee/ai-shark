@@ -6,6 +6,7 @@ import { parseDocument } from "./documentParser";
 import { analyzeBusinessPlan, analyzeTeaser, isOpenAIConfigured } from "./openai";
 import { setupAuth, isAuthenticated } from "./replit_integrations/auth";
 import { insertUserRegistrationSchema, insertCustomerFeedbackSchema } from "@shared/schema";
+import { guideSlugs } from "@shared/guides";
 import { startWeeklyEmailScheduler, startTransactionEmailScheduler, startRevenueReportScheduler, startExpenseReportScheduler, startWeeklySiteReportScheduler, triggerSiteReportManually, startWeeklyVisitsReportScheduler, triggerVisitsReportManually } from "./emailScheduler";
 import crypto from "crypto";
 import { getUncachableStripeClient, getStripePublishableKey } from "./stripeClient";
@@ -28,8 +29,10 @@ export async function registerRoutes(
   const TRACKED_PAGE_PATHS = new Set([
     "/", "/pricing", "/education", "/about", "/contact",
     "/privacy", "/terms", "/login", "/signup", "/register",
-    "/dashboard", "/payment/success", "/verify-email",
+    "/dashboard", "/payment/success", "/verify-email", "/guides", "/sample",
   ]);
+  const isTrackedPath = (path: string) =>
+    TRACKED_PAGE_PATHS.has(path) || /^\/guides\/[a-z0-9-]+$/.test(path);
   const BOT_REGEX = /bot|crawler|spider|crawling|facebookexternalhit|slurp|mediapartners|googlebot|bingbot|baiduspider|yandex|duckduckbot|applebot|gptbot|claudebot|ccbot/i;
   const VISITS_HASH_SALT = process.env.SESSION_SECRET || "ai-shark-default-salt";
 
@@ -38,7 +41,7 @@ export async function registerRoutes(
       if (req.method !== "GET") return next();
       const path = req.path;
       // Only track top-level page paths the user can navigate to
-      if (!TRACKED_PAGE_PATHS.has(path)) return next();
+      if (!isTrackedPath(path)) return next();
       // Skip API/static (already filtered above, but extra safety)
       if (path.startsWith("/api") || path.startsWith("/assets")) return next();
       // Skip bots
@@ -75,7 +78,7 @@ export async function registerRoutes(
   app.post("/api/track-pageview", async (req, res) => {
     try {
       const path = String(req.body?.path || "/").substring(0, 200);
-      if (!TRACKED_PAGE_PATHS.has(path)) return res.status(204).end();
+      if (!isTrackedPath(path)) return res.status(204).end();
       const ua = (req.headers["user-agent"] as string) || "";
       if (BOT_REGEX.test(ua)) return res.status(204).end();
       const ip = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.ip || "";
@@ -273,6 +276,12 @@ Sitemap: https://aishark.org/sitemap.xml
       { loc: "/", priority: "1.0", changefreq: "weekly" },
       { loc: "/pricing", priority: "0.9", changefreq: "monthly" },
       { loc: "/education", priority: "0.9", changefreq: "monthly" },
+      { loc: "/guides", priority: "0.8", changefreq: "monthly" },
+      ...guideSlugs.map((slug) => ({
+        loc: `/guides/${slug}`,
+        priority: "0.7",
+        changefreq: "monthly",
+      })),
       { loc: "/about", priority: "0.7", changefreq: "monthly" },
       { loc: "/contact", priority: "0.6", changefreq: "monthly" },
       { loc: "/signup", priority: "0.8", changefreq: "monthly" },

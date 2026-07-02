@@ -322,6 +322,9 @@ export default function LandingPage() {
                 <Link href="/education">
                   <span className="hover:text-foreground transition-colors cursor-pointer" data-testid="link-footer-education">Education</span>
                 </Link>
+                <Link href="/guides">
+                  <span className="hover:text-foreground transition-colors cursor-pointer" data-testid="link-footer-guides">Guides</span>
+                </Link>
                 <Link href="/pricing">
                   <span className="hover:text-foreground transition-colors cursor-pointer" data-testid="link-footer-pricing">Pricing</span>
                 </Link>

@@ -69,6 +69,31 @@ export function useSEO(opts: SEOOptions) {
   }, [opts.title, opts.description, opts.canonical, opts.ogTitle, opts.ogDescription, opts.ogImage, opts.noindex]);
 }
 
+// Inject one or more JSON-LD structured-data blocks into the document head.
+// Each entry needs a stable id so it can be updated/cleaned up on unmount.
+export function useJsonLd(blocks: Array<{ id: string; data: unknown }>) {
+  const serialized = JSON.stringify(blocks);
+  useEffect(() => {
+    const parsed: Array<{ id: string; data: unknown }> = JSON.parse(serialized);
+    const created: HTMLScriptElement[] = [];
+    for (const block of parsed) {
+      const scriptId = `jsonld-${block.id}`;
+      let el = document.getElementById(scriptId) as HTMLScriptElement | null;
+      if (!el) {
+        el = document.createElement("script");
+        el.type = "application/ld+json";
+        el.id = scriptId;
+        document.head.appendChild(el);
+      }
+      el.textContent = JSON.stringify(block.data);
+      created.push(el);
+    }
+    return () => {
+      created.forEach((el) => el.remove());
+    };
+  }, [serialized]);
+}
+
 // Lightweight client-side click tracking helper. Best-effort — never blocks UI.
 export function trackClick(label: string, extra?: { path?: string }) {
   try {

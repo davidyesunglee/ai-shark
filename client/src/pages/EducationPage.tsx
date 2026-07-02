@@ -490,7 +490,10 @@ export default function EducationPage() {
               <span className="font-semibold text-lg" data-testid="text-app-title">AI Shark</span>
             </div>
           </Link>
-          <nav aria-label="Main navigation">
+          <nav aria-label="Main navigation" className="flex items-center gap-2">
+            <Link href="/guides">
+              <Button variant="ghost" data-testid="button-guides">Guides</Button>
+            </Link>
             <Link href="/">
               <Button variant="ghost" data-testid="button-back-home">
                 <ArrowLeft className="mr-2 h-4 w-4" aria-hidden="true" />

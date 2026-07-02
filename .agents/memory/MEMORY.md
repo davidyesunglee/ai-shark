@@ -1,2 +1,3 @@
 - [Stripe managed webhook desync](stripe-managed-webhook-desync.md) — live webhook 400s after deploys; DB↔Stripe endpoint/secret mismatch. Secret read from DB per request, so reconcile DB (no redeploy). Root cause: overlapping deploys race boot setup.
 - [Public AI endpoint abuse controls](public-ai-endpoint-limits.md) — free/unauth endpoints that call Gemini need durable per-IP limit (via site_events) + a global per-minute circuit breaker; req.ip is trustworthy (trust proxy=1 in replitAuth).
+- [SEO content pages (guides)](seo-content-pages.md) — content in shared/ so sitemap imports slugs; useJsonLd hook; call SEO hooks before NotFound early return; add dynamic paths to isTrackedPath() analytics allowlist.
