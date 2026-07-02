@@ -363,6 +363,294 @@ export const guides: Guide[] = [
       },
     ],
   },
+  {
+    slug: "sba-loan-requirements",
+    title: "SBA Loan Requirements: What You Need to Qualify | AI Shark",
+    h1: "SBA Loan Requirements: What You Actually Need to Qualify",
+    metaDescription:
+      "A plain-language checklist of SBA loan requirements — credit score, time in business, down payment, cash flow, and the documents lenders ask for before they say yes.",
+    category: "Getting Approved",
+    readTime: "7 min read",
+    updated: "July 2026",
+    intro:
+      "SBA loans offer some of the best terms a small business can get, but the approval bar is specific. The good news is that the requirements are predictable. Here is exactly what lenders check and how to know if you are ready before you apply.",
+    sections: [
+      {
+        heading: "The core eligibility requirements",
+        bullets: [
+          "For-profit business operating in the United States.",
+          "You have invested your own time or money into the business (owner equity at stake).",
+          "You have exhausted other reasonable financing options first.",
+          "The business qualifies as a small business under SBA size standards for its industry.",
+          "No unresolved defaults or delinquencies on existing government debt.",
+        ],
+      },
+      {
+        heading: "The numbers lenders look at",
+        bullets: [
+          "Personal credit score — most SBA lenders want roughly 680 or higher.",
+          "Time in business — two or more years is ideal; startups can qualify but face more scrutiny.",
+          "Down payment — expect to contribute around 10% of the project cost from your own funds.",
+          "Debt service coverage ratio (DSCR) — generally 1.15x to 1.25x or better.",
+          "A clear, documented plan for how the loan will be repaid.",
+        ],
+      },
+      {
+        heading: "Documents you will need to prepare",
+        bullets: [
+          "Business and personal tax returns (usually three years).",
+          "Year-to-date financial statements — profit and loss plus balance sheet.",
+          "A business plan with realistic financial projections.",
+          "A personal financial statement for each owner of 20% or more.",
+          "Business licenses, entity documents, and any lease agreements.",
+        ],
+      },
+      {
+        heading: "How to know if you are ready",
+        paragraphs: [
+          "Before you spend weeks assembling a package, check the numbers a lender will run: your DSCR, credit profile, collateral coverage, and debt-to-equity ratio. If any of these fall short, it is far cheaper to fix them now than to be declined and wait months to reapply.",
+          "That is exactly the kind of pre-check AI Shark runs on your plan — scoring it against the same criteria a loan officer uses so you know where you stand before you apply.",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        q: "What credit score do I need for an SBA loan?",
+        a: "Most SBA lenders look for a personal credit score around 680 or higher, though some programs and lenders will consider lower scores with strong cash flow and collateral.",
+      },
+      {
+        q: "How much down payment does an SBA loan require?",
+        a: "A typical SBA loan asks the borrower to contribute about 10% of the total project cost, though this varies by loan type and the strength of the application.",
+      },
+      {
+        q: "Can a startup get an SBA loan?",
+        a: "Yes, but startups face more scrutiny. A strong business plan, solid personal credit, industry experience, and a meaningful equity contribution all improve a startup's odds.",
+      },
+    ],
+  },
+  {
+    slug: "business-loan-down-payment",
+    title: "Business Loan Down Payment: How Much Do You Need? | AI Shark",
+    h1: "How Much Down Payment Do You Need for a Business Loan?",
+    metaDescription:
+      "How much money you need to put down for a business loan, why lenders require owner equity, and how to strengthen your application if your down payment is thin.",
+    category: "Getting Approved",
+    readTime: "5 min read",
+    updated: "July 2026",
+    intro:
+      "One of the first questions a lender asks is how much of your own money you are putting in. This is your down payment, or owner equity, and it tells the bank you share the risk. Here is how much you typically need and why it matters so much.",
+    sections: [
+      {
+        heading: "Typical down payment ranges",
+        bullets: [
+          "SBA loans — usually around 10% of the total project cost.",
+          "Conventional term loans — often 15% to 25%, depending on risk and collateral.",
+          "Commercial real estate — commonly 20% to 30%.",
+          "Equipment financing — sometimes as low as 0% to 20%, since the equipment itself is collateral.",
+        ],
+      },
+      {
+        heading: "Why lenders require owner equity",
+        paragraphs: [
+          "When you put your own money in, you have something to lose if the business struggles. Lenders call this having 'skin in the game,' and it dramatically lowers the risk they take on.",
+          "A larger down payment also reduces the loan amount, which improves your debt service coverage ratio and your loan-to-value — two numbers that directly affect approval and your interest rate.",
+        ],
+      },
+      {
+        heading: "What to do if your down payment is thin",
+        bullets: [
+          "Show strong, stable cash flow to offset a smaller equity contribution.",
+          "Offer additional collateral to lower the lender's loan-to-value risk.",
+          "Bring in a partner or investor to strengthen the equity position.",
+          "Consider an SBA program, which generally requires less money down.",
+          "Wait a few months to build cash reserves if the timing allows.",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        q: "Do all business loans require a down payment?",
+        a: "Not all. Some lines of credit and equipment loans require little or nothing down, but most term loans and real estate loans expect a meaningful owner contribution.",
+      },
+      {
+        q: "Is a bigger down payment always better?",
+        a: "A larger down payment usually means better terms and easier approval, but keep enough cash in reserve to run the business. Lenders want to see working capital, not an empty account.",
+      },
+      {
+        q: "Can I use a loan as my down payment?",
+        a: "Generally no. Lenders want to see that the equity comes from your own funds, not borrowed money, because borrowed equity does not reduce their risk.",
+      },
+    ],
+  },
+  {
+    slug: "financial-projections-for-business-loan",
+    title: "How to Write Financial Projections for a Business Loan | AI Shark",
+    h1: "How to Write Financial Projections Lenders Will Trust",
+    metaDescription:
+      "Learn how to build financial projections for a business loan that banks actually believe — what to include, how far out to forecast, and the mistakes that get plans rejected.",
+    category: "Financial Projections",
+    readTime: "7 min read",
+    updated: "July 2026",
+    intro:
+      "Weak or unrealistic projections are one of the most common reasons banks decline a loan. A lender does not need a fantasy of hockey-stick growth — they need believable numbers backed by clear assumptions. Here is how to build projections that hold up.",
+    sections: [
+      {
+        heading: "What your projections must include",
+        bullets: [
+          "A monthly cash flow forecast for the first 12 to 24 months.",
+          "Projected profit and loss statements for three years.",
+          "A projected balance sheet showing assets, liabilities, and equity.",
+          "Clearly stated assumptions behind every major number.",
+          "A break-even analysis showing when the business covers its costs.",
+        ],
+      },
+      {
+        heading: "Ground every number in an assumption",
+        paragraphs: [
+          "The fastest way to lose a lender's trust is a revenue line with no explanation. For every projection, state where the number comes from: your pricing, expected units sold, your sales pipeline, or comparable businesses.",
+          "Lenders are far more comfortable with modest growth they understand than aggressive growth they cannot verify. Conservative and defensible beats optimistic and vague every time.",
+        ],
+      },
+      {
+        heading: "Stress-test your own forecast",
+        paragraphs: [
+          "Before a bank does it, run a downside scenario where revenue comes in 10 to 20% below plan. Show that you can still cover your loan payments — that your debt service coverage ratio stays above 1.25x even when things go worse than expected.",
+          "When you present the stress test yourself, you answer the lender's biggest worry before they raise it.",
+        ],
+      },
+      {
+        heading: "Common projection mistakes to avoid",
+        bullets: [
+          "Growth rates with no basis in your actual sales history or market.",
+          "Forgetting to include loan payments in the cash flow forecast.",
+          "Understating expenses to make the bottom line look better.",
+          "Round, suspiciously smooth numbers that look estimated rather than calculated.",
+          "No connection between the projections and the rest of the business plan.",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        q: "How many years of projections do banks want?",
+        a: "Most lenders want three years of projected profit and loss and balance sheet figures, with the first one to two years broken down month by month.",
+      },
+      {
+        q: "Should my projections show a profit right away?",
+        a: "Not necessarily. Lenders understand many businesses take time to become profitable. What matters is that your cash flow can cover the loan payments throughout, even during the ramp-up.",
+      },
+      {
+        q: "What makes projections believable to a lender?",
+        a: "Clear assumptions behind every number, consistency with your business plan and market, and a conservative downside scenario that still services the debt.",
+      },
+    ],
+  },
+  {
+    slug: "startup-business-loan-no-revenue",
+    title: "How to Get a Startup Business Loan With Little or No Revenue | AI Shark",
+    h1: "Getting a Startup Business Loan With Little or No Revenue",
+    metaDescription:
+      "Startups without revenue can still get funded. Learn what lenders look at when there is no track record and how to build an application strong enough to overcome it.",
+    category: "Getting Approved",
+    readTime: "6 min read",
+    updated: "July 2026",
+    intro:
+      "Lending to a business with no revenue history is riskier for a bank, so the bar is higher — but it is not impossible. When there is no track record to lean on, lenders weigh other factors more heavily. Here is what actually moves the needle.",
+    sections: [
+      {
+        heading: "What lenders look at when there is no revenue",
+        bullets: [
+          "Your personal credit score and financial history.",
+          "The owner's industry experience and management track record.",
+          "The size of your own equity contribution.",
+          "Collateral you can pledge to secure the loan.",
+          "A detailed, credible business plan with realistic projections.",
+        ],
+      },
+      {
+        heading: "Ways to strengthen a no-revenue application",
+        paragraphs: [
+          "Because you cannot show trailing cash flow, you have to compensate elsewhere. A strong personal credit score, a meaningful down payment, and pledged collateral all reduce the lender's risk and can offset the lack of revenue.",
+          "Your business plan carries more weight than usual. It needs to prove you understand your market, your costs, and exactly how the loan turns into revenue and repayment.",
+        ],
+      },
+      {
+        heading: "Financing options better suited to startups",
+        bullets: [
+          "SBA loans, which are designed to support businesses banks might otherwise decline.",
+          "Equipment financing, where the equipment itself serves as collateral.",
+          "Business credit cards or a small line of credit to build a track record.",
+          "Microloans from community and nonprofit lenders.",
+          "Loans backed by a co-signer or guarantor with strong finances.",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        q: "Can I get a business loan with no revenue?",
+        a: "Yes, but you will need to make up for it with strong personal credit, industry experience, collateral, a solid down payment, and a credible business plan.",
+      },
+      {
+        q: "How much do I need to put down as a startup?",
+        a: "Startups are often asked for a larger equity contribution than established businesses. Putting in more of your own money signals commitment and lowers the lender's risk.",
+      },
+      {
+        q: "Is an SBA loan good for a startup?",
+        a: "SBA loans are one of the most startup-friendly options because the government guarantee lets lenders approve businesses they might otherwise consider too risky.",
+      },
+    ],
+  },
+  {
+    slug: "business-line-of-credit-vs-term-loan",
+    title: "Business Line of Credit vs Term Loan: Which Is Right? | AI Shark",
+    h1: "Business Line of Credit vs Term Loan: Which Do You Need?",
+    metaDescription:
+      "Understand the difference between a business line of credit and a term loan, when to use each, and how lenders evaluate you for both — in plain language.",
+    category: "Loan Types",
+    readTime: "5 min read",
+    updated: "July 2026",
+    intro:
+      "A line of credit and a term loan solve different problems. Choosing the right one makes your application stronger and your financing cheaper. Here is how they differ and when each one makes sense.",
+    sections: [
+      {
+        heading: "How they work",
+        paragraphs: [
+          "A term loan gives you a lump sum up front that you repay in fixed installments over a set period. It is built for a specific, one-time purpose like buying equipment, real estate, or funding an expansion.",
+          "A line of credit gives you a credit limit you can draw from as needed, repay, and draw from again. You only pay interest on what you use. It is built for ongoing or unpredictable needs like managing cash flow or covering short-term gaps.",
+        ],
+      },
+      {
+        heading: "When to use each",
+        bullets: [
+          "Term loan — a large, planned purchase with a clear payback timeline.",
+          "Term loan — when you want predictable, fixed monthly payments.",
+          "Line of credit — smoothing out seasonal or uneven cash flow.",
+          "Line of credit — covering short-term expenses while you wait on receivables.",
+          "Line of credit — keeping flexible access to funds for emergencies.",
+        ],
+      },
+      {
+        heading: "How lenders evaluate you for each",
+        paragraphs: [
+          "For both, lenders check the same core factors: cash flow, credit, collateral, and how much debt you already carry. A term loan puts more weight on your long-term repayment ability and collateral, since the balance is large and fixed.",
+          "A line of credit puts more weight on your ongoing cash flow and how you manage working capital, because the lender is betting on your ability to draw and repay responsibly over time.",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        q: "Is a line of credit or a term loan easier to get?",
+        a: "It depends on your finances. Lines of credit often suit businesses with steady cash flow, while term loans favor those with strong collateral and a clear repayment plan for a specific purpose.",
+      },
+      {
+        q: "Can I have both at the same time?",
+        a: "Yes. Many businesses use a term loan for a major purchase and keep a line of credit available for day-to-day cash flow needs.",
+      },
+      {
+        q: "Which is cheaper?",
+        a: "Term loans often carry lower interest rates for large, secured amounts, while a line of credit can be cheaper for short-term needs because you only pay interest on what you draw.",
+      },
+    ],
+  },
 ];
 
 export function getGuide(slug: string): Guide | undefined {

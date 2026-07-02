@@ -72,7 +72,9 @@ export default function GuidePage() {
     return <NotFound />;
   }
 
-  const related = guides.filter((g) => g.slug !== guide.slug).slice(0, 3);
+  const sameCategory = guides.filter((g) => g.slug !== guide.slug && g.category === guide.category);
+  const otherCategory = guides.filter((g) => g.slug !== guide.slug && g.category !== guide.category);
+  const related = [...sameCategory, ...otherCategory].slice(0, 3);
 
   return (
     <div className="min-h-screen bg-background">
