@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, Shield, CheckCircle, Clock, Users, Award, ArrowRight, Zap, FileText, Star } from "lucide-react";
+import { TrendingUp, Shield, Clock, Users, Award, ArrowRight, Zap, FileText, Star, Landmark, Scale, Target, BarChart3, CircleDollarSign, ShieldAlert, Trophy } from "lucide-react";
 import { Link } from "wouter";
 import { AdPlacement } from "@/components/AdPlacement";
 import { TeaserWidget } from "@/components/TeaserWidget";
@@ -143,7 +143,7 @@ export default function LandingPage() {
                 </div>
                 <h3 className="font-semibold text-lg mb-2">AI Analysis</h3>
                 <p className="text-muted-foreground">
-                  Our AI evaluates your plan against 8 key bank financing criteria used by lenders.
+                  Our AI evaluates your plan against the 10 key bank financing criteria used by lenders.
                 </p>
               </div>
               
@@ -161,71 +161,40 @@ export default function LandingPage() {
         </section>
 
         <section className="container mx-auto px-4 py-16" aria-labelledby="evaluation-criteria-title">
-          <h2 id="evaluation-criteria-title" className="text-3xl font-bold text-center mb-4">What We Evaluate</h2>
+          <h2 id="evaluation-criteria-title" className="text-3xl font-bold text-center mb-4">The 10 Criteria We Evaluate</h2>
           <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
-            Comprehensive analysis across the criteria banks actually use
+            Your plan is scored against the same 10 factors banks weigh for debt financing
           </p>
           
-          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            <Card>
-              <CardHeader>
-                <TrendingUp className="h-10 w-10 text-primary mb-2" aria-hidden="true" />
-                <CardTitle>Financial Viability</CardTitle>
-                <CardDescription>
-                  Cash flow projections, revenue models, and financial sustainability analysis.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <Shield className="h-10 w-10 text-primary mb-2" aria-hidden="true" />
-                <CardTitle>Creditworthiness</CardTitle>
-                <CardDescription>
-                  Debt capacity, collateral assessment, and repayment capability evaluation.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CheckCircle className="h-10 w-10 text-primary mb-2" aria-hidden="true" />
-                <CardTitle>Market Position</CardTitle>
-                <CardDescription>
-                  Industry analysis, competitive landscape, and market opportunity assessment.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <Users className="h-10 w-10 text-primary mb-2" aria-hidden="true" />
-                <CardTitle>Management Team</CardTitle>
-                <CardDescription>
-                  Leadership experience, expertise, and team capability evaluation.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <Award className="h-10 w-10 text-primary mb-2" aria-hidden="true" />
-                <CardTitle>Business Model</CardTitle>
-                <CardDescription>
-                  Revenue strategy, scalability, and long-term growth potential.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <FileText className="h-10 w-10 text-primary mb-2" aria-hidden="true" />
-                <CardTitle>Plan Quality</CardTitle>
-                <CardDescription>
-                  Completeness, clarity, and professional presentation of your plan.
-                </CardDescription>
-              </CardHeader>
-            </Card>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {[
+              { icon: Shield, title: "Creditworthiness & Credit History", desc: "Credit history, borrowing track record, and repayment reliability." },
+              { icon: TrendingUp, title: "Cash Flow & Debt Service Coverage", desc: "Whether your cash flow comfortably covers loan payments (DSCR)." },
+              { icon: Landmark, title: "Collateral & Asset Base", desc: "Assets available to secure the loan and reduce lender risk." },
+              { icon: Scale, title: "Debt-to-Equity & Capital Structure", desc: "How your existing debt and owner investment balance out." },
+              { icon: Target, title: "Market Viability & Demand", desc: "Real demand, market size, and growth potential for your offering." },
+              { icon: Users, title: "Management Team & Experience", desc: "Leadership track record and the team's ability to execute." },
+              { icon: BarChart3, title: "Financial Projections & Assumptions", desc: "How realistic and well-supported your forecasts are." },
+              { icon: CircleDollarSign, title: "Revenue Model & Profitability", desc: "How you make money and your path to sustained profit." },
+              { icon: ShieldAlert, title: "Industry & Regulatory Risk", desc: "Industry headwinds and regulatory factors lenders weigh." },
+              { icon: Trophy, title: "Competitive Position & Differentiation", desc: "What sets you apart and protects you from competitors." },
+            ].map((c, i) => {
+              const Icon = c.icon;
+              return (
+                <Card key={i} data-testid={`card-criteria-${i}`}>
+                  <CardHeader>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-bold" aria-hidden="true">
+                        {i + 1}
+                      </div>
+                      <Icon className="h-6 w-6 text-primary" aria-hidden="true" />
+                    </div>
+                    <CardTitle className="text-lg">{c.title}</CardTitle>
+                    <CardDescription>{c.desc}</CardDescription>
+                  </CardHeader>
+                </Card>
+              );
+            })}
           </div>
         </section>
 

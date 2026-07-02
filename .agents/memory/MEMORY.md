@@ -2,3 +2,4 @@
 - [Public AI endpoint abuse controls](public-ai-endpoint-limits.md) — free/unauth endpoints that call Gemini need durable per-IP limit (via site_events) + a global per-minute circuit breaker; req.ip is trustworthy (trust proxy=1 in replitAuth).
 - [SEO content pages (guides)](seo-content-pages.md) — content in shared/ so sitemap imports slugs; useJsonLd hook; call SEO hooks before NotFound early return; add dynamic paths to isTrackedPath() analytics allowlist.
 - [Registration form & schema](registration-form.md) — only username+email required; address nullable but country stays NOT NULL; all readers (routes CSV + emailScheduler CSV/HTML) must be null-safe; schema via db:push not migration files.
+- [Marketing copy ↔ backend sync](marketing-copy-sync.md) — public copy must match backend truth: 10 criteria (canonical list in server/openai.ts) + 6 financial ratios; no shared config yet, so reconcile both sides on edits.
