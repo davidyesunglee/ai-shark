@@ -24,3 +24,11 @@ page erode trust.
 copy is hand-written, backend list lives in openai.ts) — so when you touch either
 the prompt criteria OR marketing copy, grep the other side for the count/names and
 reconcile. A shared `shared/` constant would remove this drift risk if it recurs.
+
+## Visible FAQ ↔ FAQPage JSON-LD parity
+
+The landing page (`client/src/pages/LandingPage.tsx`) renders a visible accordion
+FAQ whose 5 Q&A must stay **byte-for-byte identical** to the `FAQPage` JSON-LD in
+`client/index.html`. Google flags FAQ structured data that doesn't match visible
+content. When editing either, update both. (This is a second hand-maintained
+copy pair with no shared source — same drift risk as the criteria list.)
