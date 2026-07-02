@@ -46,3 +46,12 @@ and the unique constraint is on `(url, account_id)` while upsert keys on `id`.
 ## Prevention
 **Avoid rapid consecutive production redeploys** — that's what triggers the race.
 Deploy once and let boot settle before deploying again.
+
+## Client UX: post-payment credit lag
+Credits are granted by the Stripe webhook, which can lag seconds after the user
+returns from Checkout. Any UI that gates on `creditsRemaining` right after payment
+(e.g. dashboard opened via `/dashboard?upload=1` from the success page) must
+tolerate this: briefly poll `/api/billing/status` (refetchInterval, ~2s, bounded
+~20s) and show a "finalizing your purchase" state instead of re-showing the
+paywall. **Why:** without the grace poll the buyer sees the upsell again right
+after paying — the worst possible conversion moment.

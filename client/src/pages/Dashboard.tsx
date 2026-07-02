@@ -40,6 +40,7 @@ export default function Dashboard() {
   const [uploadOpen, setUploadOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [viewingId, setViewingId] = useState<string | null>(null);
+  const [pollingCredits, setPollingCredits] = useState(false);
   const { toast } = useToast();
   const previousStatusRef = useRef<Map<string, string>>(new Map());
   const [, setLocation] = useLocation();
@@ -51,6 +52,7 @@ export default function Dashboard() {
   const { data: billingStatus, isLoading: isBillingLoading } = useQuery<{ tier: string; creditsRemaining: number; hasActiveSubscription: boolean }>({
     queryKey: ["/api/billing/status"],
     enabled: registrationStatus?.isRegistered === true,
+    refetchInterval: pollingCredits ? 2000 : false,
   });
 
   useEffect(() => {
@@ -58,6 +60,38 @@ export default function Dashboard() {
       setLocation("/register");
     }
   }, [isCheckingRegistration, registrationStatus, setLocation]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("upload") === "1") {
+      setUploadOpen(true);
+      setPollingCredits(true);
+      params.delete("upload");
+      const newQuery = params.toString();
+      window.history.replaceState(
+        {},
+        "",
+        window.location.pathname + (newQuery ? `?${newQuery}` : "")
+      );
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!pollingCredits) return;
+    const timer = setTimeout(() => setPollingCredits(false), 20000);
+    return () => clearTimeout(timer);
+  }, [pollingCredits]);
+
+  useEffect(() => {
+    if (
+      pollingCredits &&
+      billingStatus &&
+      billingStatus.tier !== "free" &&
+      billingStatus.creditsRemaining > 0
+    ) {
+      setPollingCredits(false);
+    }
+  }, [pollingCredits, billingStatus]);
 
   const { data: assessments = [], isLoading } = useQuery<ApiAssessment[]>({
     queryKey: ["/api/assessments"],
@@ -151,10 +185,10 @@ export default function Dashboard() {
       setIsUploading(false);
       if (error.message.startsWith("PAYMENT_REQUIRED:")) {
         setUploadOpen(false);
+        sessionStorage.setItem("pendingUpload", "1");
         toast({
-          title: "Payment Required",
-          description: "You need to purchase an evaluation plan to analyze business plans.",
-          variant: "destructive",
+          title: "You're one step away",
+          description: "Choose a plan to unlock your business plan evaluation.",
         });
         setLocation("/pricing");
         return;
@@ -432,6 +466,9 @@ export default function Dashboard() {
         onOpenChange={setUploadOpen}
         onUpload={handleUpload}
         isUploading={isUploading}
+        needsPayment={needsPayment}
+        tier={billingStatus?.tier}
+        processingPayment={pollingCredits && needsPayment}
       />
 
       <footer className="border-t mt-12" role="contentinfo">

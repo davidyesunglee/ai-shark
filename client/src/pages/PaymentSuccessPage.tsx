@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,9 +7,14 @@ import { queryClient } from "@/lib/queryClient";
 
 export default function PaymentSuccessPage() {
   const [, setLocation] = useLocation();
+  const [hadPendingUpload, setHadPendingUpload] = useState(false);
 
   useEffect(() => {
     queryClient.invalidateQueries({ queryKey: ["/api/billing/status"] });
+    if (sessionStorage.getItem("pendingUpload") === "1") {
+      setHadPendingUpload(true);
+      sessionStorage.removeItem("pendingUpload");
+    }
   }, []);
 
   return (
@@ -27,23 +32,25 @@ export default function PaymentSuccessPage() {
               Thank you for your purchase. Your evaluation credits have been added to your account.
             </p>
             <p className="text-sm text-muted-foreground">
-              You can now upload business plans and receive AI-powered assessments.
+              {hadPendingUpload
+                ? "You're all set — upload the business plan you were about to analyze."
+                : "You can now upload business plans and receive AI-powered assessments."}
             </p>
             <div className="pt-4 space-y-2">
               <Button
+                className="w-full"
+                data-testid="button-upload-plan"
+                onClick={() => setLocation("/dashboard?upload=1")}
+              >
+                Upload Business Plan
+              </Button>
+              <Button
+                variant="outline"
                 className="w-full"
                 data-testid="button-go-dashboard"
                 onClick={() => setLocation("/dashboard")}
               >
                 Go to Dashboard
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full"
-                data-testid="button-upload-plan"
-                onClick={() => setLocation("/dashboard")}
-              >
-                Upload Business Plan
               </Button>
             </div>
           </CardContent>
