@@ -1,0 +1,1 @@
+- [Stripe managed webhook desync](stripe-managed-webhook-desync.md) — live webhook 400s after deploys; DB↔Stripe endpoint/secret mismatch. Secret read from DB per request, so reconcile DB (no redeploy). Root cause: overlapping deploys race boot setup.
