@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, Star, Zap, Shield, CreditCard } from "lucide-react";
+import { Check, Star, Zap, Shield, CreditCard, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/use-auth";
@@ -213,6 +213,15 @@ export default function PricingPage() {
             <CreditCard className="h-4 w-4 text-blue-500" aria-hidden="true" />
             <span>Secure Payments via Stripe</span>
           </div>
+        </div>
+
+        <div className="text-center mb-10">
+          <Link href="/sample">
+            <Button variant="outline" data-testid="button-pricing-sample">
+              <FileText className="h-4 w-4 mr-2" aria-hidden="true" />
+              See what a full report looks like
+            </Button>
+          </Link>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">

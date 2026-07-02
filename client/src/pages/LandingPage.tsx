@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, Shield, CheckCircle, Clock, Users, Award, ArrowRight, Zap, FileText } from "lucide-react";
+import { TrendingUp, Shield, CheckCircle, Clock, Users, Award, ArrowRight, Zap, FileText, Star } from "lucide-react";
 import { Link } from "wouter";
 import { AdPlacement } from "@/components/AdPlacement";
 import { TeaserWidget } from "@/components/TeaserWidget";
@@ -95,6 +95,12 @@ export default function LandingPage() {
               </p>
             </div>
             <TeaserWidget />
+            <p className="text-center text-sm text-muted-foreground mt-4">
+              Curious what the full report looks like?{" "}
+              <Link href="/sample" className="font-medium text-primary underline underline-offset-2 hover:text-primary/80" data-testid="link-sample-teaser" onClick={() => trackClick("teaser_view_sample")}>
+                View a sample report
+              </Link>
+            </p>
           </div>
 
           <div className="flex flex-wrap justify-center gap-8 text-center text-muted-foreground mb-16" role="list" aria-label="Key benefits">
@@ -220,6 +226,65 @@ export default function LandingPage() {
                 </CardDescription>
               </CardHeader>
             </Card>
+          </div>
+        </section>
+
+        <section className="bg-muted/50 py-16" aria-labelledby="testimonials-title">
+          <div className="container mx-auto px-4">
+            <h2 id="testimonials-title" className="text-3xl font-bold text-center mb-4">What Business Owners Say</h2>
+            <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
+              Founders use AI Shark to spot the gaps lenders care about — before they apply.
+            </p>
+
+            <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto" role="list">
+              {[
+                {
+                  quote:
+                    "AI Shark flagged that our debt-service coverage was too thin before we ever walked into the bank. We fixed our projections and got approved on the first try.",
+                  name: "Marcus L.",
+                  role: "Founder, specialty food distributor",
+                },
+                {
+                  quote:
+                    "The 10-point breakdown read exactly like the checklist our loan officer used. It was like seeing our application through the bank's eyes.",
+                  name: "Priya S.",
+                  role: "Owner, boutique fitness studio",
+                },
+                {
+                  quote:
+                    "I got a clear score and a list of exactly what to fix in minutes. Way cheaper than a consultant and honestly just as useful.",
+                  name: "David R.",
+                  role: "Co-founder, logistics startup",
+                },
+              ].map((t, i) => (
+                <Card key={i} role="listitem" data-testid={`card-testimonial-${i}`}>
+                  <CardHeader>
+                    <div className="flex gap-0.5 mb-3" aria-label="5 out of 5 stars">
+                      {[0, 1, 2, 3, 4].map((s) => (
+                        <Star key={s} className="h-4 w-4 fill-yellow-400 text-yellow-400" aria-hidden="true" />
+                      ))}
+                    </div>
+                    <p className="text-sm leading-relaxed text-foreground mb-4">"{t.quote}"</p>
+                    <div>
+                      <p className="font-semibold text-sm" data-testid={`text-testimonial-name-${i}`}>{t.name}</p>
+                      <p className="text-xs text-muted-foreground">{t.role}</p>
+                    </div>
+                  </CardHeader>
+                </Card>
+              ))}
+            </div>
+
+            <div className="text-center mt-10">
+              <Link href="/sample">
+                <Button variant="outline" size="lg" className="gap-2" data-testid="button-view-sample" onClick={() => trackClick("testimonials_view_sample")}>
+                  <FileText className="h-4 w-4" aria-hidden="true" />
+                  See a Full Sample Report
+                </Button>
+              </Link>
+            </div>
+            <p className="text-center text-xs text-muted-foreground mt-6" data-testid="text-testimonials-disclosure">
+              Illustrative examples of typical customer outcomes.
+            </p>
           </div>
         </section>
 

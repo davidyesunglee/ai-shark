@@ -14,6 +14,7 @@ import AboutPage from "@/pages/AboutPage";
 import EducationPage from "@/pages/EducationPage";
 import RegistrationPage from "@/pages/RegistrationPage";
 import PricingPage from "@/pages/PricingPage";
+import SamplePage from "@/pages/SamplePage";
 import PaymentSuccessPage from "@/pages/PaymentSuccessPage";
 import VerifyEmailPage from "@/pages/VerifyEmailPage";
 import PrivacyPolicyPage from "@/pages/PrivacyPolicyPage";
@@ -57,6 +58,7 @@ function Router() {
       <Route path="/verify-email" component={VerifyEmailPage} />
       <Route path="/register" component={RegistrationPage} />
       <Route path="/pricing" component={PricingPage} />
+      <Route path="/sample" component={SamplePage} />
       <Route path="/payment/success" component={PaymentSuccessPage} />
       <Route path="/dashboard">
         {isAuthenticated ? <Dashboard /> : <Redirect to="/login" />}

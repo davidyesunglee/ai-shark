@@ -64,6 +64,7 @@ export interface FullAssessment {
 interface AssessmentReportProps {
   assessment: FullAssessment;
   onBack: () => void;
+  publicMode?: boolean;
 }
 
 function gradeColor(grade?: string): string {
@@ -244,7 +245,7 @@ function handleExportPDF(assessment: FullAssessment) {
   setTimeout(() => printWindow.print(), 500);
 }
 
-export function AssessmentReport({ assessment, onBack }: AssessmentReportProps) {
+export function AssessmentReport({ assessment, onBack, publicMode = false }: AssessmentReportProps) {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
@@ -508,9 +509,11 @@ export function AssessmentReport({ assessment, onBack }: AssessmentReportProps) 
         />
       </section>
 
-      <div className="mt-6">
-        <SatisfactionSurvey assessmentId={assessment.id} />
-      </div>
+      {!publicMode && (
+        <div className="mt-6">
+          <SatisfactionSurvey assessmentId={assessment.id} />
+        </div>
+      )}
 
       <div className="mt-8 pt-6 border-t">
         <p className="text-xs text-muted-foreground text-center" data-testid="text-disclaimer">

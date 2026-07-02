@@ -376,35 +376,67 @@ ${pages
     }
   });
 
-  // Customer feedback endpoint (public - no auth required)
-  app.post("/api/feedback", async (req, res) => {
+  // Customer feedback endpoint (public - no auth required).
+  // Rate limited per IP to prevent spam/abuse of this open endpoint.
+  const FEEDBACK_PER_HOUR = 5;
+  const feedbackUsage = new Map<string, { count: number; resetAt: number }>();
+  setInterval(() => {
+    const now = Date.now();
+    feedbackUsage.forEach((entry, key) => {
+      if (now > entry.resetAt) feedbackUsage.delete(key);
+    });
+  }, 60 * 60 * 1000).unref?.();
+
+  app.post("/api/feedback", async (req: any, res) => {
     try {
+      // Per-IP rate limit (req.ip is trustworthy: Express trust proxy is set).
+      const ip = req.ip || "";
+      if (ip) {
+        const now = Date.now();
+        const entry = feedbackUsage.get(ip);
+        if (!entry || now > entry.resetAt) {
+          feedbackUsage.set(ip, { count: 1, resetAt: now + 60 * 60 * 1000 });
+        } else if (entry.count >= FEEDBACK_PER_HOUR) {
+          return res.status(429).json({ message: "Too many submissions. Please try again later." });
+        } else {
+          entry.count += 1;
+        }
+      }
+
       const validatedData = insertCustomerFeedbackSchema.parse(req.body);
       const feedback = await storage.createCustomerFeedback(validatedData);
-      
-      // Send email notification for new feedback
-      try {
-        const { Resend } = await import("resend");
-        const resend = new Resend(process.env.RESEND_API_KEY);
-        
-        await resend.emails.send({
-          from: "AI Shark <info@aishark.org>",
-          to: "vemangum@gmail.com",
-          subject: `New Customer Feedback: ${validatedData.feedbackType} - ${validatedData.subject}`,
-          html: `
-            <h2>New Customer Feedback Received</h2>
-            <p><strong>From:</strong> ${validatedData.name} (${validatedData.email})</p>
-            <p><strong>Type:</strong> ${validatedData.feedbackType}</p>
-            <p><strong>Subject:</strong> ${validatedData.subject}</p>
-            <p><strong>Message:</strong></p>
-            <p>${validatedData.message}</p>
-            <hr>
-            <p><em>Submitted at: ${new Date().toISOString()}</em></p>
-          `,
-        });
-        console.log("[Feedback] Email notification sent");
-      } catch (emailError) {
-        console.error("[Feedback] Failed to send email notification:", emailError);
+
+      // Skip email notification for anonymous satisfaction ratings to avoid
+      // inbox/quota noise; these are still stored and visible in the admin view.
+      const isAnonymousSurvey =
+        validatedData.feedbackType === "satisfaction" &&
+        (!validatedData.email || validatedData.email === "anonymous@user.com");
+
+      // Send email notification for new feedback (skipped for anonymous surveys).
+      if (!isAnonymousSurvey) {
+        try {
+          const { Resend } = await import("resend");
+          const resend = new Resend(process.env.RESEND_API_KEY);
+
+          await resend.emails.send({
+            from: "AI Shark <info@aishark.org>",
+            to: "vemangum@gmail.com",
+            subject: `New Customer Feedback: ${validatedData.feedbackType} - ${validatedData.subject}`,
+            html: `
+              <h2>New Customer Feedback Received</h2>
+              <p><strong>From:</strong> ${validatedData.name} (${validatedData.email})</p>
+              <p><strong>Type:</strong> ${validatedData.feedbackType}</p>
+              <p><strong>Subject:</strong> ${validatedData.subject}</p>
+              <p><strong>Message:</strong></p>
+              <p>${validatedData.message}</p>
+              <hr>
+              <p><em>Submitted at: ${new Date().toISOString()}</em></p>
+            `,
+          });
+          console.log("[Feedback] Email notification sent");
+        } catch (emailError) {
+          console.error("[Feedback] Failed to send email notification:", emailError);
+        }
       }
       
       res.json({ success: true, feedback });

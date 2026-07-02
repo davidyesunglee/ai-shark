@@ -27,3 +27,16 @@ which triggers a paid Gemini call. Unauthenticated + paid = cost-abuse target.
 limits was trivially bypassable and could drive unbounded AI spend.
 **How to apply:** reuse this pattern for any future public endpoint that calls a
 paid model.
+
+## Other public write endpoints
+`/api/feedback` is unauthenticated (used by contact form + the satisfaction
+survey). It is per-IP rate limited and skips the notification email for
+anonymous satisfaction submissions to avoid inbox/quota noise.
+
+## Reusing the full report component publicly
+The dashboard's report component embeds a feedback survey that POSTs to
+`/api/feedback`. Anything that renders the full report on a public/marketing
+page (e.g. the `/sample` page) must pass a public/sample flag so the survey is
+NOT rendered — otherwise anonymous/bot traffic pollutes feedback data.
+**Why:** caught in review; a public sample page rendering the survey turns an
+open write endpoint into a spam target.
