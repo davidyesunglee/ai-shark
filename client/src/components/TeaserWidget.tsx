@@ -93,9 +93,15 @@ export function TeaserWidget() {
               <Lock className="h-4 w-4" aria-hidden="true" />
               <span className="text-sm font-medium">Unlock the full report</span>
             </div>
-            <p className="text-sm text-muted-foreground mb-4 max-w-md mx-auto">
+            <p className="text-sm text-muted-foreground mb-3 max-w-md mx-auto">
               Get the complete 10-criteria breakdown, SWOT, market analysis, 6 financial ratios,
               specific recommendations, and a downloadable PDF.
+            </p>
+            <p className="text-sm mb-4 max-w-md mx-auto" data-testid="text-teaser-pricing">
+              <span className="font-semibold text-foreground">Just $13.99</span>
+              <span className="text-muted-foreground"> for a one-time report, or </span>
+              <span className="font-semibold text-foreground">$6.99/mo</span>
+              <span className="text-muted-foreground"> for 2 evaluations every month — a fraction of what a loan consultant charges.</span>
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link href="/signup">

@@ -260,8 +260,11 @@ export default function LandingPage() {
         <section className="bg-primary text-primary-foreground py-16" aria-labelledby="cta-title">
           <div className="container mx-auto px-4 text-center">
             <h2 id="cta-title" className="text-3xl font-bold mb-4">Ready to Know Your Score?</h2>
-            <p className="text-xl opacity-90 mb-8 max-w-2xl mx-auto">
+            <p className="text-xl opacity-90 mb-3 max-w-2xl mx-auto">
               Join businesses using AI Shark to improve their financing outcomes.
+            </p>
+            <p className="opacity-90 mb-8 max-w-2xl mx-auto" data-testid="text-cta-pricing">
+              Full reports from just <span className="font-semibold">$13.99</span> — or <span className="font-semibold">$6.99/mo</span> for 2 evaluations every month.
             </p>
             <Link href="/signup">
               <Button size="lg" variant="outline" className="gap-2 bg-background/10 backdrop-blur border-primary-foreground/20 text-primary-foreground hover:bg-background/20" data-testid="button-cta-bottom" onClick={() => trackClick("bottom_cta_get_started")}>
