@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { TrendingUp, Shield, CheckCircle, Clock, Users, Award, ArrowRight, Zap, FileText } from "lucide-react";
 import { Link } from "wouter";
 import { AdPlacement } from "@/components/AdPlacement";
+import { TeaserWidget } from "@/components/TeaserWidget";
 import logoImage from "@assets/AI_Shark_logo_1770083549283.png";
 import { useSEO, trackClick } from "@/lib/useSEO";
 
@@ -65,18 +66,35 @@ export default function LandingPage() {
               Discover strengths, fix weaknesses, and increase your approval chances.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Link href="/signup">
+              <a href="#free-preview">
                 <Button size="lg" className="gap-2" data-testid="button-get-started" onClick={() => trackClick("hero_get_started")}>
-                  Get Your Score Now
+                  Get Your Free Score
                   <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </Button>
-              </Link>
+              </a>
               <Link href="/pricing">
                 <Button size="lg" variant="outline" data-testid="button-view-pricing" onClick={() => trackClick("hero_view_pricing")}>
                   View Pricing
                 </Button>
               </Link>
             </div>
+          </div>
+
+          <div id="free-preview" className="scroll-mt-24 max-w-4xl mx-auto mb-4">
+            <div className="text-center mb-6">
+              <Badge variant="secondary" className="mb-3">
+                <Zap className="h-3 w-3 mr-1" aria-hidden="true" />
+                Free instant preview
+              </Badge>
+              <h2 className="text-2xl md:text-3xl font-bold mb-2" data-testid="text-teaser-title">
+                Score your plan free — right now
+              </h2>
+              <p className="text-muted-foreground max-w-xl mx-auto">
+                Upload your business plan and get your overall score, Lender Readiness Grade, and top
+                weaknesses in under a minute. No account required.
+              </p>
+            </div>
+            <TeaserWidget />
           </div>
 
           <div className="flex flex-wrap justify-center gap-8 text-center text-muted-foreground mb-16" role="list" aria-label="Key benefits">

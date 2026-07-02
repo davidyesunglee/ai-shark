@@ -170,6 +170,69 @@ IMPORTANT:
 BUSINESS PLAN CONTENT:
 `;
 
+export interface TeaserResult {
+  overallScore: number;
+  lenderReadinessGrade: string;
+  summary: string;
+  topWeaknesses: string[];
+}
+
+const TEASER_PROMPT = `You are a senior bank loan officer and certified financial analyst evaluating a business plan for commercial debt financing readiness.
+
+Give a FAST, high-level first impression. Do NOT produce a full report. Return a JSON object with EXACTLY this structure:
+
+{
+  "overallScore": <number 0-100>,
+  "lenderReadinessGrade": "<one of: A, B+, B, B-, C+, C, C-, D, F>",
+  "summary": "<a single punchy sentence (max 30 words) summarizing this plan's readiness for bank financing>",
+  "topWeaknesses": ["<the single most important gap>", "<second most important gap>", "<third most important gap>"]
+}
+
+Scoring guide:
+- 85-100 (A): Excellent, meets all bank lending criteria
+- 75-84 (B+/B): Strong with minor gaps
+- 65-74 (B-/C+): Good, some documentation or collateral concerns
+- 50-64 (C/C-): May qualify with significant additional documentation
+- 35-49 (D): Material improvements needed
+- 0-34 (F): Not ready for bank debt financing
+
+IMPORTANT:
+- Base the score on real bank lending criteria (cash flow/DSCR, collateral, creditworthiness, leverage, management, market viability).
+- Keep each weakness to one concrete, specific sentence.
+- Return ONLY valid JSON, no markdown, no code blocks.
+
+BUSINESS PLAN CONTENT:
+`;
+
+export async function analyzeTeaser(content: string): Promise<TeaserResult> {
+  const truncatedContent = content.slice(0, 20000);
+
+  const gemini = getGeminiClient();
+  const response = await gemini.models.generateContent({
+    model: "gemini-2.5-flash",
+    contents: TEASER_PROMPT + truncatedContent,
+    config: {
+      responseMimeType: "application/json",
+    },
+  });
+
+  const resultText = response.text;
+  if (!resultText) {
+    throw new Error("No response from Gemini");
+  }
+
+  try {
+    const result = JSON.parse(resultText) as TeaserResult;
+    if (typeof result.overallScore !== "number" || !Array.isArray(result.topWeaknesses)) {
+      throw new Error("Invalid response structure");
+    }
+    return result;
+  } catch (error) {
+    console.error("Failed to parse Gemini teaser response:", resultText);
+    throw new Error("Failed to parse analysis results");
+  }
+}
+
 export async function analyzeBusinessPlan(content: string): Promise<AnalysisResult> {
   const truncatedContent = content.slice(0, 50000);
 

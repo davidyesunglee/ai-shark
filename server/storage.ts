@@ -46,6 +46,7 @@ export interface IStorage {
   updateFeedback(id: string, updates: Partial<CustomerFeedback>): Promise<CustomerFeedback | undefined>;
   getAssessmentsLastWeek(): Promise<Assessment[]>;
   getAllAssessments(): Promise<Assessment[]>;
+  countSiteEventsByLabel(label: string, ipHash: string, since: Date): Promise<number>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -309,6 +310,27 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(siteEvents)
       .where(gte(siteEvents.occurredAt, oneWeekAgo))
       .orderBy(desc(siteEvents.occurredAt));
+  }
+
+  // Count events with a given label for a hashed IP since a point in time.
+  // Used for durable, multi-instance-safe rate limiting.
+  async countSiteEventsByLabel(label: string, ipHash: string, since: Date): Promise<number> {
+    try {
+      const rows = await db
+        .select({ n: sql<number>`count(*)::int` })
+        .from(siteEvents)
+        .where(
+          and(
+            eq(siteEvents.label, label),
+            eq(siteEvents.ipHash, ipHash),
+            gte(siteEvents.occurredAt, since),
+          ),
+        );
+      return rows[0]?.n ?? 0;
+    } catch (e) {
+      console.error("[SiteEvent] count failed:", (e as Error).message);
+      return 0;
+    }
   }
 }
 

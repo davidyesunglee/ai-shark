@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import multer from "multer";
 import { parseDocument } from "./documentParser";
-import { analyzeBusinessPlan, isOpenAIConfigured } from "./openai";
+import { analyzeBusinessPlan, analyzeTeaser, isOpenAIConfigured } from "./openai";
 import { setupAuth, isAuthenticated } from "./replit_integrations/auth";
 import { insertUserRegistrationSchema, insertCustomerFeedbackSchema } from "@shared/schema";
 import { startWeeklyEmailScheduler, startTransactionEmailScheduler, startRevenueReportScheduler, startExpenseReportScheduler, startWeeklySiteReportScheduler, triggerSiteReportManually, startWeeklyVisitsReportScheduler, triggerVisitsReportManually } from "./emailScheduler";
@@ -122,6 +122,106 @@ export async function registerRoutes(
     } catch (err: any) {
       console.error("[Track Click] error:", err.message);
       res.status(204).end();
+    }
+  });
+
+  // ── Free instant teaser score (no auth) ────────────────────────────
+  // Lets any visitor upload a plan and get a headline score + grade + top
+  // weaknesses for free. The full report stays behind the paywall.
+  //
+  // Abuse controls (this endpoint triggers paid AI calls):
+  //  1. Per-IP daily limit, counted durably in the DB (site_events) so it
+  //     survives restarts and is consistent across instances.
+  //  2. A global per-minute circuit breaker as a hard cap on AI spend that
+  //     cannot be bypassed by rotating/spoofing IPs.
+  // `trust proxy` is set (see replitAuth), so req.ip is the real client IP.
+  const TEASER_DAILY_LIMIT = 3;
+  const TEASER_GLOBAL_PER_MIN = 30;
+  const TEASER_LABEL_ATTEMPT = "teaser_attempt";
+  let teaserGlobalWindowStart = Date.now();
+  let teaserGlobalCount = 0;
+
+  function underGlobalTeaserCap(): boolean {
+    const now = Date.now();
+    if (now - teaserGlobalWindowStart > 60_000) {
+      teaserGlobalWindowStart = now;
+      teaserGlobalCount = 0;
+    }
+    if (teaserGlobalCount >= TEASER_GLOBAL_PER_MIN) return false;
+    teaserGlobalCount += 1;
+    return true;
+  }
+
+  app.post("/api/teaser", upload.single("file"), async (req: any, res) => {
+    try {
+      if (!isOpenAIConfigured()) {
+        return res.status(503).json({ message: "AI analysis is not configured." });
+      }
+
+      // Global hard cap first — protects AI spend even under IP spoofing.
+      if (!underGlobalTeaserCap()) {
+        return res.status(429).json({
+          message: "We're experiencing high demand right now. Please try again in a minute, or sign up to run a full assessment.",
+          rateLimited: true,
+        });
+      }
+
+      // req.ip is trustworthy because Express `trust proxy` is enabled.
+      const ip = req.ip || "";
+      const ipHash = ip
+        ? crypto.createHash("sha256").update(VISITS_HASH_SALT + ip).digest("hex").substring(0, 32)
+        : null;
+
+      // Durable per-IP daily limit via the DB.
+      if (ipHash) {
+        const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        const used = await storage.countSiteEventsByLabel(TEASER_LABEL_ATTEMPT, ipHash, since);
+        if (used >= TEASER_DAILY_LIMIT) {
+          return res.status(429).json({
+            message: "You've used your free previews for today. Sign up to run a full assessment.",
+            rateLimited: true,
+          });
+        }
+      }
+
+      // Accept either an uploaded file or pasted text.
+      let fileContent = "";
+      if (req.file) {
+        try {
+          fileContent = await parseDocument(req.file.buffer, req.file.mimetype);
+        } catch (parseError) {
+          console.error("[Teaser] Document parsing error:", parseError);
+          return res.status(400).json({ message: "Failed to read that document. Try a PDF, DOCX, or TXT file." });
+        }
+      } else if (typeof req.body?.text === "string") {
+        fileContent = req.body.text;
+      }
+
+      if (!fileContent || fileContent.trim().length < 200) {
+        return res.status(400).json({
+          message: "Please provide a business plan with enough content to analyze (at least a few paragraphs).",
+        });
+      }
+
+      // Record the attempt BEFORE the AI call so it counts toward the daily
+      // limit even if many requests arrive concurrently.
+      const ua = ((req.headers["user-agent"] as string) || "").substring(0, 500) || null;
+      const referrer = (req.headers["referer"] as string) || null;
+      await storage.recordSiteEvent({
+        eventType: "click",
+        path: "/",
+        label: TEASER_LABEL_ATTEMPT,
+        referrer: referrer as any,
+        userAgent: ua as any,
+        ipHash: ipHash as any,
+      });
+
+      const result = await analyzeTeaser(fileContent);
+
+      res.json(result);
+    } catch (error: any) {
+      console.error("[Teaser] error:", error?.message);
+      res.status(500).json({ message: "Something went wrong analyzing your plan. Please try again." });
     }
   });
 
