@@ -15,6 +15,7 @@ import EducationPage from "@/pages/EducationPage";
 import RegistrationPage from "@/pages/RegistrationPage";
 import PricingPage from "@/pages/PricingPage";
 import SamplePage from "@/pages/SamplePage";
+import CalculatorPage from "@/pages/CalculatorPage";
 import GuidesPage from "@/pages/GuidesPage";
 import GuidePage from "@/pages/GuidePage";
 import PaymentSuccessPage from "@/pages/PaymentSuccessPage";
@@ -63,6 +64,7 @@ function Router() {
       <Route path="/register" component={RegistrationPage} />
       <Route path="/pricing" component={PricingPage} />
       <Route path="/sample" component={SamplePage} />
+      <Route path="/calculator" component={CalculatorPage} />
       <Route path="/payment/success" component={PaymentSuccessPage} />
       <Route path="/dashboard">
         {isAuthenticated ? <Dashboard /> : <Redirect to="/login" />}
