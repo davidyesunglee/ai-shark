@@ -4,4 +4,5 @@
 - [Registration form & schema](registration-form.md) — only username+email required; address nullable but country stays NOT NULL; all readers (routes CSV + emailScheduler CSV/HTML) must be null-safe; schema via db:push not migration files.
 - [Marketing copy ↔ backend sync](marketing-copy-sync.md) — public copy must match backend truth: 10 criteria (canonical list in server/openai.ts) + 6 financial ratios; visible landing FAQ must stay byte-for-byte with FAQPage JSON-LD in index.html; no shared config, reconcile both sides on edits.
 - [Branding system](branding-system.md) — canonical blue #0846AA (= --primary hsl 217 91% 35%); fin mark for headers/favicon/reports, mascot only for fun spots like landing hero.
+- [Testimonials policy](testimonials-policy.md) — landing testimonial section renders only when shared/testimonials.ts has entries; real quotes only, never fabricate.
 - [Assessment engine is Gemini](ai-provider-is-gemini.md) — AI is Google Gemini (gemini-2.5-flash via @google/genai) despite the misleading server/openai.ts filename; verify import before any user-facing vendor claim.

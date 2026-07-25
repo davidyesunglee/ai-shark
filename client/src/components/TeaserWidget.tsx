@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { FileUpload } from "@/components/FileUpload";
+import { TrustBadges } from "@/components/TrustBadges";
+import { AnalysisProgress } from "@/components/AnalysisProgress";
 import { ScoreRing } from "@/components/ScoreRing";
 import { Badge } from "@/components/ui/badge";
 import { AlertCircle, ArrowRight, Lock, RotateCcw, ShieldAlert } from "lucide-react";
@@ -136,11 +138,7 @@ export function TeaserWidget() {
     <Card className="max-w-2xl mx-auto" data-testid="card-teaser-upload">
       <CardContent className="p-6 md:p-8">
         <FileUpload onUpload={analyze} isUploading={isAnalyzing} />
-        {isAnalyzing && (
-          <p className="mt-4 text-center text-sm text-muted-foreground" data-testid="text-teaser-analyzing">
-            Reading your plan and scoring it against bank lending criteria…
-          </p>
-        )}
+        {isAnalyzing && <AnalysisProgress />}
         {error && (
           <div
             className="mt-4 flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive"
@@ -154,6 +152,9 @@ export function TeaserWidget() {
         <p className="mt-4 text-center text-xs text-muted-foreground">
           Free preview — no account needed. Your file is analyzed, not stored.
         </p>
+        <div className="mt-4">
+          <TrustBadges />
+        </div>
       </CardContent>
     </Card>
   );

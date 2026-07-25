@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { UploadDialog } from "@/components/UploadDialog";
 import { AssessmentReport, type FullAssessment } from "@/components/AssessmentReport";
 import { useToast } from "@/hooks/use-toast";
+import { AnalysisProgress } from "@/components/AnalysisProgress";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { FileText, TrendingUp, CheckCircle, Clock, Loader2, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -341,11 +342,13 @@ export default function Dashboard() {
           <Header />
           <main className="mx-auto max-w-6xl px-6 py-8">
             <div className="text-center space-y-4" role="status" aria-live="polite">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" aria-hidden="true" />
               <p className="text-lg font-semibold">Analyzing Business Plan</p>
               <p className="text-muted-foreground">
                 "{fullAssessment.businessName}" is being analyzed. This may take a minute.
               </p>
+              <div className="max-w-md mx-auto text-left">
+                <AnalysisProgress />
+              </div>
               <button
                 onClick={handleBack}
                 className="text-primary underline"

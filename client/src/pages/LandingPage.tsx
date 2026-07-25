@@ -6,6 +6,8 @@ import { TrendingUp, Shield, Clock, Users, Award, ArrowRight, Zap, FileText, Lan
 import { Link } from "wouter";
 import { AdPlacement } from "@/components/AdPlacement";
 import { TeaserWidget } from "@/components/TeaserWidget";
+import { FreePaidComparison } from "@/components/FreePaidComparison";
+import { TestimonialsSection } from "@/components/TestimonialsSection";
 import logoImage from "@/assets/shark-mark.svg";
 import mascotImage from "@/assets/shark-mascot.png";
 import HowItWorksExplainer from "@/components/HowItWorksExplainer";
@@ -104,6 +106,12 @@ export default function LandingPage() {
               </p>
             </div>
             <TeaserWidget />
+            <div className="mt-6 max-w-2xl mx-auto">
+              <h3 className="mb-3 text-center text-lg font-semibold">
+                What you get free vs. the full report
+              </h3>
+              <FreePaidComparison />
+            </div>
             <p className="text-center text-sm text-muted-foreground mt-4">
               Curious what the full report looks like?{" "}
               <Link href="/sample" className="font-medium text-primary underline underline-offset-2 hover:text-primary/80" data-testid="link-sample-teaser" onClick={() => trackClick("teaser_view_sample")}>
@@ -127,6 +135,8 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
+
+        <TestimonialsSection />
 
         <section className="bg-muted/50 py-16" aria-labelledby="how-it-works-title">
           <div className="container mx-auto px-4">
