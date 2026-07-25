@@ -651,6 +651,191 @@ export const guides: Guide[] = [
       },
     ],
   },
+  {
+    slug: "good-dscr-for-sba-loan",
+    title: "What Is a Good DSCR for an SBA Loan? | AI Shark",
+    h1: "What Is a Good DSCR for an SBA Loan?",
+    metaDescription:
+      "SBA lenders generally want a DSCR of at least 1.15x, and most prefer 1.25x or higher. Learn the exact benchmarks for SBA 7(a) and 504 loans and how to hit them.",
+    category: "SBA Loans",
+    readTime: "5 min read",
+    updated: "July 2026",
+    intro:
+      "The SBA itself sets a lower bar than most banks — but the bank still has to approve you first. Here are the real DSCR benchmarks SBA lenders use for 7(a) and 504 loans, and what to do if you fall short.",
+    sections: [
+      {
+        heading: "The short answer: 1.15x minimum, 1.25x to be competitive",
+        paragraphs: [
+          "SBA Standard Operating Procedures require a debt service coverage ratio of at least 1.15x on 7(a) loans, measured on the business's historical or projected cash flow. That is the floor, not the target.",
+          "In practice, most SBA lenders underwrite to their own credit policy, which usually mirrors conventional standards: 1.25x or better. A file at 1.15x can be approved, but expect more scrutiny, more collateral discussion, and slower processing.",
+        ],
+      },
+      {
+        heading: "Benchmarks by loan program",
+        bullets: [
+          "SBA 7(a) — 1.15x SBA minimum; most lenders want 1.25x+ on projections and 1.15x+ on trailing twelve months.",
+          "SBA 504 — typically 1.15x–1.25x on the combined bank and CDC debt, with real estate cash flow doing the heavy lifting.",
+          "SBA microloans — intermediaries vary widely; character and plan quality often matter as much as the ratio.",
+          "Startups — lenders lean on projected DSCR; expect them to stress-test your revenue assumptions down 10–20%.",
+        ],
+      },
+      {
+        heading: "How SBA lenders actually calculate it",
+        paragraphs: [
+          "Lenders start with your net income, then add back interest, depreciation, amortization, and often the owner's excess compensation — a figure close to EBITDA. They subtract a reasonable owner salary if you underpay yourself, then divide by all annual debt payments including the new SBA loan.",
+          "Add-backs are where applications are won and lost. One-time expenses, discontinued costs, and personal expenses run through the business can all legitimately raise your cash flow figure — but only if you document each one clearly.",
+        ],
+      },
+      {
+        heading: "If you're below 1.15x",
+        bullets: [
+          "Request a longer term — SBA 7(a) working-capital loans can run 10 years, real estate 25 years, which lowers annual debt service.",
+          "Document add-backs aggressively but honestly: one-time legal fees, owner's health insurance, discontinued leases.",
+          "Reduce the loan request or phase the project so the first tranche cash-flows.",
+          "Show post-loan income: if the loan directly adds revenue (new equipment, new location), build a projection the lender can verify.",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        q: "Is DSCR for an SBA loan calculated on past or projected cash flow?",
+        a: "Both. Established businesses are judged mostly on their trailing twelve months or last fiscal year, with projections as support. Startups and expansion loans lean on projections, which lenders stress-test before believing.",
+      },
+      {
+        q: "Can I get an SBA loan with a DSCR below 1.15x?",
+        a: "Rarely. The SBA's own guidelines set 1.15x as the general floor, and lenders must justify exceptions. A stronger path is restructuring the request — longer term, smaller amount, or documented add-backs — until the ratio clears 1.15x.",
+      },
+      {
+        q: "Does personal income count toward SBA DSCR?",
+        a: "Some lenders use a global DSCR that combines business cash flow with the guarantor's personal income and personal debts. Strong personal cash flow can offset a marginal business ratio, and weak personal finances can hurt an otherwise good file.",
+      },
+    ],
+  },
+  {
+    slug: "sba-loan-denial-reasons",
+    title: "Top 9 SBA Loan Denial Reasons (and How to Fix Each) | AI Shark",
+    h1: "Why SBA Loans Get Denied: The 9 Most Common Reasons",
+    metaDescription:
+      "Most SBA loan denials come down to nine fixable issues — weak cash flow, credit problems, incomplete paperwork, and more. See the list and how to fix each before you reapply.",
+    category: "SBA Loans",
+    readTime: "6 min read",
+    updated: "July 2026",
+    intro:
+      "An SBA denial is rarely final — it is a diagnosis. Lenders decline for a short list of predictable reasons, and nearly all of them can be fixed before you reapply. Here are the nine that account for most denials.",
+    sections: [
+      {
+        heading: "The nine most common denial reasons",
+        bullets: [
+          "Insufficient cash flow — DSCR below the lender's threshold is the single most common reason.",
+          "Low credit scores — personal FICO below ~650 or a low SBSS small-business score.",
+          "Too little time in business — under two years puts you in the highest-risk bucket.",
+          "Incomplete or inconsistent paperwork — numbers that don't match between tax returns, financials, and the application.",
+          "Weak business plan — no clear use of funds, no repayment story, unrealistic projections.",
+          "Existing debt load — too much leverage before the new loan is even added.",
+          "Insufficient owner equity — little of your own money invested in the business.",
+          "Prior government debt problems — defaulted federal loans or unresolved tax liens are near-automatic declines.",
+          "Industry or eligibility issues — restricted industries, ineligible business structures, or unresolved character questions.",
+        ],
+      },
+      {
+        heading: "What a denial actually tells you",
+        paragraphs: [
+          "Lenders are required to give you the reason for an SBA denial in writing. Get it, because it tells you exactly what to fix. A cash-flow denial and a paperwork denial call for completely different responses.",
+          "A denial from one SBA lender is not a denial from all of them. Credit boxes vary: a community bank may decline a file that a non-bank SBA lender or a CDFI will approve. But reapplying without fixing the stated reason usually just produces a second denial and another credit inquiry.",
+        ],
+      },
+      {
+        heading: "How to come back stronger",
+        bullets: [
+          "Cash flow: cut the request, extend the term, or wait for two stronger quarters before reapplying.",
+          "Credit: pay down revolving balances, dispute errors, and resolve any past-due federal obligations first.",
+          "Paperwork: reconcile every number across tax returns, P&L, and the application before resubmitting.",
+          "Business plan: rewrite it around repayment — show the lender exactly how their money comes back.",
+          "Equity: document additional owner injection; even 10% of the project changes the conversation.",
+        ],
+      },
+      {
+        heading: "Fix the file before the bank sees it",
+        paragraphs: [
+          "Every reason on this list is visible in your business plan and financials before a lender ever reads them. Scoring your plan against the same criteria banks use — cash flow coverage, credit readiness, equity, realistic projections — turns a likely denial into a fixable to-do list.",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        q: "How soon can I reapply after an SBA loan denial?",
+        a: "There is no mandatory waiting period from the SBA. Reapply when you have materially fixed the stated denial reason — often 90 days for paperwork or credit issues, and two or more quarters for cash-flow problems.",
+      },
+      {
+        q: "Does an SBA denial hurt my credit?",
+        a: "The denial itself is not reported, but the hard inquiry from the application can trim a few points. Multiple applications in a short window compound the effect, which is another reason to fix the file before reapplying.",
+      },
+      {
+        q: "Can a different lender approve me after a denial?",
+        a: "Yes. SBA lenders set their own credit standards above the SBA minimums, so a file declined at one institution may be approved at another — especially community banks, credit unions, and CDFIs with more flexible credit boxes.",
+      },
+    ],
+  },
+  {
+    slug: "personal-guarantee-business-loan",
+    title: "Personal Guarantees on Business Loans: What You're Really Signing | AI Shark",
+    h1: "Personal Guarantees on Business Loans, Explained",
+    metaDescription:
+      "Almost every small business loan requires a personal guarantee. Learn what it means, when it's required, what's at risk, and how to limit your exposure.",
+    category: "Loan Basics",
+    readTime: "5 min read",
+    updated: "July 2026",
+    intro:
+      "If you own 20% or more of a small business, expect to personally guarantee its loans — SBA rules require it and banks demand it. Here is what that signature actually commits you to and the few ways to limit it.",
+    sections: [
+      {
+        heading: "What a personal guarantee means",
+        paragraphs: [
+          "A personal guarantee makes you personally liable for the business's debt. If the business cannot pay, the lender can pursue your personal assets — savings, investments, and in many cases your home — to collect.",
+          "It exists because limited liability protects owners from business debts by default. The guarantee removes that shield for this one obligation, aligning your risk with the lender's.",
+        ],
+      },
+      {
+        heading: "When it's required",
+        bullets: [
+          "SBA loans — every owner of 20% or more must provide an unlimited personal guarantee. This is not negotiable.",
+          "Bank term loans and lines of credit — nearly always for small and mid-sized businesses.",
+          "Equipment financing — usually, though the equipment itself softens the terms.",
+          "Larger companies with strong balance sheets can sometimes borrow guarantee-free — most small businesses cannot.",
+        ],
+      },
+      {
+        heading: "Limited vs. unlimited guarantees",
+        paragraphs: [
+          "An unlimited guarantee puts you on the hook for the full loan balance plus collection costs. A limited guarantee caps your exposure at a dollar amount or a percentage — common when multiple partners each guarantee their share.",
+          "Spouses may be asked to sign if jointly-owned assets secure the guarantee. Understand exactly which assets are reachable before signing, and get legal advice for any guarantee tied to your home.",
+        ],
+      },
+      {
+        heading: "How to limit your exposure",
+        bullets: [
+          "Negotiate a cap or a burn-off clause that releases the guarantee after a period of on-time payments.",
+          "Ask for the guarantee to exclude your primary residence where state law allows.",
+          "With partners, push for several (proportional) liability instead of joint-and-several.",
+          "Strengthen the loan file itself — better cash flow and collateral give you standing to negotiate terms.",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        q: "Can I get a business loan without a personal guarantee?",
+        a: "For most small businesses, no. Exceptions exist for well-capitalized companies, some equipment financing, and revenue-based products — but expect higher rates in exchange for the lender's added risk.",
+      },
+      {
+        q: "Does a personal guarantee show up on my credit report?",
+        a: "Not by itself. But if the business defaults and the lender pursues you, the collection, judgment, or settlement can hit your personal credit hard.",
+      },
+      {
+        q: "What happens to my guarantee if I sell the business?",
+        a: "It does not automatically go away. You must be formally released by the lender — typically when the loan is paid off or refinanced by the new owner. Get the release in writing at closing.",
+      },
+    ],
+  },
 ];
 
 export function getGuide(slug: string): Guide | undefined {

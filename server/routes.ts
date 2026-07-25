@@ -30,6 +30,7 @@ export async function registerRoutes(
     "/", "/pricing", "/education", "/about", "/contact",
     "/privacy", "/terms", "/login", "/signup", "/register",
     "/dashboard", "/payment/success", "/verify-email", "/guides", "/sample", "/calculator",
+    "/debt-to-equity-calculator", "/glossary", "/partners",
   ]);
   const isTrackedPath = (path: string) =>
     TRACKED_PAGE_PATHS.has(path) || /^\/guides\/[a-z0-9-]+$/.test(path);
@@ -278,6 +279,9 @@ Sitemap: https://aishark.org/sitemap.xml
       { loc: "/education", priority: "0.9", changefreq: "monthly" },
       { loc: "/guides", priority: "0.8", changefreq: "monthly" },
       { loc: "/calculator", priority: "0.8", changefreq: "monthly" },
+      { loc: "/debt-to-equity-calculator", priority: "0.8", changefreq: "monthly" },
+      { loc: "/glossary", priority: "0.8", changefreq: "monthly" },
+      { loc: "/partners", priority: "0.7", changefreq: "monthly" },
       ...guideSlugs.map((slug) => ({
         loc: `/guides/${slug}`,
         priority: "0.7",

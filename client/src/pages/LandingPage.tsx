@@ -358,6 +358,15 @@ export default function LandingPage() {
                 <Link href="/calculator">
                   <span className="hover:text-foreground transition-colors cursor-pointer" data-testid="link-footer-calculator">DSCR Calculator</span>
                 </Link>
+                <Link href="/debt-to-equity-calculator">
+                  <span className="hover:text-foreground transition-colors cursor-pointer" data-testid="link-footer-dte-calculator">Debt-to-Equity Calculator</span>
+                </Link>
+                <Link href="/glossary">
+                  <span className="hover:text-foreground transition-colors cursor-pointer" data-testid="link-footer-glossary">Lending Glossary</span>
+                </Link>
+                <Link href="/partners">
+                  <span className="hover:text-foreground transition-colors cursor-pointer" data-testid="link-footer-partners">For Advisors</span>
+                </Link>
                 <Link href="/education">
                   <span className="hover:text-foreground transition-colors cursor-pointer" data-testid="link-footer-education">Education</span>
                 </Link>
