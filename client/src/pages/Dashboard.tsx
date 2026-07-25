@@ -3,6 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Header } from "@/components/Header";
 import { StatsCard } from "@/components/StatsCard";
+import { ScoreTrendCard, type ScorePoint } from "@/components/ScoreTrendCard";
 import { AssessmentCard, type Assessment } from "@/components/AssessmentCard";
 import { EmptyState } from "@/components/EmptyState";
 import { UploadDialog } from "@/components/UploadDialog";
@@ -258,6 +259,15 @@ export default function Dashboard() {
     overallScore: a.overallScore,
   }));
 
+  const scorePoints: ScorePoint[] = assessments
+    .filter((a) => a.status === "complete" && a.overallScore !== null)
+    .sort((a, b) => new Date(a.uploadDate).getTime() - new Date(b.uploadDate).getTime())
+    .map((a) => ({
+      date: new Date(a.uploadDate).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+      score: a.overallScore as number,
+      businessName: a.businessName,
+    }));
+
   const completedCount = assessments.filter((a) => a.status === "complete").length;
   const avgScore = assessments
     .filter((a) => a.overallScore !== null)
@@ -432,6 +442,12 @@ export default function Dashboard() {
               />
             </div>
           </section>
+
+          {scorePoints.length >= 2 && (
+            <section aria-label="Score trend">
+              <ScoreTrendCard points={scorePoints} />
+            </section>
+          )}
 
           <section aria-label="Recent assessments">
             <h2 className="text-xl font-semibold mb-4">Recent Assessments</h2>
