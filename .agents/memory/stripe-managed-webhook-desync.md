@@ -47,6 +47,15 @@ and the unique constraint is on `(url, account_id)` while upsert keys on `id`.
 **Avoid rapid consecutive production redeploys** — that's what triggers the race.
 Deploy once and let boot settle before deploying again.
 
+**Second root cause found (July 2026): dev boot also managed the live webhook.**
+The webhook URL is hardcoded to aishark.org, and dev+prod use SEPARATE databases,
+so every dev workspace restart deleted/recreated the live endpoint and stored the
+new secret in the DEV db — leaving the prod DB pointing at a dead endpoint. Fixed
+by skipping webhook setup entirely when NODE_ENV !== "production" in server/index.ts.
+Do not remove that guard. After such a desync, a single production republish
+self-heals: boot detects its stored endpoint is gone ("No such webhook endpoint"),
+creates a fresh one, and updates the prod DB row.
+
 ## Client UX: post-payment credit lag
 Credits are granted by the Stripe webhook, which can lag seconds after the user
 returns from Checkout. Any UI that gates on `creditsRemaining` right after payment

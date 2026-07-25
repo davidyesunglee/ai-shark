@@ -136,7 +136,7 @@ export class DatabaseStorage implements IStorage {
   async upsertBillingProfile(userRegistrationId: string, data: Partial<InsertBillingProfile>): Promise<BillingProfile> {
     const existing = await this.getBillingProfile(userRegistrationId);
     if (existing) {
-      const updated = await this.updateBillingProfile(userRegistrationId, data);
+      const updated = await this.updateBillingProfile(userRegistrationId, data as Partial<BillingProfile>);
       return updated!;
     }
     return await this.createBillingProfile({

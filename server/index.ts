@@ -50,7 +50,12 @@ async function initStripe() {
     const replitDomain = process.env.REPLIT_DOMAINS?.split(",")[0];
     const domain = customDomain || replitDomain;
     
-    if (domain) {
+    if (process.env.NODE_ENV !== "production") {
+      // Dev must NOT manage the live webhook: creating/deleting the aishark.org
+      // endpoint from dev invalidates the secret stored in the production DB,
+      // breaking signature verification for real payments.
+      console.log("[Stripe] Skipping webhook setup in development (production endpoint is managed by the deployed app)");
+    } else if (domain) {
       console.log("[Stripe] Setting up managed webhook...");
       const webhookBaseUrl = `https://${domain}`;
       console.log(`[Stripe] Webhook URL: ${webhookBaseUrl}/api/stripe/webhook`);
@@ -299,8 +304,14 @@ async function initializeBackground() {
     try {
       await migrate(db, { migrationsFolder: "./migrations" });
       console.log("[Database] Migrations complete");
-    } catch (error) {
-      console.error("[Database] Migration error:", error);
+    } catch (error: any) {
+      if (error?.code === "42P07") {
+        // Schema is managed via `npm run db:push`; the legacy migration files
+        // overlap with the pushed schema, so "already exists" here is benign.
+        console.log("[Database] Schema already up to date (managed via db:push)");
+      } else {
+        console.error("[Database] Migration error:", error);
+      }
     }
   } else {
     console.log("[Database] Skipping migrations in production");
