@@ -7,7 +7,7 @@ import { analyzeBusinessPlan, analyzeTeaser, isOpenAIConfigured } from "./openai
 import { setupAuth, isAuthenticated } from "./replit_integrations/auth";
 import { insertUserRegistrationSchema, insertCustomerFeedbackSchema } from "@shared/schema";
 import { guideSlugs } from "@shared/guides";
-import { startWeeklyEmailScheduler, startTransactionEmailScheduler, startRevenueReportScheduler, startExpenseReportScheduler, startWeeklySiteReportScheduler, triggerSiteReportManually, startWeeklyVisitsReportScheduler, triggerVisitsReportManually } from "./emailScheduler";
+import { startWeeklyEmailScheduler, startTransactionEmailScheduler, startRevenueReportScheduler, startExpenseReportScheduler, startWeeklySiteReportScheduler, triggerSiteReportManually, startWeeklyVisitsReportScheduler, triggerVisitsReportManually, startTeaserDripScheduler } from "./emailScheduler";
 import crypto from "crypto";
 import { getUncachableStripeClient, getStripePublishableKey } from "./stripeClient";
 import { db } from "./db";
@@ -162,6 +162,12 @@ export async function registerRoutes(
         return res.status(503).json({ message: "AI analysis is not configured." });
       }
 
+      // Email capture wall: a valid email is required to receive the score.
+      const email = typeof req.body?.email === "string" ? req.body.email.trim() : "";
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) {
+        return res.status(400).json({ message: "Please enter a valid email address to see your score." });
+      }
+
       // Global hard cap first — protects AI spend even under IP spoofing.
       if (!underGlobalTeaserCap()) {
         return res.status(429).json({
@@ -222,11 +228,46 @@ export async function registerRoutes(
 
       const result = await analyzeTeaser(fileContent);
 
+      // Save the lead for the remarketing drip (best-effort; never blocks the response).
+      try {
+        await storage.createTeaserLead({
+          email,
+          score: (result as any).overallScore ?? null,
+          grade: (result as any).lenderReadinessGrade ?? null,
+          unsubscribeToken: crypto.randomBytes(24).toString("hex"),
+        } as any);
+      } catch (leadErr: any) {
+        console.error("[Teaser] lead save failed:", leadErr?.message);
+      }
+
       res.json(result);
     } catch (error: any) {
       console.error("[Teaser] error:", error?.message);
       res.status(500).json({ message: "Something went wrong analyzing your plan. Please try again." });
     }
+  });
+
+  // Unsubscribe link used in drip emails (must work without auth).
+  app.get("/api/unsubscribe", async (req, res) => {
+    const token = typeof req.query.token === "string" ? req.query.token : "";
+    let ok = false;
+    if (token) {
+      try {
+        ok = await storage.unsubscribeTeaserLead(token);
+      } catch (e: any) {
+        console.error("[Unsubscribe] error:", e?.message);
+      }
+    }
+    res
+      .status(ok ? 200 : 400)
+      .type("html")
+      .send(
+        `<!doctype html><html><body style="font-family:sans-serif;text-align:center;padding:60px 20px">
+        <h2>${ok ? "You're unsubscribed" : "Link not valid"}</h2>
+        <p>${ok ? "You won't receive any more emails about your free score." : "This unsubscribe link is invalid or already used."}</p>
+        <p><a href="/">Back to AI Shark</a></p>
+        </body></html>`,
+      );
   });
 
   // Admin: trigger weekly visits/clicks report manually
@@ -498,6 +539,7 @@ ${pages
   await setupAuth(app);
   
   startWeeklyEmailScheduler();
+  startTeaserDripScheduler();
   startTransactionEmailScheduler();
   startRevenueReportScheduler();
   startExpenseReportScheduler();
@@ -858,10 +900,10 @@ ${pages
         return res.status(500).json({ message: "Payment system temporarily unavailable. Please try again later." });
       }
 
-      // Fetch the price to determine if it's recurring
+      // Fetch the price (with its product) to determine mode and the real tier
       let price;
       try {
-        price = await stripe.prices.retrieve(priceId);
+        price = await stripe.prices.retrieve(priceId, { expand: ["product"] });
       } catch (priceError: any) {
         console.error("[Checkout] Failed to retrieve price:", priceError.message);
         return res.status(400).json({ message: "Invalid price selected. Please refresh and try again." });
@@ -869,7 +911,12 @@ ${pages
       
       const isSubscription = !!price.recurring;
       const mode = isSubscription ? "subscription" : "payment";
-      const tier = isSubscription ? "subscription" : "one_time";
+      // Tier comes from the Stripe product metadata (subscription, subscription_pro,
+      // subscription_advisor, one_time) — fall back to the legacy inference.
+      const productMetaTier = typeof price.product === "object" && price.product && !("deleted" in price.product)
+        ? (price.product.metadata?.tier as string | undefined)
+        : undefined;
+      const tier = productMetaTier || (isSubscription ? "subscription" : "one_time");
 
       let billingProfile = await storage.getBillingProfile(registration.id);
       let customerId = billingProfile?.stripeCustomerId;
@@ -899,6 +946,7 @@ ${pages
         success_url: `${baseUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${baseUrl}/pricing`,
         automatic_tax: { enabled: true },
+        allow_promotion_codes: true,
         billing_address_collection: "required",
         customer_update: {
           address: "auto",
@@ -946,85 +994,6 @@ ${pages
     }
   });
 
-  app.post("/api/stripe/webhook/process", async (req: any, res) => {
-    try {
-      const event = req.body;
-      
-      if (event.type === "checkout.session.completed") {
-        const session = event.data.object;
-        const userRegistrationId = session.metadata?.userRegistrationId;
-        const tier = session.metadata?.tier;
-
-        if (userRegistrationId) {
-          const credits = tier === "subscription" ? 2 : 1;
-          
-          await storage.upsertBillingProfile(userRegistrationId, {
-            currentTier: tier as any,
-            creditsRemaining: credits,
-            activeSubscriptionId: session.subscription || null,
-            lastPaymentAt: new Date(),
-          });
-
-          await storage.addCredits(userRegistrationId, credits, "purchase");
-
-          await storage.createTransactionRecord({
-            userRegistrationId,
-            stripeCheckoutSessionId: session.id,
-            stripePaymentIntentId: session.payment_intent,
-            amount: session.amount_total,
-            currency: session.currency,
-            taxAmount: session.total_details?.amount_tax,
-            tier: tier as any,
-            paymentStatus: "succeeded",
-            paidAt: new Date(),
-          });
-        }
-      }
-
-      if (event.type === "invoice.payment_succeeded") {
-        const invoice = event.data.object;
-        const customerId = invoice.customer;
-
-        const billingProfile = await storage.getBillingProfileByStripeCustomer(customerId);
-        if (billingProfile && billingProfile.currentTier === "subscription") {
-          await storage.addCredits(billingProfile.userRegistrationId, 2, "reset");
-          await storage.updateBillingProfile(billingProfile.userRegistrationId, {
-            lastPaymentAt: new Date(),
-          });
-
-          await storage.createTransactionRecord({
-            userRegistrationId: billingProfile.userRegistrationId,
-            stripeInvoiceId: invoice.id,
-            amount: invoice.amount_paid,
-            currency: invoice.currency,
-            taxAmount: invoice.tax,
-            tier: "subscription",
-            paymentStatus: "succeeded",
-            paidAt: new Date(),
-          });
-        }
-      }
-
-      if (event.type === "customer.subscription.deleted") {
-        const subscription = event.data.object;
-        const customerId = subscription.customer;
-
-        const billingProfile = await storage.getBillingProfileByStripeCustomer(customerId);
-        if (billingProfile) {
-          await storage.updateBillingProfile(billingProfile.userRegistrationId, {
-            currentTier: "free",
-            activeSubscriptionId: null,
-            creditsRemaining: 0,
-          });
-        }
-      }
-
-      res.json({ received: true });
-    } catch (error) {
-      console.error("Error processing webhook:", error);
-      res.status(500).json({ message: "Webhook processing failed" });
-    }
-  });
 
   return httpServer;
 }

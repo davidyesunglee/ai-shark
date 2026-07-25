@@ -98,7 +98,20 @@ export const insertAssessmentSchema = createInsertSchema(assessments).omit({
 export type InsertAssessment = z.infer<typeof insertAssessmentSchema>;
 export type Assessment = typeof assessments.$inferSelect;
 
-export type PaymentTier = "free" | "subscription" | "one_time";
+export type PaymentTier = "free" | "subscription" | "subscription_pro" | "subscription_advisor" | "one_time";
+
+// Single source of truth for how many credits each paid tier grants per
+// purchase / billing cycle. Used by the Stripe webhook and the seed script.
+export const TIER_CREDITS: Record<Exclude<PaymentTier, "free">, number> = {
+  one_time: 1,
+  subscription: 2,
+  subscription_pro: 20,
+  subscription_advisor: 50,
+};
+
+export function isSubscriptionTier(tier: string | null | undefined): boolean {
+  return typeof tier === "string" && tier.startsWith("subscription");
+}
 export type PaymentStatus = "pending" | "succeeded" | "failed" | "refunded";
 export type CreditReason = "purchase" | "evaluation" | "reset" | "manual";
 
@@ -240,6 +253,28 @@ export const insertSiteEventSchema = createInsertSchema(siteEvents).omit({
 
 export type InsertSiteEvent = z.infer<typeof insertSiteEventSchema>;
 export type SiteEvent = typeof siteEvents.$inferSelect;
+
+// ── Teaser leads (email capture + drip remarketing) ────────────────
+export const teaserLeads = pgTable("teaser_leads", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: varchar("email").notNull(),
+  score: integer("score"),
+  grade: varchar("grade"),
+  dripStage: integer("drip_stage").notNull().default(0), // 0 = none sent, 1..3 = last drip email sent
+  unsubscribeToken: varchar("unsubscribe_token").notNull().unique(),
+  unsubscribedAt: timestamp("unsubscribed_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertTeaserLeadSchema = createInsertSchema(teaserLeads).omit({
+  id: true,
+  createdAt: true,
+  dripStage: true,
+  unsubscribedAt: true,
+});
+
+export type InsertTeaserLead = z.infer<typeof insertTeaserLeadSchema>;
+export type TeaserLead = typeof teaserLeads.$inferSelect;
 
 export * from "./models/chat";
 export * from "./models/auth";

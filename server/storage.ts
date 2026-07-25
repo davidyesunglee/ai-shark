@@ -7,6 +7,9 @@ import {
   advertisingRevenue,
   customerFeedback,
   siteEvents,
+  teaserLeads,
+  type TeaserLead,
+  type InsertTeaserLead,
   type SiteEvent,
   type InsertSiteEvent,
   type Assessment,
@@ -47,6 +50,13 @@ export interface IStorage {
   getAssessmentsLastWeek(): Promise<Assessment[]>;
   getAllAssessments(): Promise<Assessment[]>;
   countSiteEventsByLabel(label: string, ipHash: string, since: Date): Promise<number>;
+  createTeaserLead(lead: InsertTeaserLead): Promise<TeaserLead>;
+  getTeaserLeadsDueForStage(stage: number, createdBefore: Date): Promise<TeaserLead[]>;
+  markTeaserLeadStage(id: string, stage: number): Promise<void>;
+  unsubscribeTeaserLead(token: string): Promise<boolean>;
+  emailHasRegistration(email: string): Promise<boolean>;
+  hasTransactionForCheckoutSession(sessionId: string): Promise<boolean>;
+  hasTransactionForInvoice(invoiceId: string): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -331,6 +341,73 @@ export class DatabaseStorage implements IStorage {
       console.error("[SiteEvent] count failed:", (e as Error).message);
       return 0;
     }
+  }
+
+  // ── Teaser leads (email capture + drip remarketing) ──────────────
+  async createTeaserLead(lead: InsertTeaserLead): Promise<TeaserLead> {
+    const [row] = await db.insert(teaserLeads).values(lead as any).returning();
+    return row;
+  }
+
+  // Leads whose last-sent drip email is `stage - 1`, created long enough ago
+  // for stage N (N days), and not unsubscribed.
+  async getTeaserLeadsDueForStage(stage: number, createdBefore: Date): Promise<TeaserLead[]> {
+    return await db.select().from(teaserLeads)
+      .where(
+        and(
+          eq(teaserLeads.dripStage, stage - 1),
+          isNull(teaserLeads.unsubscribedAt),
+          sql`${teaserLeads.createdAt} <= ${createdBefore}`,
+        ),
+      )
+      .limit(100);
+  }
+
+  async markTeaserLeadStage(id: string, stage: number): Promise<void> {
+    await db.update(teaserLeads).set({ dripStage: stage }).where(eq(teaserLeads.id, id));
+  }
+
+  async unsubscribeTeaserLead(token: string): Promise<boolean> {
+    // Unsubscribe applies to the EMAIL, not just the one lead row — a person
+    // who ran several free previews has several rows, and opting out once
+    // must stop all of them (CAN-SPAM).
+    const rows = await db.update(teaserLeads)
+      .set({ unsubscribedAt: new Date() })
+      .where(eq(teaserLeads.unsubscribeToken, token))
+      .returning({ email: teaserLeads.email });
+    if (rows.length === 0) return false;
+    await db.update(teaserLeads)
+      .set({ unsubscribedAt: new Date() })
+      .where(and(
+        sql`lower(${teaserLeads.email}) = lower(${rows[0].email})`,
+        isNull(teaserLeads.unsubscribedAt),
+      ));
+    return true;
+  }
+
+  // Idempotency guards for Stripe webhook retries / duplicate events.
+  async hasTransactionForCheckoutSession(sessionId: string): Promise<boolean> {
+    const rows = await db.select({ id: transactionRecords.id })
+      .from(transactionRecords)
+      .where(eq(transactionRecords.stripeCheckoutSessionId, sessionId))
+      .limit(1);
+    return rows.length > 0;
+  }
+
+  async hasTransactionForInvoice(invoiceId: string): Promise<boolean> {
+    const rows = await db.select({ id: transactionRecords.id })
+      .from(transactionRecords)
+      .where(eq(transactionRecords.stripeInvoiceId, invoiceId))
+      .limit(1);
+    return rows.length > 0;
+  }
+
+  async emailHasRegistration(email: string): Promise<boolean> {
+    const rows = await db.select({ id: userRegistrations.id })
+      .from(userRegistrations)
+      .where(sql`lower(${userRegistrations.email}) = lower(${email})`)
+      .limit(1);
+    return rows.length > 0;
   }
 }
 

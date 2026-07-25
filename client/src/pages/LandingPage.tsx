@@ -102,7 +102,7 @@ export default function LandingPage() {
               </h2>
               <p className="text-muted-foreground max-w-xl mx-auto">
                 Upload your business plan and get your overall score, Lender Readiness Grade, and top
-                weaknesses in under a minute. No account required.
+                weaknesses in under a minute. No account required — just your email.
               </p>
             </div>
             <TeaserWidget />

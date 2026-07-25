@@ -115,12 +115,12 @@ export default function PricingPage() {
       popular: false,
     },
     {
-      name: "Monthly Subscription",
+      name: "Iteration Plan",
       price: "$6.99",
       period: "/month",
-      description: "Best value for regular users",
+      description: "Very few plans pass on the first try. Upload, get feedback, fix your plan, and re-upload to watch your score improve.",
       features: [
-        "2 business plan evaluations per month",
+        "2 evaluations per month — score, fix, re-score",
         "Full AI-powered analysis",
         "Detailed scoring & recommendations",
         "Download assessment reports",
@@ -141,6 +141,39 @@ export default function PricingPage() {
         "Download assessment report",
       ],
       tier: "one_time",
+      popular: false,
+    },
+  ];
+
+  const advisorPlans = [
+    {
+      name: "Pro Plan",
+      price: "$49",
+      period: "/month",
+      description: "For coaches and consultants who review client plans regularly",
+      features: [
+        "20 evaluations per month",
+        "Full AI-powered analysis on every plan",
+        "Detailed scoring & recommendations",
+        "Downloadable PDF reports for clients",
+        "Priority support",
+      ],
+      tier: "subscription_pro",
+      popular: false,
+    },
+    {
+      name: "Advisor Plan",
+      price: "$99",
+      period: "/month",
+      description: "For SBDCs, CPA firms, and fractional CFOs reviewing plans at volume",
+      features: [
+        "50 evaluations per month",
+        "Full AI-powered analysis on every plan",
+        "Detailed scoring & recommendations",
+        "Downloadable PDF reports for clients",
+        "Priority support",
+      ],
+      tier: "subscription_advisor",
       popular: false,
     },
   ];
@@ -316,6 +349,77 @@ export default function PricingPage() {
           })}
         </div>
 
+        <section className="mt-16 max-w-4xl mx-auto" aria-labelledby="advisor-plans-title">
+          <div className="text-center mb-8">
+            <h2 id="advisor-plans-title" className="text-3xl font-bold mb-3">For Advisors & Firms</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Review business plans for clients? Get volume pricing built for business coaches,
+              accountants, SBDC counselors, and fractional CFOs.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+            {advisorPlans.map((plan) => {
+              const product = getProductForTier(plan.tier);
+              const price = product?.prices?.[0];
+              const isCurrentPlan = billingData?.tier === plan.tier;
+              return (
+                <Card
+                  key={plan.tier}
+                  data-testid={`card-plan-${plan.tier}`}
+                  className="relative flex flex-col"
+                  role="region"
+                  aria-label={`${plan.name} - ${price ? formatPrice(price.unit_amount) : plan.price} ${plan.period}`}
+                >
+                  <CardHeader className="text-center">
+                    <CardTitle className="text-2xl">{plan.name}</CardTitle>
+                    <div className="mt-4">
+                      <span className="text-4xl font-bold">
+                        {price ? formatPrice(price.unit_amount) : plan.price}
+                      </span>
+                      <span className="text-muted-foreground ml-1">{plan.period}</span>
+                    </div>
+                    <CardDescription className="mt-2">{plan.description}</CardDescription>
+                    <p className="text-xs text-muted-foreground mt-1">+ applicable taxes</p>
+                  </CardHeader>
+                  <CardContent className="flex-1">
+                    <ul className="space-y-3" aria-label={`${plan.name} features`}>
+                      {plan.features.map((feature, i) => (
+                        <li key={i} className="flex items-start gap-2">
+                          <Check className="h-5 w-5 text-green-500 shrink-0 mt-0.5" aria-hidden="true" />
+                          <span className="text-sm">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                  <CardFooter>
+                    {isCurrentPlan ? (
+                      <Button variant="secondary" className="w-full" disabled aria-label={`${plan.name} - Current Plan`}>
+                        Current Plan
+                      </Button>
+                    ) : (
+                      <Button
+                        className="w-full"
+                        data-testid={`button-select-${plan.tier}`}
+                        onClick={() => price && handleSelectPlan(price.id, true, plan.tier)}
+                        disabled={processingTier !== null || !price}
+                      >
+                        {processingTier === plan.tier ? (
+                          "Processing..."
+                        ) : (
+                          <>
+                            <Zap className="h-4 w-4 mr-2" aria-hidden="true" />
+                            Subscribe Now
+                          </>
+                        )}
+                      </Button>
+                    )}
+                  </CardFooter>
+                </Card>
+              );
+            })}
+          </div>
+        </section>
+
         <section className="mt-16 max-w-3xl mx-auto" aria-labelledby="faq-title">
           <h2 id="faq-title" className="text-2xl font-bold text-center mb-8">Frequently Asked Questions</h2>
           
@@ -329,10 +433,11 @@ export default function PricingPage() {
             </div>
             
             <div>
-              <h3 className="font-semibold mb-2">How does the subscription work?</h3>
+              <h3 className="font-semibold mb-2">How does the Iteration Plan work?</h3>
               <p className="text-muted-foreground">
-                The monthly subscription gives you 2 business plan evaluations per month. Your credits reset on each billing cycle.
-                You can cancel anytime from your account settings.
+                Very few business plans pass on the first try. The Iteration Plan gives you 2 evaluations per month
+                so you can score your plan, fix what's failing, and re-upload to see your score improve before you
+                approach the bank. Credits reset each billing cycle, and you can cancel anytime from your account settings.
               </p>
             </div>
             

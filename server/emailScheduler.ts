@@ -1,6 +1,6 @@
 import { storage } from "./storage";
 import { Resend } from "resend";
-import type { TransactionRecord } from "@shared/schema";
+import type { TransactionRecord, TeaserLead } from "@shared/schema";
 
 const RECIPIENT_EMAIL = "vemangum@gmail.com";
 const REVENUE_REPORT_EMAIL = "vemangum@gmail.com";
@@ -1411,4 +1411,93 @@ export function startWeeklyVisitsReportScheduler() {
 export async function triggerVisitsReportManually() {
   console.log("[Visits Report] Manual trigger requested");
   await sendWeeklyVisitsReport();
+}
+
+// ── Teaser lead drip (3-day remarketing sequence) ───────────────────
+// Day 1: score recap. Day 2: why banks reject at that score. Day 3: 15% off.
+// Runs hourly; each lead advances at most one stage per run, gated on age.
+// Leads whose email already has a registered account are skipped (they're
+// already in the funnel) but still marked so we don't re-check forever.
+
+const DRIP_DISCOUNT_CODE = "SHARK15";
+const SITE_URL = "https://aishark.org";
+
+function dripFooter(lead: TeaserLead): string {
+  return `<p style="color:#888;font-size:12px;margin-top:32px">
+    You're receiving this because you requested a free business plan score at aishark.org.
+    <a href="${SITE_URL}/api/unsubscribe?token=${lead.unsubscribeToken}">Unsubscribe</a></p>`;
+}
+
+function dripEmail(stage: number, lead: TeaserLead): { subject: string; html: string } {
+  const score = lead.score ?? null;
+  const grade = lead.grade ?? null;
+  const scoreLine = score !== null
+    ? `<p style="font-size:18px">Your plan scored <strong>${score}/100</strong>${grade ? ` (Lender Readiness Grade: <strong>${grade}</strong>)` : ""}.</p>`
+    : "";
+  if (stage === 1) {
+    return {
+      subject: score !== null ? `Your business plan score: ${score}/100` : "Your free business plan score",
+      html: `<div style="font-family:sans-serif;max-width:560px;margin:0 auto">
+        <h2>Here's your free score again</h2>${scoreLine}
+        <p>Your free preview showed <em>what's</em> holding your plan back. The full report shows exactly <em>how to fix it</em>: all 10 bank lending criteria scored, specific recommendations, 6 financial ratios, SWOT, and a downloadable PDF.</p>
+        <p><a href="${SITE_URL}/pricing" style="background:#0846AA;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none">Get my full report — $13.99</a></p>
+        ${dripFooter(lead)}</div>`,
+    };
+  }
+  if (stage === 2) {
+    return {
+      subject: score !== null ? `Why banks reject plans that score ${score}/100` : "Why banks reject most business plans",
+      html: `<div style="font-family:sans-serif;max-width:560px;margin:0 auto">
+        <h2>Most plans don't pass on the first try</h2>${scoreLine}
+        <p>Loan officers screen against the same criteria every time — debt service coverage, cash flow, collateral, management experience. A plan that scores below the bar on even one of them usually gets a "no" without an explanation.</p>
+        <p>The good news: these are fixable before you ever walk into the bank. The full AI Shark report tells you exactly which criteria are failing and what to change.</p>
+        <p><a href="${SITE_URL}/pricing" style="background:#0846AA;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none">See what's failing — $13.99</a></p>
+        ${dripFooter(lead)}</div>`,
+    };
+  }
+  return {
+    subject: "15% off your full AI Shark analysis — today",
+    html: `<div style="font-family:sans-serif;max-width:560px;margin:0 auto">
+      <h2>Take 15% off the full analysis</h2>${scoreLine}
+      <p>Use code <strong style="font-size:18px">${DRIP_DISCOUNT_CODE}</strong> at checkout for 15% off — that's the full 10-criteria report, specific fixes, financial ratios, SWOT, and PDF for less than the cost of lunch.</p>
+      <p><a href="${SITE_URL}/pricing" style="background:#0846AA;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none">Use my 15% discount</a></p>
+      ${dripFooter(lead)}</div>`,
+  };
+}
+
+async function processTeaserDrip() {
+  const resend = getResend();
+  if (!resend) return;
+  try {
+    // Descending order so a lead advances at most ONE stage per hourly run —
+    // ascending would walk an overdue lead through all three emails at once.
+    for (const stage of [3, 2, 1]) {
+      const cutoff = new Date(Date.now() - stage * 24 * 60 * 60 * 1000);
+      const due = await storage.getTeaserLeadsDueForStage(stage, cutoff);
+      for (const lead of due) {
+        try {
+          // Skip (but advance) leads that registered an account — they get
+          // the in-product funnel instead of remarketing email.
+          const registered = await storage.emailHasRegistration(lead.email);
+          if (!registered) {
+            const { subject, html } = dripEmail(stage, lead);
+            await resend.emails.send({ from: FROM_EMAIL, to: lead.email, subject, html });
+            console.log(`[Teaser Drip] Sent stage ${stage} to lead ${lead.id}`);
+          }
+          await storage.markTeaserLeadStage(lead.id, stage);
+        } catch (e: any) {
+          console.error(`[Teaser Drip] Failed lead ${lead.id} stage ${stage}:`, e?.message);
+        }
+      }
+    }
+  } catch (e: any) {
+    console.error("[Teaser Drip] run failed:", e?.message);
+  }
+}
+
+export function startTeaserDripScheduler() {
+  console.log("[Teaser Drip] Started — checking hourly");
+  setInterval(() => processTeaserDrip(), 60 * 60 * 1000);
+  // First pass shortly after boot so restarts don't delay overdue sends.
+  setTimeout(() => processTeaserDrip(), 60 * 1000);
 }

@@ -21,14 +21,22 @@ export function TeaserWidget() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState<TeaserResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [email, setEmail] = useState("");
+
+  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
   const analyze = async (file: File) => {
+    if (!emailValid) {
+      setError("Enter your email above to see your score — that's all we need.");
+      return;
+    }
     setError(null);
     setIsAnalyzing(true);
     trackClick("teaser_upload");
     try {
       const formData = new FormData();
       formData.append("file", file);
+      formData.append("email", email.trim());
       const res = await fetch("/api/teaser", {
         method: "POST",
         body: formData,
@@ -76,15 +84,21 @@ export function TeaserWidget() {
               <ShieldAlert className="h-5 w-5 text-primary" aria-hidden="true" />
               <h3 className="font-semibold">Top things holding your plan back</h3>
             </div>
-            <ul className="space-y-2">
+            <ul className="space-y-3">
               {result.topWeaknesses.slice(0, 3).map((w, i) => (
-                <li
-                  key={i}
-                  className="flex items-start gap-2 text-muted-foreground"
-                  data-testid={`text-teaser-weakness-${i}`}
-                >
-                  <AlertCircle className="h-4 w-4 mt-1 shrink-0 text-primary" aria-hidden="true" />
-                  <span>{w}</span>
+                <li key={i} data-testid={`text-teaser-weakness-${i}`}>
+                  <div className="flex items-start gap-2 text-muted-foreground">
+                    <AlertCircle className="h-4 w-4 mt-1 shrink-0 text-primary" aria-hidden="true" />
+                    <span>{w}</span>
+                  </div>
+                  <div className="ml-6 mt-1.5 flex items-center gap-2 rounded-md border bg-muted/40 px-3 py-2">
+                    <Lock className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+                    <span className="select-none text-sm text-muted-foreground blur-[5px]" aria-hidden="true">
+                      Specific steps to fix this before you apply for the loan
+                    </span>
+                    <span className="sr-only">How to fix this is included in the full report.</span>
+                    <span className="ml-auto shrink-0 text-xs font-medium text-primary">Unlock to see the fix</span>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -137,6 +151,22 @@ export function TeaserWidget() {
   return (
     <Card className="max-w-2xl mx-auto" data-testid="card-teaser-upload">
       <CardContent className="p-6 md:p-8">
+        <div className="mb-4">
+          <label htmlFor="teaser-email" className="mb-1.5 block text-sm font-medium">
+            Your email <span className="text-muted-foreground font-normal">(required to see your score)</span>
+          </label>
+          <input
+            id="teaser-email"
+            type="email"
+            autoComplete="email"
+            placeholder="you@company.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={isAnalyzing}
+            className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50"
+            data-testid="input-teaser-email"
+          />
+        </div>
         <FileUpload onUpload={analyze} isUploading={isAnalyzing} />
         {isAnalyzing && <AnalysisProgress />}
         {error && (
@@ -150,7 +180,8 @@ export function TeaserWidget() {
           </div>
         )}
         <p className="mt-4 text-center text-xs text-muted-foreground">
-          Free preview — no account needed. Your file is analyzed, not stored.
+          Free preview — no account or credit card needed. Your file is analyzed, not stored.
+          We'll follow up by email with your score and tips; unsubscribe anytime.
         </p>
         <div className="mt-4">
           <TrustBadges />

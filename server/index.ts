@@ -8,6 +8,7 @@ import { WebhookHandlers } from "./webhookHandlers";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { db } from "./db";
 import { storage } from "./storage";
+import { TIER_CREDITS, isSubscriptionTier } from "@shared/schema";
 
 // Top-level debug logging - Version 2
 console.log("[Boot] Server starting... v2");
@@ -169,17 +170,26 @@ async function processBillingWebhook(event: any) {
       console.log("[Webhook] checkout.session.completed - userRegistrationId:", userRegistrationId, "tier:", tier);
 
       if (userRegistrationId) {
-        const credits = tier === "subscription" ? 2 : 1;
-        
+        // Idempotency: Stripe retries webhooks — never grant twice for one session.
+        if (await storage.hasTransactionForCheckoutSession(session.id)) {
+          console.log("[Webhook] Session already processed, skipping:", session.id);
+          return;
+        }
+
+        const credits = TIER_CREDITS[tier as keyof typeof TIER_CREDITS] ?? 1;
+
+        // Don't set creditsRemaining here — addCredits below is the single
+        // source of credit changes (setting both double-granted).
         await storage.upsertBillingProfile(userRegistrationId, {
           currentTier: tier as any,
-          creditsRemaining: credits,
           stripeCustomerId: session.customer,
           activeSubscriptionId: session.subscription || null,
           lastPaymentAt: new Date(),
         });
 
-        await storage.addCredits(userRegistrationId, credits, "purchase");
+        // Subscriptions start their cycle at exactly `credits`; one-time
+        // purchases stack on any remaining balance.
+        await storage.addCredits(userRegistrationId, credits, isSubscriptionTier(tier) ? "reset" : "purchase");
 
         await storage.createTransactionRecord({
           userRegistrationId,
@@ -203,9 +213,23 @@ async function processBillingWebhook(event: any) {
 
       console.log("[Webhook] invoice.payment_succeeded - customerId:", customerId);
 
+      // The very first invoice of a subscription is already handled by
+      // checkout.session.completed — crediting it here would double-grant.
+      if (invoice.billing_reason === "subscription_create") {
+        console.log("[Webhook] Skipping subscription_create invoice (handled by checkout):", invoice.id);
+        return;
+      }
+
+      // Idempotency guard against Stripe webhook retries.
+      if (await storage.hasTransactionForInvoice(invoice.id)) {
+        console.log("[Webhook] Invoice already processed, skipping:", invoice.id);
+        return;
+      }
+
       const billingProfile = await storage.getBillingProfileByStripeCustomer(customerId);
-      if (billingProfile && billingProfile.currentTier === "subscription") {
-        await storage.addCredits(billingProfile.userRegistrationId, 2, "reset");
+      if (billingProfile && isSubscriptionTier(billingProfile.currentTier)) {
+        const cycleCredits = TIER_CREDITS[billingProfile.currentTier as keyof typeof TIER_CREDITS] ?? 2;
+        await storage.addCredits(billingProfile.userRegistrationId, cycleCredits, "reset");
         await storage.updateBillingProfile(billingProfile.userRegistrationId, {
           lastPaymentAt: new Date(),
         });
@@ -216,7 +240,7 @@ async function processBillingWebhook(event: any) {
           amount: invoice.amount_paid,
           currency: invoice.currency,
           taxAmount: invoice.tax,
-          tier: "subscription",
+          tier: billingProfile.currentTier,
           paymentStatus: "succeeded",
           paidAt: new Date(),
         });
