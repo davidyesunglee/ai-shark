@@ -8,4 +8,22 @@ export interface Testimonial {
   role: string; // e.g. "Owner, coffee roastery — Austin, TX"
 }
 
-export const testimonials: Testimonial[] = [];
+export const testimonials: Testimonial[] = [
+  {
+    quote:
+      "AI Shark found discrepancies in my business plan and suggested improvements that increased my evaluation score!",
+    name: "Vince",
+    role: "Founder",
+  },
+  {
+    quote: "Their evaluation was quick and powerful. Helped me get approved!",
+    name: "Ethan",
+    role: "Owner, personal services",
+  },
+  {
+    quote:
+      "Really helped improve my business plan and offered examples that helped grow my business operations. Now funding is within reach!",
+    name: "Earl",
+    role: "Tech student & founder",
+  },
+];
