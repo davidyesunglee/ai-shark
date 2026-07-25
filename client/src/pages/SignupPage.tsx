@@ -9,7 +9,7 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { useSEO } from "@/lib/useSEO";
-import logoImage from "@assets/AI_Shark_logo_1770083549283.png";
+import logoImage from "@/assets/shark-mark.svg";
 
 export default function SignupPage() {
   useSEO({

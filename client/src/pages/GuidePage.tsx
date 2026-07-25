@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, ArrowRight, Clock, CheckCircle2, FileText } from "lucide-react";
 import { useSEO, useJsonLd, trackClick } from "@/lib/useSEO";
 import { getGuide, guides } from "@shared/guides";
-import logoImage from "@assets/AI_Shark_logo_1770083549283.png";
+import logoImage from "@/assets/shark-mark.svg";
 import NotFound from "@/pages/not-found";
 
 export default function GuidePage() {

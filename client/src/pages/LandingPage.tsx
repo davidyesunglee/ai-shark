@@ -6,7 +6,8 @@ import { TrendingUp, Shield, Clock, Users, Award, ArrowRight, Zap, FileText, Lan
 import { Link } from "wouter";
 import { AdPlacement } from "@/components/AdPlacement";
 import { TeaserWidget } from "@/components/TeaserWidget";
-import logoImage from "@assets/AI_Shark_logo_1770083549283.png";
+import logoImage from "@/assets/shark-mark.svg";
+import mascotImage from "@/assets/shark-mascot.png";
 import { useSEO, trackClick } from "@/lib/useSEO";
 
 export default function LandingPage() {
@@ -54,6 +55,12 @@ export default function LandingPage() {
       <main id="main-content">
         <section className="container mx-auto px-4 py-20" aria-labelledby="hero-title">
           <div className="max-w-4xl mx-auto text-center mb-12">
+            <img
+              src={mascotImage}
+              alt="AI Shark mascot reading a business plan"
+              className="h-40 w-40 mx-auto mb-4 object-contain"
+              data-testid="img-hero-mascot"
+            />
             <Badge variant="secondary" className="mb-4">
               <Zap className="h-3 w-3 mr-1" aria-hidden="true" />
               AI-Powered Analysis

@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Clock, BookOpen } from "lucide-react";
 import { useSEO, useJsonLd, trackClick } from "@/lib/useSEO";
 import { guides } from "@shared/guides";
-import logoImage from "@assets/AI_Shark_logo_1770083549283.png";
+import logoImage from "@/assets/shark-mark.svg";
 
 export default function GuidesPage() {
   useSEO({

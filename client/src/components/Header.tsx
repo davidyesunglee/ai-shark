@@ -3,7 +3,7 @@ import { ThemeToggle } from "./ThemeToggle";
 import { Plus, LogOut, CreditCard } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Link } from "wouter";
-import logoImage from "@assets/AI_Shark_logo_1770083549283.png";
+import logoImage from "@/assets/shark-mark.svg";
 
 interface HeaderProps {
   onNewAssessment?: () => void;

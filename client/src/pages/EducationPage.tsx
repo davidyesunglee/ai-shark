@@ -25,7 +25,7 @@ import {
   GraduationCap,
 } from "lucide-react";
 import { Link } from "wouter";
-import logoImage from "@assets/AI_Shark_logo_1770083549283.png";
+import logoImage from "@/assets/shark-mark.svg";
 
 const criteria = [
   {

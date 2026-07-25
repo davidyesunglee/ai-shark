@@ -144,8 +144,8 @@ function handleExportPDF(assessment: FullAssessment) {
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a2e; background: #fff; padding: 32px; font-size: 13px; line-height: 1.6; }
     .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #0f3460; padding-bottom: 16px; margin-bottom: 24px; }
-    .logo { font-size: 22px; font-weight: 800; color: #0f3460; }
-    .logo span { color: #e94560; }
+    .logo { font-size: 22px; font-weight: 800; color: #0846AA; }
+    .logo span { color: #0846AA; }
     .meta { text-align: right; color: #555; font-size: 12px; }
     .score-banner { background: linear-gradient(135deg, #0f3460 0%, #16213e 100%); color: #fff; border-radius: 10px; padding: 20px 24px; margin-bottom: 24px; display: flex; gap: 32px; align-items: center; }
     .score-num { font-size: 52px; font-weight: 900; line-height: 1; }

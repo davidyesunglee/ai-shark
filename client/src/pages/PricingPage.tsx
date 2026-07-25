@@ -9,7 +9,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/use-auth";
 import { Link, useLocation } from "wouter";
 import { ArrowLeft } from "lucide-react";
-import logoImage from "@assets/AI_Shark_logo_1770083549283.png";
+import logoImage from "@/assets/shark-mark.svg";
 import { useSEO } from "@/lib/useSEO";
 
 interface Price {
