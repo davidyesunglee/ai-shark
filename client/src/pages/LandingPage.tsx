@@ -8,6 +8,7 @@ import { AdPlacement } from "@/components/AdPlacement";
 import { TeaserWidget } from "@/components/TeaserWidget";
 import logoImage from "@/assets/shark-mark.svg";
 import mascotImage from "@/assets/shark-mascot.png";
+import HowItWorksExplainer from "@/components/HowItWorksExplainer";
 import { useSEO, trackClick } from "@/lib/useSEO";
 
 export default function LandingPage() {
@@ -134,37 +135,7 @@ export default function LandingPage() {
               Three simple steps to understand your business plan's financing potential
             </p>
             
-            <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto" role="list">
-              <div className="text-center" role="listitem">
-                <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xl font-bold mx-auto mb-4" aria-hidden="true">
-                  1
-                </div>
-                <h3 className="font-semibold text-lg mb-2">Upload Your Plan</h3>
-                <p className="text-muted-foreground">
-                  Upload your business plan in PDF, DOCX, or TXT format. We support files up to 10MB.
-                </p>
-              </div>
-              
-              <div className="text-center" role="listitem">
-                <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xl font-bold mx-auto mb-4" aria-hidden="true">
-                  2
-                </div>
-                <h3 className="font-semibold text-lg mb-2">AI Analysis</h3>
-                <p className="text-muted-foreground">
-                  Our AI evaluates your plan against the 10 key bank financing criteria used by lenders.
-                </p>
-              </div>
-              
-              <div className="text-center" role="listitem">
-                <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xl font-bold mx-auto mb-4" aria-hidden="true">
-                  3
-                </div>
-                <h3 className="font-semibold text-lg mb-2">Get Your Report</h3>
-                <p className="text-muted-foreground">
-                  Receive detailed scores, strengths, weaknesses, and specific recommendations.
-                </p>
-              </div>
-            </div>
+            <HowItWorksExplainer />
           </div>
         </section>
 
