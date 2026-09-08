@@ -15,6 +15,7 @@ interface TeaserResult {
   lenderReadinessGrade: string;
   summary: string;
   topWeaknesses: string[];
+  unsubscribeUrl?: string | null;
 }
 
 export function TeaserWidget() {
@@ -142,6 +143,18 @@ export function TeaserWidget() {
                 Try another plan
               </Button>
             </div>
+            {result.unsubscribeUrl && (
+              <p className="mt-4 text-xs text-muted-foreground">
+                Don't want score follow-up emails?{" "}
+                <a
+                  href={result.unsubscribeUrl}
+                  className="underline underline-offset-2 hover:text-foreground"
+                  data-testid="link-teaser-unsubscribe"
+                >
+                  Unsubscribe
+                </a>
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>

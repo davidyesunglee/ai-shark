@@ -229,18 +229,27 @@ export async function registerRoutes(
       const result = await analyzeTeaser(fileContent);
 
       // Save the lead for the remarketing drip (best-effort; never blocks the response).
+      // Return its token so the result screen can offer an immediate opt-out too.
+      let unsubscribeToken: string | null = null;
       try {
+        unsubscribeToken = crypto.randomBytes(24).toString("hex");
         await storage.createTeaserLead({
           email,
           score: (result as any).overallScore ?? null,
           grade: (result as any).lenderReadinessGrade ?? null,
-          unsubscribeToken: crypto.randomBytes(24).toString("hex"),
+          unsubscribeToken,
         } as any);
       } catch (leadErr: any) {
+        unsubscribeToken = null;
         console.error("[Teaser] lead save failed:", leadErr?.message);
       }
 
-      res.json(result);
+      res.json({
+        ...result,
+        unsubscribeUrl: unsubscribeToken
+          ? `/api/unsubscribe?token=${encodeURIComponent(unsubscribeToken)}`
+          : null,
+      });
     } catch (error: any) {
       console.error("[Teaser] error:", error?.message);
       res.status(500).json({ message: "Something went wrong analyzing your plan. Please try again." });

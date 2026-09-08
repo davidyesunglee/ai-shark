@@ -11,7 +11,7 @@ import { AssessmentReport, type FullAssessment } from "@/components/AssessmentRe
 import { useToast } from "@/hooks/use-toast";
 import { AnalysisProgress } from "@/components/AnalysisProgress";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { FileText, TrendingUp, CheckCircle, Clock, Loader2, CreditCard } from "lucide-react";
+import { FileText, TrendingUp, CheckCircle, Clock, Loader2, CreditCard, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -46,6 +46,23 @@ export default function Dashboard() {
   const { toast } = useToast();
   const previousStatusRef = useRef<Map<string, string>>(new Map());
   const [, setLocation] = useLocation();
+
+  const billingPortalMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/billing/portal");
+      return response.json() as Promise<{ url: string }>;
+    },
+    onSuccess: ({ url }) => {
+      window.location.href = url;
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not open billing settings",
+        description: error.message || "Please try again in a moment.",
+        variant: "destructive",
+      });
+    },
+  });
 
   const { data: registrationStatus, isLoading: isCheckingRegistration } = useQuery<{ isRegistered: boolean }>({
     queryKey: ["/api/registration/status"],
@@ -422,6 +439,44 @@ export default function Dashboard() {
                 View Plans
               </Button>
             </div>
+          )}
+
+          {billingStatus?.hasActiveSubscription && (
+            <section
+              className="rounded-lg border bg-card p-4 flex flex-wrap items-center justify-between gap-4"
+              aria-labelledby="billing-management-title"
+              data-testid="card-billing-management"
+            >
+              <div className="flex items-start gap-3">
+                <Settings className="h-5 w-5 mt-0.5 text-primary" aria-hidden="true" />
+                <div>
+                  <h2 id="billing-management-title" className="font-medium">
+                    Billing & subscription
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    Update or remove your credit card, view invoices, or cancel your subscription securely through Stripe.
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                onClick={() => billingPortalMutation.mutate()}
+                disabled={billingPortalMutation.isPending}
+                data-testid="button-manage-billing"
+              >
+                {billingPortalMutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+                    Opening...
+                  </>
+                ) : (
+                  <>
+                    <CreditCard className="mr-2 h-4 w-4" aria-hidden="true" />
+                    Manage card or cancel
+                  </>
+                )}
+              </Button>
+            </section>
           )}
 
           <section aria-label="Assessment statistics">
