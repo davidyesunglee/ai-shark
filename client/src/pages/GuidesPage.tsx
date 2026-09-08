@@ -64,7 +64,7 @@ export default function GuidesPage() {
               Guides to Getting Your Business Plan Funded
             </h1>
             <p className="mx-auto mt-3 max-w-2xl text-lg text-muted-foreground">
-              Plain-language guides on the exact criteria banks use to approve business loans. Read up,
+              Plain-language guides on common criteria banks consider when reviewing business loans. Read up,
               then check your own plan with a free instant score.
             </p>
           </div>

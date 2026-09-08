@@ -118,20 +118,20 @@ export function TeaserWidget() {
               <span className="font-semibold text-foreground">Just $13.99</span>
               <span className="text-muted-foreground"> for a one-time report, or </span>
               <span className="font-semibold text-foreground">$6.99/mo</span>
-              <span className="text-muted-foreground"> for 2 evaluations every month — a fraction of what a loan consultant charges.</span>
+              <span className="text-muted-foreground"> for 2 evaluations every month.</span>
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Link href="/signup">
-                <Button
+              <Button
+                asChild
                   size="lg"
                   className="gap-2 w-full sm:w-auto"
                   data-testid="button-teaser-unlock"
-                  onClick={() => trackClick("teaser_unlock_full_report")}
                 >
+                <Link href="/signup" onClick={() => trackClick("teaser_unlock_full_report")}>
                   Get My Full Report
                   <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                </Button>
-              </Link>
+                </Link>
+              </Button>
               <Button
                 size="lg"
                 variant="outline"
@@ -176,6 +176,8 @@ export function TeaserWidget() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             disabled={isAnalyzing}
+            aria-invalid={!!error && !emailValid}
+            aria-describedby={error && !emailValid ? "teaser-email-error" : undefined}
             className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50"
             data-testid="input-teaser-email"
           />
@@ -189,12 +191,12 @@ export function TeaserWidget() {
             data-testid="text-teaser-error"
           >
             <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" aria-hidden="true" />
-            <span>{error}</span>
+            <span id="teaser-email-error">{error}</span>
           </div>
         )}
         <p className="mt-4 text-center text-xs text-muted-foreground">
           Free preview — no account or credit card needed. Your file is analyzed, not stored.
-          We'll follow up by email with your score and tips; unsubscribe anytime.
+          We will email your score and follow-up information; you can unsubscribe at any time.
         </p>
         <div className="mt-4">
           <TrustBadges />

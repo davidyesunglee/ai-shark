@@ -10,7 +10,7 @@ const STAGES = [
   "Assessing management team & experience…",
   "Checking market viability & competitive position…",
   "Reviewing revenue model & industry risk…",
-  "Scoring against the 10 criteria banks use…",
+  "Scoring across 10 common lending considerations…",
 ];
 
 // Advance through stages on a timer; hold on the last stage until done.

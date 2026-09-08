@@ -16,7 +16,7 @@ import { useSEO, trackClick } from "@/lib/useSEO";
 export default function LandingPage() {
   useSEO({
     title: "AI Shark — AI Business Plan Assessment for Bank Loans & SBA Financing",
-    description: "Score your business plan against the 10 criteria banks use for loan approval. Get a Lender Readiness Grade (A–F), SWOT, market analysis, and 6 financial ratios in minutes — from $13.99.",
+    description: "Review your business plan across 10 common bank debt-financing considerations. Get a Lender Readiness Grade (A–F), SWOT, market analysis, and 6 financial ratios in minutes — from $13.99.",
     canonical: "/",
   });
   return (
@@ -32,24 +32,22 @@ export default function LandingPage() {
           </div>
           <nav aria-label="Main navigation">
             <div className="flex items-center gap-2 flex-wrap">
-              <Link href="/about">
-                <Button variant="ghost" data-testid="link-about">
+              <Button variant="ghost" className="hidden md:inline-flex" asChild data-testid="link-about">
+                <Link href="/about">
                   About
-                </Button>
-              </Link>
-              <Link href="/education">
-                <Button variant="ghost" data-testid="link-education">
+                </Link>
+              </Button>
+              <Button variant="ghost" className="hidden md:inline-flex" asChild data-testid="link-education">
+                <Link href="/education">
                   Education
-                </Button>
-              </Link>
-              <Link href="/pricing">
-                <Button variant="ghost" data-testid="link-pricing">
+                </Link>
+              </Button>
+              <Button variant="ghost" asChild data-testid="link-pricing">
+                <Link href="/pricing">
                   Pricing
-                </Button>
-              </Link>
-              <Link href="/login">
-                <Button data-testid="button-login-header">Sign In</Button>
-              </Link>
+                </Link>
+              </Button>
+              <Button asChild data-testid="button-login-header"><Link href="/login">Sign In</Link></Button>
             </div>
           </nav>
         </div>
@@ -64,7 +62,7 @@ export default function LandingPage() {
               className="h-40 w-40 mx-auto mb-4 object-contain"
               data-testid="img-hero-mascot"
             />
-            <Badge variant="secondary" className="mb-4">
+            <Badge variant="secondary" className="mb-4 border border-primary/15 bg-primary/5 text-primary">
               <Zap className="h-3 w-3 mr-1" aria-hidden="true" />
               AI-Powered Analysis
             </Badge>
@@ -73,8 +71,8 @@ export default function LandingPage() {
               <span className="text-primary block mt-2">Before the Bank Does</span>
             </h1>
             <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto" data-testid="text-hero-description">
-              Get instant AI analysis of your business plan against real bank debt financing criteria. 
-              Discover strengths, fix weaknesses, and increase your approval chances.
+              Get a clear, practical read on how your plan addresses common bank debt-financing criteria.
+              See what is covered, what needs evidence, and what to address before you apply.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <a href="#free-preview">
@@ -83,11 +81,11 @@ export default function LandingPage() {
                   <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </Button>
               </a>
-              <Link href="/pricing">
-                <Button size="lg" variant="outline" data-testid="button-view-pricing" onClick={() => trackClick("hero_view_pricing")}>
+              <Button size="lg" variant="outline" asChild data-testid="button-view-pricing">
+                <Link href="/pricing" onClick={() => trackClick("hero_view_pricing")}>
                   View Pricing
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </div>
           </div>
 
@@ -101,8 +99,8 @@ export default function LandingPage() {
                 Score your plan free — right now
               </h2>
               <p className="text-muted-foreground max-w-xl mx-auto">
-                Upload your business plan and get your overall score, Lender Readiness Grade, and top
-                weaknesses in under a minute. No account required — just your email.
+                Upload a plan to receive an overall score, Lender Readiness Grade, and key gaps.
+                No account or card is needed for the preview; we ask for an email to deliver it.
               </p>
             </div>
             <TeaserWidget />
@@ -127,7 +125,7 @@ export default function LandingPage() {
             </div>
             <div className="flex items-center gap-2" role="listitem">
               <Shield className="h-5 w-5 text-primary" aria-hidden="true" />
-              <span>Bank-grade criteria</span>
+              <span>10 financing considerations</span>
             </div>
             <div className="flex items-center gap-2" role="listitem">
               <Award className="h-5 w-5 text-primary" aria-hidden="true" />
@@ -142,7 +140,7 @@ export default function LandingPage() {
           <div className="container mx-auto px-4">
             <h2 id="how-it-works-title" className="text-3xl font-bold text-center mb-4">How It Works</h2>
             <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
-              Three simple steps to understand your business plan's financing potential
+              Three clear steps to prepare your plan for a lender conversation
             </p>
             
             <HowItWorksExplainer />
@@ -152,7 +150,7 @@ export default function LandingPage() {
         <section className="container mx-auto px-4 py-16" aria-labelledby="evaluation-criteria-title">
           <h2 id="evaluation-criteria-title" className="text-3xl font-bold text-center mb-4">The 10 Criteria We Evaluate</h2>
           <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
-            Your plan is scored against the same 10 factors banks weigh for debt financing
+            Your plan is reviewed across ten areas commonly considered in debt financing
           </p>
           
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
@@ -189,9 +187,9 @@ export default function LandingPage() {
 
         <section className="bg-muted/50 py-16" aria-labelledby="testimonials-title">
           <div className="container mx-auto px-4">
-            <h2 id="testimonials-title" className="text-3xl font-bold text-center mb-4">Built to Think Like a Lender</h2>
+            <h2 id="testimonials-title" className="text-3xl font-bold text-center mb-4">A focused review before you apply</h2>
             <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
-              AI Shark reviews your plan the way a bank would — so you can fix the gaps that matter before you apply.
+              AI Shark organizes your plan around the questions a lender is likely to ask, so the next steps are easier to see.
             </p>
 
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto" role="list">
@@ -199,12 +197,12 @@ export default function LandingPage() {
                 {
                   icon: Landmark,
                   title: "Real bank criteria",
-                  body: "Scored against the same 10 debt-financing factors lenders actually weigh.",
+                  body: "A structured review across ten core debt-financing considerations.",
                 },
                 {
                   icon: Clock,
                   title: "Results in minutes",
-                  body: "Upload your plan and get a full breakdown in under a minute — no account needed to start.",
+                  body: "Start with a free preview before you decide whether a full report is useful.",
                 },
                 {
                   icon: Shield,
@@ -213,8 +211,8 @@ export default function LandingPage() {
                 },
                 {
                   icon: CircleDollarSign,
-                  title: "A fraction of a consultant",
-                  body: "The depth of a paid review, starting at just $13.99 per report.",
+                  title: "Straightforward pricing",
+                  body: "A full report starts at $13.99, with pricing shown before checkout.",
                 },
               ].map((item, i) => {
                 const Icon = item.icon;
@@ -272,12 +270,12 @@ export default function LandingPage() {
             </div>
 
             <div className="text-center mt-10">
-              <Link href="/sample">
-                <Button variant="outline" size="lg" className="gap-2" data-testid="button-view-sample" onClick={() => trackClick("testimonials_view_sample")}>
+              <Button variant="outline" size="lg" className="gap-2" asChild data-testid="button-view-sample">
+                <Link href="/sample" onClick={() => trackClick("testimonials_view_sample")}>
                   <FileText className="h-4 w-4" aria-hidden="true" />
                   See a Full Sample Report
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </div>
           </div>
         </section>
@@ -292,7 +290,7 @@ export default function LandingPage() {
               {[
                 {
                   q: "How does AI Shark assess my business plan?",
-                  a: "AI Shark uses Gemini AI to analyze your business plan across 10 criteria that commercial bank loan officers use: creditworthiness, cash flow, collateral, debt-to-equity, market viability, management team, financial projections, revenue model, industry risk, and competitive position. You receive an overall score (0–100), a lender readiness grade (A–F), SWOT analysis, market analysis, six key financial ratios, strengths, weaknesses, and actionable recommendations.",
+                   a: "AI Shark uses AI to review your business plan across 10 debt-financing considerations: creditworthiness, cash flow, collateral, debt-to-equity, market viability, management team, financial projections, revenue model, industry risk, and competitive position. A full report includes an overall score (0–100), a lender readiness grade (A–F), SWOT and market analysis, six financial ratios, and recommendations.",
                 },
                 {
                   q: "What file types can I upload?",
@@ -304,7 +302,7 @@ export default function LandingPage() {
                 },
                 {
                   q: "What is a lender readiness grade?",
-                  a: "The Lender Readiness Grade is a letter grade (A through F) that summarizes how prepared your business plan is for bank debt financing. Grade A indicates an exceptional candidate where bank approval is highly likely, while Grade F indicates significant gaps that would prevent debt financing approval.",
+                   a: "The Lender Readiness Grade is a letter grade (A through F) that summarizes how completely your plan addresses the areas reviewed. It is an informational assessment, not a prediction of a lending decision.",
                 },
                 {
                   q: "Will using AI Shark guarantee a bank loan approval?",
@@ -326,17 +324,17 @@ export default function LandingPage() {
           <div className="container mx-auto px-4 text-center">
             <h2 id="cta-title" className="text-3xl font-bold mb-4">Ready to Know Your Score?</h2>
             <p className="text-xl opacity-90 mb-3 max-w-2xl mx-auto">
-              Join businesses using AI Shark to improve their financing outcomes.
+              Use AI Shark to identify gaps before your next lender conversation.
             </p>
             <p className="opacity-90 mb-8 max-w-2xl mx-auto" data-testid="text-cta-pricing">
               Full reports from just <span className="font-semibold">$13.99</span> — or <span className="font-semibold">$6.99/mo</span> for 2 evaluations every month.
             </p>
-            <Link href="/signup">
-              <Button size="lg" variant="outline" className="gap-2 bg-background/10 backdrop-blur border-primary-foreground/20 text-primary-foreground hover:bg-background/20" data-testid="button-cta-bottom" onClick={() => trackClick("bottom_cta_get_started")}>
+              <Button size="lg" variant="outline" className="gap-2 bg-background/10 backdrop-blur border-primary-foreground/20 text-primary-foreground hover:bg-background/20" asChild data-testid="button-cta-bottom">
+               <Link href="/signup" onClick={() => trackClick("bottom_cta_get_started")}>
                 Get Started
                 <ArrowRight className="h-4 w-4" aria-hidden="true" />
-              </Button>
-            </Link>
+               </Link>
+             </Button>
           </div>
         </section>
       </main>

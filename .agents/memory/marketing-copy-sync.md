@@ -32,3 +32,18 @@ FAQ whose 5 Q&A must stay **byte-for-byte identical** to the `FAQPage` JSON-LD i
 `client/index.html`. Google flags FAQ structured data that doesn't match visible
 content. When editing either, update both. (This is a second hand-maintained
 copy pair with no shared source — same drift risk as the criteria list.)
+
+## Lending-outcome language
+
+**Rule:** describe the score and grade as an informational review of how completely
+the submitted plan addresses common debt-financing considerations. Never describe
+grades as approval probabilities, label users as lending candidates, promise score
+improvement, or imply the assessment predicts a lender's decision.
+
+**Why:** lenders apply institution-, product-, and borrower-specific underwriting.
+Outcome language overstates what the AI assessment can establish and conflicts with
+the product disclaimer.
+
+**How to apply:** when editing landing, pricing, education, guides, progress text,
+report explanations, or SEO metadata, grep for approval/probability/candidate/pass/
+financeable claims and keep visible FAQ answers synchronized with JSON-LD.

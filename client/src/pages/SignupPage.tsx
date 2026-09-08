@@ -115,9 +115,9 @@ export default function SignupPage() {
       <main id="main-content" className="flex-1 flex items-center justify-center px-4 py-8">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl" data-testid="text-signup-title">Create Account</CardTitle>
+            <CardTitle className="text-2xl" data-testid="text-signup-title">Start with a clear plan review</CardTitle>
             <CardDescription data-testid="text-signup-description">
-              Sign up to start evaluating your business plans
+              Create a free account to save assessments and choose a report when you are ready.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -127,7 +127,7 @@ export default function SignupPage() {
                   <Label htmlFor="firstName">First Name</Label>
                   <Input
                     id="firstName"
-                    placeholder="John"
+                    placeholder="First name"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                     autoComplete="given-name"
@@ -138,7 +138,7 @@ export default function SignupPage() {
                   <Label htmlFor="lastName">Last Name</Label>
                   <Input
                     id="lastName"
-                    placeholder="Doe"
+                    placeholder="Last name"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                     autoComplete="family-name"
@@ -151,7 +151,7 @@ export default function SignupPage() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="you@example.com"
+                  placeholder="you@company.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -187,8 +187,13 @@ export default function SignupPage() {
                   required
                   autoComplete="new-password"
                   aria-required="true"
+                  aria-invalid={confirmPassword.length > 0 && password !== confirmPassword}
+                  aria-describedby={confirmPassword.length > 0 && password !== confirmPassword ? "password-match-hint" : undefined}
                   data-testid="input-confirm-password"
                 />
+                {confirmPassword.length > 0 && password !== confirmPassword && (
+                  <p id="password-match-hint" className="text-xs text-destructive">Passwords need to match.</p>
+                )}
               </div>
               <div className="flex items-start gap-2">
                 <Checkbox

@@ -138,7 +138,7 @@ export default function Dashboard() {
     });
   }, [assessments, toast]);
 
-  const { data: fullAssessment, isLoading: isLoadingFull } = useQuery<ApiFullAssessment>({
+  const { data: fullAssessment, isLoading: isLoadingFull, isError: isFullAssessmentError, refetch: refetchFullAssessment } = useQuery<ApiFullAssessment>({
     queryKey: ["/api/assessments", viewingId],
     queryFn: async () => {
       const response = await fetch(`/api/assessments/${viewingId}`);
@@ -294,7 +294,11 @@ export default function Dashboard() {
   if (isCheckingRegistration) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center" role="status" aria-label="Loading">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" aria-hidden="true" />
+        <div className="w-full max-w-5xl space-y-5 px-6" aria-hidden="true">
+          <Skeleton className="h-10 w-52" />
+          <Skeleton className="h-28 w-full" />
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{[1, 2, 3, 4].map((item) => <Skeleton key={item} className="h-28" />)}</div>
+        </div>
         <span className="sr-only">Loading dashboard...</span>
       </div>
     );
@@ -317,13 +321,18 @@ export default function Dashboard() {
       );
     }
 
-    if (!fullAssessment) {
+    if (isFullAssessmentError || !fullAssessment) {
       return (
         <div className="min-h-screen bg-background">
           <Header />
           <main className="mx-auto max-w-6xl px-6 py-8">
-            <div className="text-center">
-              <p className="text-muted-foreground" role="alert">Assessment not found</p>
+            <div className="mx-auto max-w-md rounded-xl border bg-card p-8 text-center space-y-4">
+              <p className="font-semibold" role="alert">We could not load this assessment.</p>
+              <p className="text-sm text-muted-foreground">It may no longer be available, or the connection may have been interrupted.</p>
+              <div className="flex justify-center gap-3">
+                <Button variant="outline" onClick={() => refetchFullAssessment()}>Try again</Button>
+                <Button onClick={handleBack}>Back to dashboard</Button>
+              </div>
             </div>
           </main>
         </div>
@@ -335,18 +344,14 @@ export default function Dashboard() {
         <div className="min-h-screen bg-background">
           <Header />
           <main className="mx-auto max-w-6xl px-6 py-8">
-            <div className="text-center space-y-4" role="alert">
+            <div className="mx-auto max-w-xl rounded-xl border border-destructive/20 bg-card p-8 text-center space-y-4" role="alert">
               <p className="text-lg font-semibold text-destructive">Analysis Failed</p>
               <p className="text-muted-foreground">
                 Unable to analyze "{fullAssessment.businessName}". Please try uploading the document again.
               </p>
-              <button
-                onClick={handleBack}
-                className="text-primary underline"
-                data-testid="button-back-to-dashboard"
-              >
+              <Button onClick={handleBack} variant="outline" data-testid="button-back-to-dashboard">
                 Back to Dashboard
-              </button>
+              </Button>
             </div>
           </main>
         </div>
@@ -358,7 +363,7 @@ export default function Dashboard() {
         <div className="min-h-screen bg-background">
           <Header />
           <main className="mx-auto max-w-6xl px-6 py-8">
-            <div className="text-center space-y-4" role="status" aria-live="polite">
+            <div className="mx-auto max-w-xl rounded-xl border bg-card p-8 text-center space-y-4" role="status" aria-live="polite">
               <p className="text-lg font-semibold">Analyzing Business Plan</p>
               <p className="text-muted-foreground">
                 "{fullAssessment.businessName}" is being analyzed. This may take a minute.
@@ -366,13 +371,9 @@ export default function Dashboard() {
               <div className="max-w-md mx-auto text-left">
                 <AnalysisProgress />
               </div>
-              <button
-                onClick={handleBack}
-                className="text-primary underline"
-                data-testid="button-back-to-dashboard"
-              >
+              <Button onClick={handleBack} variant="outline" data-testid="button-back-to-dashboard">
                 Back to Dashboard
-              </button>
+              </Button>
             </div>
           </main>
         </div>
@@ -419,16 +420,16 @@ export default function Dashboard() {
       <main id="main-content" className="mx-auto max-w-7xl px-6 py-8">
         <div className="space-y-8">
           {needsPayment && (
-            <div className="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-lg p-4 flex flex-wrap items-center justify-between gap-4" role="alert" data-testid="banner-payment-required">
+            <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 flex flex-wrap items-center justify-between gap-4" role="alert" data-testid="banner-payment-required">
               <div className="flex items-center gap-3">
-                <CreditCard className="h-5 w-5 text-amber-600 dark:text-amber-400" aria-hidden="true" />
+                <CreditCard className="h-5 w-5 text-primary" aria-hidden="true" />
                 <div>
-                  <p className="font-medium text-amber-800 dark:text-amber-200">
+                  <p className="font-medium">
                     {billingStatus?.creditsRemaining === 0 
                       ? "No evaluation credits remaining" 
                       : "Choose a plan to start analyzing business plans"}
                   </p>
-                  <p className="text-sm text-amber-600 dark:text-amber-400">
+                  <p className="text-sm text-muted-foreground">
                     {billingStatus?.tier === "subscription" 
                       ? "Your subscription is active but you've used all credits this month."
                       : "Subscribe for $6.99/month or purchase a single evaluation for $13.99"}
@@ -443,7 +444,7 @@ export default function Dashboard() {
 
           {billingStatus?.hasActiveSubscription && (
             <section
-              className="rounded-lg border bg-card p-4 flex flex-wrap items-center justify-between gap-4"
+              className="rounded-xl border bg-card p-5 flex flex-wrap items-center justify-between gap-4"
               aria-labelledby="billing-management-title"
               data-testid="card-billing-management"
             >
@@ -454,7 +455,7 @@ export default function Dashboard() {
                     Billing & subscription
                   </h2>
                   <p className="text-sm text-muted-foreground">
-                    Update or remove your credit card, view invoices, or cancel your subscription securely through Stripe.
+                    Open Stripe to update payment details, view invoices, or cancel your subscription. Your cancellation is completed there.
                   </p>
                 </div>
               </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -37,10 +37,6 @@ export default function PricingPage() {
   const { user, isLoading: authLoading } = useAuth();
   const [, setLocation] = useLocation();
   const [processingTier, setProcessingTier] = useState<string | null>(null);
-
-  useEffect(() => {
-    setProcessingTier(null);
-  }, []);
 
   const { data: productsData, isLoading: productsLoading } = useQuery<{ products: Product[] }>({
     queryKey: ["/api/products"],
@@ -118,7 +114,7 @@ export default function PricingPage() {
       name: "Iteration Plan",
       price: "$6.99",
       period: "/month",
-      description: "Very few plans pass on the first try. Upload, get feedback, fix your plan, and re-upload to watch your score improve.",
+      description: "Business plans often need revision. Upload, review feedback, revise your plan, and re-upload to compare evaluations.",
       features: [
         "2 evaluations per month — score, fix, re-score",
         "Full AI-powered analysis",
@@ -189,7 +185,10 @@ export default function PricingPage() {
   if (productsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center" role="status" aria-label="Loading pricing">
-        <div className="animate-pulse text-muted-foreground">Loading pricing...</div>
+          <div className="w-full max-w-5xl grid gap-6 md:grid-cols-3 px-4" aria-hidden="true">
+            {[1, 2, 3].map((item) => <div key={item} className="h-[420px] animate-pulse rounded-xl bg-muted" />)}
+          </div>
+          <span className="sr-only">Loading pricing options...</span>
       </div>
     );
   }
@@ -232,29 +231,29 @@ export default function PricingPage() {
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-4">Choose Your Plan</h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Get professional AI-powered business plan evaluations for bank debt financing decisions.
+            Choose the level of plan review that fits your next lender conversation.
             All prices are in USD and exclude applicable taxes.
           </p>
         </div>
 
         <div className="flex items-center justify-center gap-6 mb-8">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Shield className="h-4 w-4 text-green-500" aria-hidden="true" />
-            <span>PCI Compliant</span>
+            <Shield className="h-4 w-4 text-primary" aria-hidden="true" />
+            <span>Payments handled by Stripe</span>
           </div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <CreditCard className="h-4 w-4 text-blue-500" aria-hidden="true" />
-            <span>Secure Payments via Stripe</span>
+            <CreditCard className="h-4 w-4 text-primary" aria-hidden="true" />
+            <span>Manage or cancel subscriptions in Stripe</span>
           </div>
         </div>
 
         <div className="text-center mb-10">
-          <Link href="/sample">
-            <Button variant="outline" data-testid="button-pricing-sample">
+          <Button variant="outline" asChild data-testid="button-pricing-sample">
+            <Link href="/sample">
               <FileText className="h-4 w-4 mr-2" aria-hidden="true" />
               See what a full report looks like
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
@@ -299,7 +298,7 @@ export default function PricingPage() {
                   <ul className="space-y-3" aria-label={`${plan.name} features`}>
                     {plan.features.map((feature, i) => (
                       <li key={i} className="flex items-start gap-2">
-                        <Check className="h-5 w-5 text-green-500 shrink-0 mt-0.5" aria-hidden="true" />
+                        <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" aria-hidden="true" />
                         <span className="text-sm">{feature}</span>
                       </li>
                     ))}
@@ -331,7 +330,7 @@ export default function PricingPage() {
                       className="w-full"
                       data-testid={`button-select-${plan.tier}`}
                       onClick={() => price && handleSelectPlan(price.id, isSubscription, plan.tier)}
-                      disabled={processingTier !== null || !price}
+                       disabled={authLoading || processingTier !== null || !price}
                     >
                       {processingTier === plan.tier ? (
                         "Processing..."
@@ -385,7 +384,7 @@ export default function PricingPage() {
                     <ul className="space-y-3" aria-label={`${plan.name} features`}>
                       {plan.features.map((feature, i) => (
                         <li key={i} className="flex items-start gap-2">
-                          <Check className="h-5 w-5 text-green-500 shrink-0 mt-0.5" aria-hidden="true" />
+                        <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" aria-hidden="true" />
                           <span className="text-sm">{feature}</span>
                         </li>
                       ))}
@@ -401,7 +400,7 @@ export default function PricingPage() {
                         className="w-full"
                         data-testid={`button-select-${plan.tier}`}
                         onClick={() => price && handleSelectPlan(price.id, true, plan.tier)}
-                        disabled={processingTier !== null || !price}
+                         disabled={authLoading || processingTier !== null || !price}
                       >
                         {processingTier === plan.tier ? (
                           "Processing..."
@@ -435,9 +434,9 @@ export default function PricingPage() {
             <div>
               <h3 className="font-semibold mb-2">How does the Iteration Plan work?</h3>
               <p className="text-muted-foreground">
-                Very few business plans pass on the first try. The Iteration Plan gives you 2 evaluations per month
-                so you can score your plan, fix what's failing, and re-upload to see your score improve before you
-                approach the bank. Credits reset each billing cycle, and you can cancel anytime from your account settings.
+                 The Iteration Plan includes 2 evaluations each month, so you can review an updated plan after making changes.
+                 Credits reset each billing cycle. You can manage payment details, invoices, or cancellation through the
+                 Stripe billing portal in your dashboard.
               </p>
             </div>
             
@@ -452,8 +451,7 @@ export default function PricingPage() {
             <div>
               <h3 className="font-semibold mb-2">Are my payment details secure?</h3>
               <p className="text-muted-foreground">
-                Yes, we use Stripe for payment processing, which is PCI Level 1 certified.
-                We never store your card details on our servers. All transactions are encrypted and secure.
+                 Stripe processes payment details. AI Shark does not store your card details on its servers.
               </p>
             </div>
           </div>

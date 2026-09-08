@@ -42,7 +42,7 @@ const criteria = [
       "Length of credit history",
       "Public records (bankruptcies, liens, judgments)"
     ],
-    importance: "Banks consider creditworthiness as one of the primary indicators of default risk. A strong credit profile can result in better loan terms, lower interest rates, and higher approval chances. Aim for a FICO score above 680 for business loans.",
+    importance: "Banks consider creditworthiness as one indicator of default risk. A stronger credit profile may support better loan terms and lower interest rates, but requirements vary by lender and loan type. Many business lenders look for a FICO score around 680 or higher.",
     tip: "Request your free credit reports annually and dispute any errors. Pay down existing balances to reduce utilization below 30%.",
     references: [
       { name: "SBA — Understanding Your Credit", url: "https://www.sba.gov/business-guide/manage-your-business/manage-your-finances" },
@@ -86,7 +86,7 @@ const criteria = [
       "Depreciation rate and remaining useful life",
       "Legal encumbrances — existing liens or mortgages on assets"
     ],
-    importance: "Strong collateral reduces lender risk and can help secure better loan terms or approval for businesses with less established credit. SBA loans require collateral for loans above $25,000. The more liquid and stable the collateral value, the stronger your position.",
+    importance: "Strong collateral can reduce lender risk and may support better loan terms for businesses with less established credit. Collateral requirements vary by lender, loan size, and program. More liquid assets with stable values are generally easier for lenders to evaluate.",
     tip: "Get professional appraisals for key assets before applying. Clearly list all assets with fair market values and any existing liens in your business plan.",
     references: [
       { name: "SBA — Collateral Requirements", url: "https://www.sba.gov/partners/lenders/7a-loan-program/terms-conditions-eligibility" },
@@ -152,7 +152,7 @@ const criteria = [
       "Key person risk (over-dependence on one individual)",
       "Board of directors or advisory board strength"
     ],
-    importance: "A strong management team is often the deciding factor between approved and declined loan applications. Experienced leadership with relevant industry expertise significantly reduces perceived risk for lenders. Key person insurance may be required for sole founders.",
+    importance: "Lenders often review the management team's relevant experience and ability to execute the plan. Experienced leadership may reduce perceived risk, while some lenders may require key person insurance for sole founders.",
     tip: "Include detailed bios for all key leaders, emphasizing directly relevant experience. If you have gaps, bring on advisors or board members with the missing expertise.",
     references: [
       { name: "SBA — Building Your Team", url: "https://www.sba.gov/business-guide/launch-your-business/hire-manage-employees" },
@@ -323,7 +323,7 @@ const financialRatios = [
     formula: "Net Operating Income ÷ Total Debt Service",
     target: "≥ 1.25x",
     targetColor: "text-green-600",
-    description: "The DSCR measures how many times over a business can cover its total debt payments (principal + interest) from its net operating income. It is the single most important ratio for bank loan approval.",
+    description: "The DSCR measures how many times over a business can cover its total debt payments (principal + interest) from net operating income. It is an important repayment-capacity measure, and lender requirements vary.",
     interpretation: [
       { range: "≥ 1.5x", label: "Excellent", color: "bg-green-100 text-green-800" },
       { range: "1.25x – 1.49x", label: "Good (Bank Minimum)", color: "bg-blue-100 text-blue-800" },
@@ -398,22 +398,22 @@ const financialRatios = [
       { range: "≥ 30%", label: "Strong commitment — lower lender risk", color: "bg-green-100 text-green-800" },
       { range: "20% – 29%", label: "Good — meets standard minimums", color: "bg-blue-100 text-blue-800" },
       { range: "10% – 19%", label: "Marginal — may require additional collateral", color: "bg-yellow-100 text-yellow-800" },
-      { range: "< 10%", label: "Insufficient — typically not financeable", color: "bg-red-100 text-red-800" }
+      { range: "< 10%", label: "Limited owner equity — expect closer review", color: "bg-red-100 text-red-800" }
     ],
     references: [{ name: "SBA — Equity Requirements", url: "https://www.sba.gov/partners/lenders/7a-loan-program/terms-conditions-eligibility" }]
   }
 ];
 
 const lenderGrades = [
-  { grade: "A", score: "85–100", label: "Excellent", color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200", description: "Exceptional candidate. All major lending criteria are met or exceeded. Strong credit, solid cash flow, ample collateral, experienced management, and a clear market position. Bank approval is highly likely.", borderColor: "border-green-400" },
-  { grade: "B+", score: "80–84", label: "Very Good", color: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200", description: "Strong candidate with only minor gaps. Approval is likely with standard documentation. Small improvements (such as additional collateral or refined projections) can elevate to Grade A.", borderColor: "border-emerald-400" },
-  { grade: "B", score: "75–79", label: "Good", color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200", description: "Good candidate meeting most bank lending criteria. Some areas need additional documentation or explanation. SBA loan programs may be appropriate if conventional lending falls short.", borderColor: "border-blue-400" },
-  { grade: "B-", score: "70–74", label: "Above Average", color: "bg-sky-100 text-sky-800 dark:bg-sky-900 dark:text-sky-200", description: "Above-average candidate with notable strengths but also meaningful gaps that lenders will scrutinize. Focused improvements in the weakest 2-3 areas could move this plan into Grade B territory.", borderColor: "border-sky-400" },
-  { grade: "C+", score: "65–69", label: "Average", color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200", description: "Average candidate. Approval is possible but requires substantial documentation, additional collateral, or a co-signer. Review all flagged weaknesses carefully before applying.", borderColor: "border-yellow-400" },
-  { grade: "C", score: "55–64", label: "Below Average", color: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200", description: "Below average. Conventional bank lending will be difficult. Consider SBA Microloan, CDFI lenders, or credit unions. Significant plan revisions are needed before applying.", borderColor: "border-orange-400" },
-  { grade: "C-", score: "50–54", label: "Needs Work", color: "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200", description: "The plan needs substantial work before it will be taken seriously by lenders. Focus on the two or three lowest-scoring criteria and rebuild from there. Consider consulting a SCORE mentor.", borderColor: "border-amber-400" },
-  { grade: "D", score: "35–49", label: "Not Ready", color: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200", description: "Not ready for bank debt financing. Multiple material deficiencies exist. Alternative funding paths (bootstrapping, equity investors, grants) may be more appropriate at this stage.", borderColor: "border-red-400" },
-  { grade: "F", score: "0–34", label: "Significant Gaps", color: "bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-200", description: "Significant fundamental gaps exist. The business concept or plan as presented is not viable for debt financing. Consider a complete rewrite with professional guidance before resubmitting.", borderColor: "border-rose-400" }
+  { grade: "A", score: "85–100", label: "Excellent", color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200", description: "The plan addresses the reviewed areas in strong detail, including credit, cash flow, collateral, management, and market position. This grade is informational and does not predict a lender's decision.", borderColor: "border-green-400" },
+  { grade: "B+", score: "80–84", label: "Very Good", color: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200", description: "The plan addresses most reviewed areas in strong detail, with only a few gaps needing clearer evidence or explanation.", borderColor: "border-emerald-400" },
+  { grade: "B", score: "75–79", label: "Good", color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200", description: "The plan covers many reviewed areas well, while several sections would benefit from additional documentation or explanation.", borderColor: "border-blue-400" },
+  { grade: "B-", score: "70–74", label: "Above Average", color: "bg-sky-100 text-sky-800 dark:bg-sky-900 dark:text-sky-200", description: "The plan shows notable strengths alongside meaningful gaps. Focus first on the two or three lowest-scoring areas.", borderColor: "border-sky-400" },
+  { grade: "C+", score: "65–69", label: "Average", color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200", description: "The plan addresses the reviewed areas unevenly. Several flagged sections need stronger evidence, assumptions, or supporting documentation.", borderColor: "border-yellow-400" },
+  { grade: "C", score: "55–64", label: "Below Average", color: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200", description: "The plan has multiple material gaps across the reviewed areas. Substantial revisions and clearer supporting evidence are recommended.", borderColor: "border-orange-400" },
+  { grade: "C-", score: "50–54", label: "Needs Work", color: "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200", description: "The plan needs substantial development. Start with the lowest-scoring areas and consider guidance from a qualified business adviser.", borderColor: "border-amber-400" },
+  { grade: "D", score: "35–49", label: "Major Gaps", color: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200", description: "The submitted plan leaves many reviewed areas unsupported or incomplete. Rework the core financial, market, and management sections before relying on it.", borderColor: "border-red-400" },
+  { grade: "F", score: "0–34", label: "Significant Gaps", color: "bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-200", description: "The submitted plan has fundamental information gaps across most reviewed areas. A thorough rewrite with supporting evidence is recommended.", borderColor: "border-rose-400" }
 ];
 
 const marketItems = [
@@ -860,7 +860,7 @@ export default function EducationPage() {
                     In addition to the numeric score (0–100), AI Shark assigns a <strong>Lender Readiness Grade</strong> from A to F. This grade maps your overall score to a letter equivalent that mirrors how academic grades communicate performance levels — making the assessment immediately intuitive.
                   </p>
                   <p>
-                    The grade is calculated from the weighted overall score, which combines all 10 assessment criteria. Each criterion contributes equally to the overall score. The grade is not just cosmetic — it reflects the actual probability of approval based on typical commercial bank lending standards.
+                    The grade is calculated from the weighted overall score, which combines all 10 assessment criteria. Each criterion contributes equally to the overall score. It summarizes how completely the submitted plan addresses the reviewed areas; it does not predict a lender's decision.
                   </p>
                 </CardContent>
               </Card>

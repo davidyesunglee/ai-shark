@@ -119,7 +119,11 @@ export default function RegistrationPage() {
   if (statusLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center" role="status" aria-live="polite">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" aria-hidden="true" />
+        <div className="w-full max-w-2xl space-y-4 px-4" aria-hidden="true">
+          <div className="mx-auto h-12 w-12 animate-pulse rounded-full bg-muted" />
+          <div className="h-9 w-2/3 mx-auto animate-pulse rounded bg-muted" />
+          <div className="h-96 animate-pulse rounded-xl bg-muted" />
+        </div>
         <span className="sr-only">Loading registration status...</span>
       </div>
     );
@@ -140,12 +144,12 @@ export default function RegistrationPage() {
       <main className="container mx-auto px-4 py-8 max-w-2xl">
         <Card>
           <CardHeader className="text-center">
-            <div className="mx-auto mb-4 w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <div className="mx-auto mb-4 w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
               <UserPlus className="h-6 w-6 text-primary" aria-hidden="true" />
             </div>
-            <CardTitle className="text-2xl">Complete Your Registration</CardTitle>
+            <CardTitle className="text-2xl">A few details, then you are ready</CardTitle>
             <CardDescription>
-              Just your name and email to get started — takes 30 seconds
+              Your username and email are required. Everything else can be added later.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -162,7 +166,7 @@ export default function RegistrationPage() {
                         <FormItem>
                           <FormLabel>Username *</FormLabel>
                           <FormControl>
-                            <Input data-testid="input-username" placeholder="johndoe" {...field} />
+                            <Input data-testid="input-username" autoComplete="username" placeholder="Choose a username" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -176,7 +180,7 @@ export default function RegistrationPage() {
                         <FormItem>
                           <FormLabel>Email Address *</FormLabel>
                           <FormControl>
-                            <Input data-testid="input-email" type="email" placeholder="john@example.com" {...field} />
+                            <Input data-testid="input-email" type="email" autoComplete="email" placeholder="you@company.com" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -210,7 +214,7 @@ export default function RegistrationPage() {
                         <FormItem>
                           <FormLabel>Company Name</FormLabel>
                           <FormControl>
-                            <Input data-testid="input-company" placeholder="Acme Inc." {...field} />
+                            <Input data-testid="input-company" autoComplete="organization" placeholder="Your company" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
