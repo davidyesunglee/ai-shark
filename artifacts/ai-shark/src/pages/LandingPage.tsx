@@ -1,0 +1,411 @@
+import { Button } from "@/components/ui/button";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { TrendingUp, Shield, Clock, Users, Award, ArrowRight, Zap, FileText, Landmark, Scale, Target, BarChart3, CircleDollarSign, ShieldAlert, Trophy } from "lucide-react";
+import { Link } from "wouter";
+import { AdPlacement } from "@/components/AdPlacement";
+import { TeaserWidget } from "@/components/TeaserWidget";
+import { FreePaidComparison } from "@/components/FreePaidComparison";
+import { TestimonialsSection } from "@/components/TestimonialsSection";
+import logoImage from "@/assets/shark-mark.svg";
+import mascotImage from "@/assets/shark-mascot.png";
+import HowItWorksExplainer from "@/components/HowItWorksExplainer";
+import { useSEO, trackClick } from "@/lib/useSEO";
+
+export default function LandingPage() {
+  useSEO({
+    title: "AI Shark — AI Business Plan Assessment for Bank Loans & SBA Financing",
+    description: "Review your business plan across 10 common bank debt-financing considerations. Get a Lender Readiness Grade (A–F), SWOT, market analysis, and 6 financial ratios in minutes — from $13.99.",
+    canonical: "/",
+  });
+  return (
+    <div className="min-h-screen bg-background">
+      <a href="#main-content" className="skip-to-content">
+        Skip to main content
+      </a>
+      <header className="border-b sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50" role="banner">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <img src={logoImage} alt="AI Shark Logo" className="h-10 w-auto" data-testid="img-logo" />
+            <span className="font-semibold text-lg hidden sm:inline" data-testid="text-app-title">AI Shark</span>
+          </div>
+          <nav aria-label="Main navigation">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button variant="ghost" className="hidden md:inline-flex" asChild data-testid="link-about">
+                <Link href="/about">
+                  About
+                </Link>
+              </Button>
+              <Button variant="ghost" className="hidden md:inline-flex" asChild data-testid="link-education">
+                <Link href="/education">
+                  Education
+                </Link>
+              </Button>
+              <Button variant="ghost" asChild data-testid="link-pricing">
+                <Link href="/pricing">
+                  Pricing
+                </Link>
+              </Button>
+              <Button asChild data-testid="button-login-header"><Link href="/login">Sign In</Link></Button>
+            </div>
+          </nav>
+        </div>
+      </header>
+
+      <main id="main-content">
+        <section className="container mx-auto px-4 py-20" aria-labelledby="hero-title">
+          <div className="max-w-4xl mx-auto text-center mb-12">
+            <img
+              src={mascotImage}
+              alt="AI Shark mascot reading a business plan"
+              className="h-40 w-40 mx-auto mb-4 object-contain"
+              data-testid="img-hero-mascot"
+            />
+            <Badge variant="secondary" className="mb-4 border border-primary/15 bg-primary/5 text-primary">
+              <Zap className="h-3 w-3 mr-1" aria-hidden="true" />
+              AI-Powered Analysis
+            </Badge>
+            <h1 id="hero-title" className="text-4xl md:text-5xl font-bold tracking-tight mb-6" data-testid="text-hero-title">
+              Know Your Business Plan Score
+              <span className="text-primary block mt-2">Before the Bank Does</span>
+            </h1>
+            <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto" data-testid="text-hero-description">
+              Get a clear, practical read on how your plan addresses common bank debt-financing criteria.
+              See what is covered, what needs evidence, and what to address before you apply.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <a href="#free-preview">
+                <Button size="lg" className="gap-2" data-testid="button-get-started" onClick={() => trackClick("hero_get_started")}>
+                  Get Your Free Score
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </Button>
+              </a>
+              <Button size="lg" variant="outline" asChild data-testid="button-view-pricing">
+                <Link href="/pricing" onClick={() => trackClick("hero_view_pricing")}>
+                  View Pricing
+                </Link>
+              </Button>
+            </div>
+          </div>
+
+          <div id="free-preview" className="scroll-mt-24 max-w-4xl mx-auto mb-4">
+            <div className="text-center mb-6">
+              <Badge variant="secondary" className="mb-3">
+                <Zap className="h-3 w-3 mr-1" aria-hidden="true" />
+                Free instant preview
+              </Badge>
+              <h2 className="text-2xl md:text-3xl font-bold mb-2" data-testid="text-teaser-title">
+                Score your plan free — right now
+              </h2>
+              <p className="text-muted-foreground max-w-xl mx-auto">
+                Upload a plan to receive an overall score, Lender Readiness Grade, and key gaps.
+                No account or card is needed for the preview; we ask for an email to deliver it.
+              </p>
+            </div>
+            <TeaserWidget />
+            <div className="mt-6 max-w-2xl mx-auto">
+              <h3 className="mb-3 text-center text-lg font-semibold">
+                What you get free vs. the full report
+              </h3>
+              <FreePaidComparison />
+            </div>
+            <p className="text-center text-sm text-muted-foreground mt-4">
+              Curious what the full report looks like?{" "}
+              <Link href="/sample" className="font-medium text-primary underline underline-offset-2 hover:text-primary/80" data-testid="link-sample-teaser" onClick={() => trackClick("teaser_view_sample")}>
+                View a sample report
+              </Link>
+            </p>
+          </div>
+
+          <div className="flex flex-wrap justify-center gap-8 text-center text-muted-foreground mb-16" role="list" aria-label="Key benefits">
+            <div className="flex items-center gap-2" role="listitem">
+              <Clock className="h-5 w-5 text-primary" aria-hidden="true" />
+              <span>Results in minutes</span>
+            </div>
+            <div className="flex items-center gap-2" role="listitem">
+              <Shield className="h-5 w-5 text-primary" aria-hidden="true" />
+              <span>10 financing considerations</span>
+            </div>
+            <div className="flex items-center gap-2" role="listitem">
+              <Award className="h-5 w-5 text-primary" aria-hidden="true" />
+              <span>Actionable insights</span>
+            </div>
+          </div>
+        </section>
+
+        <TestimonialsSection />
+
+        <section className="bg-muted/50 py-16" aria-labelledby="how-it-works-title">
+          <div className="container mx-auto px-4">
+            <h2 id="how-it-works-title" className="text-3xl font-bold text-center mb-4">How It Works</h2>
+            <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
+              Three clear steps to prepare your plan for a lender conversation
+            </p>
+            
+            <HowItWorksExplainer />
+          </div>
+        </section>
+
+        <section className="container mx-auto px-4 py-16" aria-labelledby="evaluation-criteria-title">
+          <h2 id="evaluation-criteria-title" className="text-3xl font-bold text-center mb-4">The 10 Criteria We Evaluate</h2>
+          <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
+            Your plan is reviewed across ten areas commonly considered in debt financing
+          </p>
+          
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {[
+              { icon: Shield, title: "Creditworthiness & Credit History", desc: "Credit history, borrowing track record, and repayment reliability." },
+              { icon: TrendingUp, title: "Cash Flow & Debt Service Coverage", desc: "Whether your cash flow comfortably covers loan payments (DSCR)." },
+              { icon: Landmark, title: "Collateral & Asset Base", desc: "Assets available to secure the loan and reduce lender risk." },
+              { icon: Scale, title: "Debt-to-Equity & Capital Structure", desc: "How your existing debt and owner investment balance out." },
+              { icon: Target, title: "Market Viability & Demand", desc: "Real demand, market size, and growth potential for your offering." },
+              { icon: Users, title: "Management Team & Experience", desc: "Leadership track record and the team's ability to execute." },
+              { icon: BarChart3, title: "Financial Projections & Assumptions", desc: "How realistic and well-supported your forecasts are." },
+              { icon: CircleDollarSign, title: "Revenue Model & Profitability", desc: "How you make money and your path to sustained profit." },
+              { icon: ShieldAlert, title: "Industry & Regulatory Risk", desc: "Industry headwinds and regulatory factors lenders weigh." },
+              { icon: Trophy, title: "Competitive Position & Differentiation", desc: "What sets you apart and protects you from competitors." },
+            ].map((c, i) => {
+              const Icon = c.icon;
+              return (
+                <Card key={i} data-testid={`card-criteria-${i}`}>
+                  <CardHeader>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-bold" aria-hidden="true">
+                        {i + 1}
+                      </div>
+                      <Icon className="h-6 w-6 text-primary" aria-hidden="true" />
+                    </div>
+                    <CardTitle className="text-lg">{c.title}</CardTitle>
+                    <CardDescription>{c.desc}</CardDescription>
+                  </CardHeader>
+                </Card>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="bg-muted/50 py-16" aria-labelledby="testimonials-title">
+          <div className="container mx-auto px-4">
+            <h2 id="testimonials-title" className="text-3xl font-bold text-center mb-4">A focused review before you apply</h2>
+            <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
+              AI Shark organizes your plan around the questions a lender is likely to ask, so the next steps are easier to see.
+            </p>
+
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto" role="list">
+              {[
+                {
+                  icon: Landmark,
+                  title: "Real bank criteria",
+                  body: "A structured review across ten core debt-financing considerations.",
+                },
+                {
+                  icon: Clock,
+                  title: "Results in minutes",
+                  body: "Start with a free preview before you decide whether a full report is useful.",
+                },
+                {
+                  icon: Shield,
+                  title: "Private & secure",
+                  body: "Your plan is stored securely and never shared with third parties.",
+                },
+                {
+                  icon: CircleDollarSign,
+                  title: "Straightforward pricing",
+                  body: "A full report starts at $13.99, with pricing shown before checkout.",
+                },
+              ].map((item, i) => {
+                const Icon = item.icon;
+                return (
+                  <Card key={i} role="listitem" data-testid={`card-trust-${i}`} className="text-center">
+                    <CardHeader>
+                      <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10">
+                        <Icon className="h-5 w-5 text-primary" aria-hidden="true" />
+                      </div>
+                      <p className="font-semibold text-sm mb-1" data-testid={`text-trust-title-${i}`}>{item.title}</p>
+                      <p className="text-sm leading-relaxed text-muted-foreground">{item.body}</p>
+                    </CardHeader>
+                  </Card>
+                );
+              })}
+            </div>
+
+            <div className="max-w-5xl mx-auto mt-14">
+              <h3 className="text-xl font-bold text-center mb-2">What AI Shark Catches</h3>
+              <p className="text-center text-sm text-muted-foreground mb-8 max-w-2xl mx-auto">
+                Illustrative examples of the kinds of issues the analysis flags in a business plan.
+              </p>
+              <div className="grid sm:grid-cols-3 gap-6" role="list">
+                {[
+                  {
+                    icon: BarChart3,
+                    label: "Cash Flow",
+                    body: "A debt-service coverage ratio below 1.25× — a common lender concern.",
+                  },
+                  {
+                    icon: Scale,
+                    label: "Capital Structure",
+                    body: "A debt-to-equity ratio that signals the business is over-leveraged.",
+                  },
+                  {
+                    icon: Target,
+                    label: "Projections",
+                    body: "Revenue forecasts with assumptions that lack supporting evidence.",
+                  },
+                ].map((item, i) => {
+                  const Icon = item.icon;
+                  return (
+                    <div key={i} role="listitem" className="flex gap-3 text-left" data-testid={`example-finding-${i}`}>
+                      <div className="mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                        <Icon className="h-4 w-4 text-primary" aria-hidden="true" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-sm mb-1">{item.label}</p>
+                        <p className="text-sm leading-relaxed text-muted-foreground">{item.body}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="text-center mt-10">
+              <Button variant="outline" size="lg" className="gap-2" asChild data-testid="button-view-sample">
+                <Link href="/sample" onClick={() => trackClick("testimonials_view_sample")}>
+                  <FileText className="h-4 w-4" aria-hidden="true" />
+                  See a Full Sample Report
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </section>
+
+        <section className="container mx-auto px-4 py-16" aria-labelledby="faq-title">
+          <h2 id="faq-title" className="text-3xl font-bold text-center mb-4">Frequently Asked Questions</h2>
+          <p className="text-center text-muted-foreground mb-10 max-w-2xl mx-auto">
+            Everything you need to know before you get your score.
+          </p>
+          <div className="max-w-3xl mx-auto">
+            <Accordion type="single" collapsible className="w-full">
+              {[
+                {
+                  q: "How does AI Shark assess my business plan?",
+                   a: "AI Shark uses AI to review your business plan across 10 debt-financing considerations: creditworthiness, cash flow, collateral, debt-to-equity, market viability, management team, financial projections, revenue model, industry risk, and competitive position. A full report includes an overall score (0–100), a lender readiness grade (A–F), SWOT and market analysis, six financial ratios, and recommendations.",
+                },
+                {
+                  q: "What file types can I upload?",
+                  a: "You can upload PDF, DOCX, or TXT files up to 10 MB. Most banks and SBA lenders prefer PDF format for business plans.",
+                },
+                {
+                  q: "How much does AI Shark cost?",
+                  a: "A one-time assessment costs $13.99. A monthly subscription costs $6.99 per month and includes two business plan evaluations per month. Both options give you full access to the lender readiness grade, SWOT analysis, financial ratios, and PDF export.",
+                },
+                {
+                  q: "What is a lender readiness grade?",
+                   a: "The Lender Readiness Grade is a letter grade (A through F) that summarizes how completely your plan addresses the areas reviewed. It is an informational assessment, not a prediction of a lending decision.",
+                },
+                {
+                  q: "Will using AI Shark guarantee a bank loan approval?",
+                  a: "No. AI Shark provides analytical perspectives on your business plan for informational purposes only. The assessment does not imply any expectation of positive or negative outcomes from banking institutions and is not a guarantee of funding. Always consult with qualified financial professionals before making funding decisions.",
+                },
+              ].map((item, i) => (
+                <AccordionItem key={i} value={`faq-${i}`} data-testid={`faq-item-${i}`}>
+                  <AccordionTrigger className="text-left" data-testid={`faq-question-${i}`}>{item.q}</AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground leading-relaxed" data-testid={`faq-answer-${i}`}>
+                    {item.a}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </div>
+        </section>
+
+        <section className="bg-primary text-primary-foreground py-16" aria-labelledby="cta-title">
+          <div className="container mx-auto px-4 text-center">
+            <h2 id="cta-title" className="text-3xl font-bold mb-4">Ready to Know Your Score?</h2>
+            <p className="text-xl opacity-90 mb-3 max-w-2xl mx-auto">
+              Use AI Shark to identify gaps before your next lender conversation.
+            </p>
+            <p className="opacity-90 mb-8 max-w-2xl mx-auto" data-testid="text-cta-pricing">
+              Full reports from just <span className="font-semibold">$13.99</span> — or <span className="font-semibold">$6.99/mo</span> for 2 evaluations every month.
+            </p>
+              <Button size="lg" variant="outline" className="gap-2 bg-background/10 backdrop-blur border-primary-foreground/20 text-primary-foreground hover:bg-background/20" asChild data-testid="button-cta-bottom">
+               <Link href="/signup" onClick={() => trackClick("bottom_cta_get_started")}>
+                Get Started
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+               </Link>
+             </Button>
+          </div>
+        </section>
+      </main>
+
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 backdrop-blur p-3 pr-20 md:hidden" data-testid="sticky-cta-mobile">
+        <a href="#free-preview" className="block">
+          <Button size="lg" className="w-full gap-2" data-testid="button-sticky-get-started" onClick={() => trackClick("sticky_get_started")}>
+            Get Your Free Score
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </Button>
+        </a>
+      </div>
+
+      <footer className="border-t" role="contentinfo">
+        <div className="container mx-auto px-4 pt-8 pb-28 md:pb-8">
+          <div className="flex justify-center mb-6">
+            <AdPlacement slot="footer" className="hidden md:flex" />
+          </div>
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
+            <div className="flex items-center gap-2">
+              <img src={logoImage} alt="AI Shark Logo" className="h-8 w-auto" data-testid="img-footer-logo" />
+              <span className="font-semibold">AI Shark</span>
+            </div>
+            <nav aria-label="Footer navigation">
+              <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 text-sm text-muted-foreground">
+                <Link href="/about">
+                  <span className="hover:text-foreground transition-colors cursor-pointer" data-testid="link-footer-about">About</span>
+                </Link>
+                <Link href="/calculator">
+                  <span className="hover:text-foreground transition-colors cursor-pointer" data-testid="link-footer-calculator">DSCR Calculator</span>
+                </Link>
+                <Link href="/debt-to-equity-calculator">
+                  <span className="hover:text-foreground transition-colors cursor-pointer" data-testid="link-footer-dte-calculator">Debt-to-Equity Calculator</span>
+                </Link>
+                <Link href="/glossary">
+                  <span className="hover:text-foreground transition-colors cursor-pointer" data-testid="link-footer-glossary">Lending Glossary</span>
+                </Link>
+                <Link href="/partners">
+                  <span className="hover:text-foreground transition-colors cursor-pointer" data-testid="link-footer-partners">For Advisors</span>
+                </Link>
+                <Link href="/education">
+                  <span className="hover:text-foreground transition-colors cursor-pointer" data-testid="link-footer-education">Education</span>
+                </Link>
+                <Link href="/guides">
+                  <span className="hover:text-foreground transition-colors cursor-pointer" data-testid="link-footer-guides">Guides</span>
+                </Link>
+                <Link href="/pricing">
+                  <span className="hover:text-foreground transition-colors cursor-pointer" data-testid="link-footer-pricing">Pricing</span>
+                </Link>
+                <Link href="/privacy">
+                  <span className="hover:text-foreground transition-colors cursor-pointer" data-testid="link-footer-privacy">Privacy Policy</span>
+                </Link>
+                <Link href="/terms">
+                  <span className="hover:text-foreground transition-colors cursor-pointer" data-testid="link-footer-terms">Terms of Service</span>
+                </Link>
+                <Link href="/contact">
+                  <span className="hover:text-foreground transition-colors cursor-pointer" data-testid="link-footer-contact">Contact</span>
+                </Link>
+              </div>
+            </nav>
+            <p className="text-sm text-muted-foreground">
+              Powered by AI for accurate, fast analysis.
+            </p>
+          </div>
+          <div className="border-t pt-6">
+            <p className="text-xs text-muted-foreground text-center max-w-4xl mx-auto" data-testid="text-disclaimer">
+              <strong>Disclaimer:</strong> AI Shark provides analytical perspectives on business plan documentation and data for informational purposes only. Results do not imply any expectation of positive or negative outcomes from banking or financial institutions. Our assessments are not to be construed as a decision to fund or not fund any business. Always consult with qualified financial professionals before making funding decisions. For questions or assistance, contact us at{" "}<a href="mailto:info@aishark.org" className="underline hover:text-foreground" data-testid="link-contact-email">info@aishark.org</a>.
+            </p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}

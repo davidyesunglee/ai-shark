@@ -1,0 +1,16 @@
+export const guideSlugs = [
+  "how-to-improve-dscr",
+  "why-banks-reject-business-loans",
+  "credit-score-for-business-loan",
+  "business-plan-for-bank-loan",
+  "collateral-for-business-loan",
+  "debt-to-equity-ratio-business-loan",
+  "sba-loan-requirements",
+  "business-loan-down-payment",
+  "financial-projections-for-business-loan",
+  "startup-business-loan-no-revenue",
+  "business-line-of-credit-vs-term-loan",
+  "good-dscr-for-sba-loan",
+  "sba-loan-denial-reasons",
+  "personal-guarantee-business-loan",
+];

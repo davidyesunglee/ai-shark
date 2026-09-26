@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "AI Shark"
+description = "AI Shark reviews business plans against lender criteria, helping business owners understand financing readiness, weaknesses, and practical improvements before applying for a loan."
+version = "1.0.0"
+id = "artifacts/ai-shark"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23745
+
+[services.development]
+run = "pnpm --filter @workspace/ai-shark run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/ai-shark", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/ai-shark/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23745"
+BASE_PATH = "/"

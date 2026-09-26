@@ -1,43 +1,45 @@
-# AI Shark — Business Plan Assessor
+# [Project name]
 
-## Overview
-AI Shark is a professional web application (aishark.org) designed to evaluate business plans against bank debt financing criteria. It uses Gemini AI to provide comprehensive assessments, including an overall score, a 10-dimension criteria breakdown, SWOT analysis, market analysis, key financial ratios, and actionable recommendations. The project aims to provide a unique focus on bank debt financing, offering PDF export of full reports.
+_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
 
-## User Preferences
-Preferred communication style: Simple, everyday language.
+## Run & Operate
 
-## System Architecture
+- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm run typecheck` — full typecheck across all packages
+- `pnpm run build` — typecheck + build all packages
+- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
+- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
+- Required env: `DATABASE_URL` — Postgres connection string
 
-### Frontend Architecture
-The frontend uses React with TypeScript and Vite. It employs Wouter for routing, TanStack React Query for state management, and `shadcn/ui` (built on Radix UI) for UI components. Styling is handled by Tailwind CSS with a professional banking aesthetic, including the Inter font family and custom data visualization components like ScoreRing and ScoreBar. Accessibility features include ADA / WCAG 2.1 compliance with skip navigation, ARIA landmarks, focus indicators, semantic HTML, and an accessibility toolbar with text-to-speech and font size adjustment.
+## Stack
 
-### Backend Architecture
-The backend is built with Node.js and Express, written in TypeScript with ES modules. It provides RESTful APIs, uses Multer for handling multipart file uploads (max 10MB), and integrates `pdf-parse` for PDF and `mammoth` for DOCX document parsing.
+- pnpm workspaces, Node.js 24, TypeScript 5.9
+- API: Express 5
+- DB: PostgreSQL + Drizzle ORM
+- Validation: Zod (`zod/v4`), `drizzle-zod`
+- API codegen: Orval (from OpenAPI spec)
+- Build: esbuild (CJS bundle)
 
-### Data Storage
-PostgreSQL is used as the primary database, managed with Drizzle ORM. Key tables include `users` and `assessments`. Drizzle Kit is used for database migrations.
+## Where things live
 
-### AI Integration
-The system integrates with the OpenAI API for core business plan analysis, generating structured assessment data, scores, and recommendations.
+_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
 
-### Authentication System
-The application features an email/password authentication system using `bcryptjs` for password hashing and `express-session` with a PostgreSQL store for session management. Optional email verification is also implemented.
+## Architecture decisions
 
-### Payment System (Stripe Integration)
-Stripe is integrated for payment processing, supporting free, monthly subscription, and one-time payment tiers. It uses `stripe-replit-sync` for webhook handling and directly fetches product information from the Stripe API. Payment enforcement is applied, with credit deduction post-upload and monthly resets for subscriptions.
+_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
 
-### Reporting and Tracking
-The system includes functionality for tracking site visits and CTA clicks, storing data in a `site_events` table with SHA-256 hashed IPs. Weekly reports for user registrations, transactions, revenue, expenses, site visits, clicks, and a competitive analysis are generated and emailed.
+## Product
 
-### SEO & Discoverability
-Comprehensive SEO features include `robots.txt`, a dynamic `sitemap.xml`, meta tags for all public pages, Open Graph and Twitter Card tags, and rich snippets via JSON-LD structured data for `Organization`, `SoftwareApplication`, `FAQPage`, `BreadcrumbList`, `HowTo`, `WebSite` with `SearchAction`, and `Service` schemas.
+_Describe the high-level user-facing capabilities of this app once they exist._
 
-### Customer Feedback System
-A customer feedback system allows users to submit feedback, bug reports, feature requests, and support queries via a contact page and satisfaction surveys. Feedback is stored in a `customer_feedback` table, with admin monitoring and email notifications for new entries.
+## User preferences
 
-## External Dependencies
+_Populate as you build — explicit user instructions worth remembering across sessions._
 
-- **PostgreSQL**: Primary database for data storage.
-- **OpenAI API**: Used for AI-powered business plan analysis and scoring.
-- **Resend**: Email service for sending weekly registration reports and various financial reports.
-- **Stripe**: Payment processing gateway for subscriptions and one-time purchases.
+## Gotchas
+
+_Populate as you build — sharp edges, "always run X before Y" rules._
+
+## Pointers
+
+- See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details

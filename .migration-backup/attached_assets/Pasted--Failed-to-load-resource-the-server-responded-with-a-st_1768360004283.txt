@@ -1,0 +1,55 @@
+
+Failed to load resource: the server responded with a status of 500 ()
+index-DzugR4Gf.js:8  [Auth] Signup failed: 500: {"message":"Failed to create account"}
+gj @ index-DzugR4Gf.js:8
+index-DzugR4Gf.js:60  Signup error: Error: 500: {"message":"Failed to create account"}
+    at $g (index-DzugR4Gf.js:8:96587)
+    at async Cs (index-DzugR4Gf.js:8:96788)
+    at async Object.gj [as mutationFn] (index-DzugR4Gf.js:8:188024)
+N @ index-DzugR4Gf.js:60
+index-DzugR4Gf.js:8   POST https://aishark.org/api/auth/login 500 (Internal Server Error)
+Cs @ index-DzugR4Gf.js:8
+vj @ index-DzugR4Gf.js:8
+fn @ index-DzugR4Gf.js:8
+N @ index-DzugR4Gf.js:8
+start @ index-DzugR4Gf.js:8
+execute @ index-DzugR4Gf.js:8
+await in execute
+mutate @ index-DzugR4Gf.js:8
+h @ index-DzugR4Gf.js:60
+I0 @ index-DzugR4Gf.js:5
+F0 @ index-DzugR4Gf.js:5
+L0 @ index-DzugR4Gf.js:5
+Wp @ index-DzugR4Gf.js:5
+Hp @ index-DzugR4Gf.js:5
+(anonymous) @ index-DzugR4Gf.js:5
+Ou @ index-DzugR4Gf.js:8
+Yf @ index-DzugR4Gf.js:5
+Oc @ index-DzugR4Gf.js:5
+hc @ index-DzugR4Gf.js:5
+eb @ index-DzugR4Gf.js:5
+index-DzugR4Gf.js:8  [Auth] Login failed: 500: {"message":"Login failed","detail":"password verification error","errorType":"AggregateError","errorMessage":"No message"}
+vj @ index-DzugR4Gf.js:8
+await in vj
+fn @ index-DzugR4Gf.js:8
+N @ index-DzugR4Gf.js:8
+start @ index-DzugR4Gf.js:8
+execute @ index-DzugR4Gf.js:8
+await in execute
+mutate @ index-DzugR4Gf.js:8
+h @ index-DzugR4Gf.js:60
+I0 @ index-DzugR4Gf.js:5
+F0 @ index-DzugR4Gf.js:5
+L0 @ index-DzugR4Gf.js:5
+Wp @ index-DzugR4Gf.js:5
+Hp @ index-DzugR4Gf.js:5
+(anonymous) @ index-DzugR4Gf.js:5
+Ou @ index-DzugR4Gf.js:8
+Yf @ index-DzugR4Gf.js:5
+Oc @ index-DzugR4Gf.js:5
+hc @ index-DzugR4Gf.js:5
+eb @ index-DzugR4Gf.js:5
+index-DzugR4Gf.js:60  Login error: Error: 500: {"message":"Login failed","detail":"password verification error","errorType":"AggregateError","errorMessage":"No message"}
+    at $g (index-DzugR4Gf.js:8:96587)
+    at async Cs (index-DzugR4Gf.js:8:96788)
+    at async Object.vj [as mutationFn] (index-DzugR4Gf.js:8:187817)
