@@ -4,6 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "ux-report": "tsx ./src/ux-report/run.ts",
+    "test:ux-report": "tsx --test ./src/ux-report/checks.test.ts",
     "hello": "tsx ./src/hello.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },

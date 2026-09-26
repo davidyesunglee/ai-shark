@@ -1,1 +1,2 @@
 - [Registration uniqueness migration](registration-uniqueness.md) — review existing registration duplicates before enforcing the user ID uniqueness constraint.
+- [Scheduled report boundary](scheduled-report-boundary.md) — verify independent scheduling tooling before promising activation; multi-artifact migration alone is not sufficient.
