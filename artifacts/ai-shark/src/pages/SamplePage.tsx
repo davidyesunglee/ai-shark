@@ -1,255 +1,268 @@
 import { useLocation, Link } from "wouter";
-import { Button } from "@/components/ui/button";
 import { AssessmentReport, type FullAssessment } from "@/components/AssessmentReport";
 import { useSEO } from "@/lib/useSEO";
-import { Sparkles, ArrowRight } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+import { ArrowRight, Info, CircleSlash } from "lucide-react";
+import { MarketingHeader, MarketingFooter, Reveal } from "@/components/marketing/MarketingChrome";
 
+// Fictional business. Criteria names match the ten used by the live assessment prompt.
 const SAMPLE_ASSESSMENT: FullAssessment = {
   id: "sample-report",
-  businessName: "Riverside Coffee Roasters",
-  fileName: "riverside-coffee-business-plan.pdf",
-  uploadDate: "March 12, 2026",
+  businessName: "Riverside Coffee Roasters (fictional)",
+  fileName: "riverside-coffee-business-plan-sample.pdf",
+  uploadDate: "Illustrative example",
   status: "complete",
-  overallScore: 74,
+  overallScore: 72,
   lenderReadinessGrade: "B",
   executiveSummary:
-    "Riverside Coffee Roasters presents a well-structured plan to open a second location and expand its wholesale roasting operation. The business shows three years of consistent revenue growth, healthy gross margins, and an experienced ownership team. Debt-service coverage is adequate but leaves limited cushion, and the plan would be strengthened by more detailed cash-flow projections and a clearer collateral position. Overall, this is a solid candidate for bank debt financing, likely to qualify with modest additional documentation and a slightly larger owner equity contribution.",
+    "This fictional plan describes opening a second cafe location and expanding a wholesale roasting operation. As written, the documentation covers the business model, management team and use of funds well. It is thinner on cash-flow detail, collateral documentation and risk mitigation. Adding a month-by-month cash-flow projection, documented equipment values and a fuller risk section would make the plan more complete for a lender conversation. This assessment reflects the documents only; it is not a credit review or a prediction of any lending decision.",
   criteria: [
     {
       id: "1",
-      name: "Business Model & Viability",
-      score: 82,
+      name: "Creditworthiness & Credit History",
+      score: 64,
       analysis:
-        "The dual revenue model — retail cafe sales plus wholesale roasting to local restaurants — is proven and diversified. Existing location has been profitable for two years.",
+        "The plan states the owners have repaid a prior equipment loan but provides no supporting detail. A lender will review credit directly; the plan could briefly summarize existing obligations and repayment history.",
       keyFindings: [
-        "Two complementary revenue streams reduce dependence on foot traffic",
-        "Existing location profitable since year two",
-        "Wholesale contracts provide predictable recurring revenue",
+        "Prior equipment loan mentioned without terms or payoff date",
+        "Existing business obligations not listed in one place",
+        "No credit information reviewed — outside the scope of this assessment",
       ],
     },
     {
       id: "2",
-      name: "Management & Experience",
-      score: 85,
+      name: "Cash Flow & Debt Service Coverage",
+      score: 63,
       analysis:
-        "Owners have 12 combined years in specialty coffee and prior management experience. A clear org chart and hiring plan support the expansion.",
+        "The plan's own figures imply a DSCR of about 1.28x. That is stated but not stress-tested, and there is no monthly cash-flow projection for the first 18 months.",
       keyFindings: [
-        "12 years combined industry experience",
-        "Defined roles for the new location",
-        "Existing staff can be promoted to reduce ramp-up risk",
+        "Plan-stated DSCR of about 1.28x (many lenders look for 1.20x–1.25x or higher)",
+        "No slower-ramp scenario for the new location",
+        "Missing month-by-month cash-flow projection",
       ],
     },
     {
       id: "3",
-      name: "Financial Projections",
-      score: 68,
+      name: "Collateral & Asset Base",
+      score: 60,
       analysis:
-        "Revenue projections are reasonable and grounded in existing performance, but the plan lacks a month-by-month cash-flow statement for the first 18 months.",
+        "Roasting equipment and buildout are listed as potential collateral, but appraised values and any existing liens are not documented.",
       keyFindings: [
-        "Revenue assumptions tied to real historical data",
-        "Missing detailed monthly cash-flow projection",
-        "Break-even analysis provided but optimistic on ramp speed",
+        "Equipment listed as collateral",
+        "No appraisals or invoices attached",
+        "Existing liens not disclosed",
       ],
     },
     {
       id: "4",
-      name: "Debt Service Coverage",
-      score: 65,
+      name: "Debt-to-Equity & Capital Structure",
+      score: 66,
       analysis:
-        "Projected DSCR of 1.28x meets typical bank minimums but leaves limited room for slower-than-expected sales at the new location.",
+        "The plan shows a 15% owner equity injection and a post-loan debt-to-equity of about 2.4x. Many lenders prefer a larger injection for expansion projects.",
       keyFindings: [
-        "Projected DSCR of 1.28x (bank minimum typically 1.20x)",
-        "Limited cushion if new location ramps slowly",
-        "Existing location cash flow partially offsets risk",
+        "15% owner equity contribution stated",
+        "Post-loan debt-to-equity about 2.4x per plan figures",
+        "Source of the equity injection not documented",
       ],
     },
     {
       id: "5",
-      name: "Collateral & Security",
-      score: 62,
+      name: "Market Viability & Demand",
+      score: 77,
       analysis:
-        "Roasting equipment and buildout provide some collateral, but the plan does not clearly document appraised values or existing liens.",
+        "The plan describes a growing neighborhood with limited specialty competition, but market figures are stated without citing where they came from.",
       keyFindings: [
-        "Roasting equipment offers tangible collateral",
-        "Appraised values not documented",
-        "Owner willing to provide personal guarantee",
+        "Target area and customer profile clearly described",
+        "Market size figures given without a stated source",
+        "Wholesale demand described anecdotally",
       ],
     },
     {
       id: "6",
-      name: "Market Opportunity",
-      score: 78,
+      name: "Management Team & Experience",
+      score: 84,
       analysis:
-        "The target neighborhood is growing and underserved by specialty coffee. Demand for local wholesale roasting is rising.",
+        "The plan describes owners with a combined 12 years in specialty coffee, a clear org chart and a hiring plan for the new location.",
       keyFindings: [
-        "Target area population growing 4% annually",
-        "Only one comparable specialty competitor nearby",
-        "Growing restaurant demand for local roasters",
+        "Relevant industry experience described",
+        "Defined roles for the new location",
+        "Internal promotion plan reduces ramp-up risk",
       ],
     },
     {
       id: "7",
-      name: "Competitive Advantage",
-      score: 76,
+      name: "Financial Projections & Assumptions",
+      score: 68,
       analysis:
-        "Established brand, loyal customer base, and direct-trade sourcing relationships differentiate the business from chains.",
+        "Revenue projections reference the existing location's history, but the break-even timeline for the new site looks optimistic and key assumptions are not listed.",
       keyFindings: [
-        "Recognized local brand with loyal following",
-        "Direct-trade sourcing supports premium pricing",
-        "Chains compete on price, not quality",
+        "Projections reference historical sales",
+        "Assumptions not listed in a single table",
+        "Break-even timeline may be optimistic",
       ],
     },
     {
       id: "8",
-      name: "Use of Funds",
-      score: 80,
+      name: "Revenue Model & Profitability",
+      score: 81,
       analysis:
-        "The loan request is clearly itemized across buildout, equipment, and working capital, with sensible contingency.",
+        "The plan describes two complementary revenue streams — retail cafe sales and wholesale roasting — and states the existing location has been profitable since its second year.",
       keyFindings: [
-        "Clearly itemized use of proceeds",
-        "10% contingency included",
-        "Working capital line appropriately sized",
+        "Diversified retail and wholesale revenue",
+        "Stated profitability at existing location",
+        "Wholesale pricing terms not included",
       ],
     },
     {
       id: "9",
-      name: "Owner Equity & Commitment",
-      score: 70,
+      name: "Industry & Regulatory Risk",
+      score: 65,
       analysis:
-        "Owners contribute 15% equity. Banks often prefer 20%+ for expansion, so a larger contribution would strengthen the application.",
+        "Key risks are named, but mitigation is thin — particularly for green-coffee price swings, labor availability and supplier disruption. Permitting for the new site is not addressed.",
       keyFindings: [
-        "15% owner equity contribution",
-        "Banks typically prefer 20%+ for expansion",
-        "Owners reinvesting retained earnings",
+        "Commodity price risk named without a mitigation plan",
+        "No backup plan for key-supplier disruption",
+        "Permitting and buildout timeline not discussed",
       ],
     },
     {
       id: "10",
-      name: "Risk & Contingency Planning",
-      score: 66,
+      name: "Competitive Position & Differentiation",
+      score: 76,
       analysis:
-        "The plan acknowledges key risks but offers limited mitigation detail, particularly around rising green-coffee costs and labor availability.",
+        "The plan explains its differentiation through local brand recognition and direct-trade sourcing, and names the nearest specialty competitor.",
       keyFindings: [
-        "Key risks identified",
-        "Limited mitigation detail for input cost volatility",
-        "No documented backup for key-supplier disruption",
+        "Clear premium positioning",
+        "Direct-trade sourcing described as a differentiator",
+        "Response to a possible chain entrant not addressed",
       ],
     },
   ],
   strengths: [
-    "Proven, profitable existing location with two years of positive cash flow",
-    "Experienced ownership team with clear expansion roles",
-    "Diversified revenue across retail and wholesale channels",
-    "Well-itemized use of loan proceeds with contingency",
+    "Clear description of an existing, profitable location",
+    "Experienced ownership team with defined expansion roles",
+    "Diversified revenue across retail and wholesale",
+    "Itemized use of loan proceeds with a 10% contingency",
   ],
   weaknesses: [
-    "Missing detailed month-by-month cash-flow projection",
-    "Debt-service coverage cushion is thin at 1.28x",
-    "Collateral values and liens not fully documented",
-    "Owner equity contribution below the 20% banks often prefer",
+    "No month-by-month cash-flow projection",
+    "Plan-stated DSCR of about 1.28x is not stress-tested",
+    "Collateral values and liens not documented",
+    "Owner equity injection of 15% with no stated source",
   ],
   recommendations: [
-    "Add an 18-month monthly cash-flow projection for the new location",
-    "Increase owner equity contribution toward 20% to strengthen the application",
-    "Obtain and document equipment appraisals and any existing liens",
-    "Expand the risk section with specific mitigation for green-coffee cost volatility",
-    "Provide signed letters of intent for new wholesale accounts to support revenue projections",
+    "Add an 18-month monthly cash-flow projection for the new location, including a slower-ramp case",
+    "Document the source of the owner equity injection and consider whether a larger contribution is possible",
+    "Attach equipment invoices or appraisals and disclose any existing liens",
+    "List key projection assumptions in one table and explain each",
+    "Expand the risk section with specific mitigation for commodity costs, labor and supplier disruption",
+    "Cite sources for market size figures, and include any signed letters of intent from wholesale customers",
   ],
   swot: {
-    strengths: [
-      "Established, recognized local brand",
-      "Two profitable years at the existing location",
-      "Direct-trade sourcing supports premium margins",
-    ],
-    weaknesses: [
-      "Thin debt-service coverage cushion",
-      "Incomplete cash-flow documentation",
-      "Below-preferred owner equity contribution",
-    ],
-    opportunities: [
-      "Underserved, growing target neighborhood",
-      "Rising restaurant demand for local wholesale roasting",
-      "Room to add catering and subscription revenue",
-    ],
-    threats: [
-      "Volatile green-coffee commodity prices",
-      "Tight local labor market",
-      "Potential entry of a national chain",
-    ],
+    strengths: ["Recognized local brand (as described)", "Profitable existing location (as stated)", "Direct-trade sourcing supports premium pricing"],
+    weaknesses: ["Thin, untested debt-service cushion", "Incomplete cash-flow documentation", "Modest owner equity contribution"],
+    opportunities: ["Growing target neighborhood", "Restaurant demand for local wholesale roasting", "Room for catering and subscription revenue"],
+    threats: ["Volatile green-coffee prices", "Tight local labor market", "Possible entry of a national chain"],
   },
   marketAnalysis: {
     targetMarket:
-      "Specialty coffee drinkers and local restaurants in a growing suburban corridor, ages 25–55 with above-average discretionary spend.",
+      "As described in the plan: specialty coffee customers and local restaurants in a growing suburban corridor.",
     marketSize:
-      "Estimated $18M local specialty coffee market growing roughly 6% per year, with an addressable wholesale segment of about $4M.",
+      "The plan states an $18M local specialty coffee market and a $4M wholesale segment. No source is cited; a lender may ask for one.",
     competitivePosition:
-      "Differentiated premium position anchored by brand loyalty and direct-trade sourcing; limited direct specialty competition nearby.",
+      "Premium positioning based on brand loyalty and direct-trade sourcing, with one named specialty competitor nearby.",
     growthPotential:
-      "Strong — expansion location plus wholesale growth could roughly double revenue within three years if execution stays on plan.",
+      "The plan projects revenue roughly doubling in three years. This depends on assumptions that are not fully documented.",
   },
   financialRatios: [
-    { name: "Debt Service Coverage (DSCR)", value: "1.28x", assessment: "Acceptable" },
-    { name: "Gross Margin", value: "62%", assessment: "Good" },
-    { name: "Current Ratio", value: "1.6", assessment: "Good" },
-    { name: "Debt-to-Equity", value: "2.4x", assessment: "Acceptable" },
-    { name: "Net Profit Margin", value: "9%", assessment: "Acceptable" },
-    { name: "Owner Equity Contribution", value: "15%", assessment: "Concerning" },
+    { name: "Debt Service Coverage Ratio (DSCR)", value: "1.28x (plan-stated)", assessment: "Acceptable" },
+    { name: "Current Ratio", value: "1.6 (plan-stated)", assessment: "Good" },
+    { name: "Debt-to-Equity", value: "2.4x (plan-stated)", assessment: "Acceptable" },
+    { name: "Gross Margin", value: "62% (plan-stated)", assessment: "Good" },
+    { name: "Net Profit Margin", value: "9% (plan-stated)", assessment: "Acceptable" },
+    { name: "Owner Equity Contribution", value: "15% (plan-stated)", assessment: "Concerning" },
   ],
 };
 
 export default function SamplePage() {
   const [, setLocation] = useLocation();
+  const { user } = useAuth();
 
   useSEO({
-    title: "Sample Business Plan Assessment Report | AI Shark",
+    title: "Sample Business Plan Review (Fictional) | AI Shark",
     description:
-      "See a real example of an AI Shark business plan assessment — overall score, lender readiness grade, 10-dimension breakdown, SWOT, market analysis, and financial ratios.",
+      "An illustrative AI Shark documentation assessment for a fictional business: overall score, readiness grade, 10 debt-financing considerations, SWOT and ratios. Not a credit check or approval prediction.",
     canonical: "/sample",
   });
 
+  const previewHref = `${import.meta.env.BASE_URL}#free-preview`;
+
   return (
-    <div className="min-h-screen bg-background">
-      <div className="border-b bg-primary/5">
-        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" aria-hidden="true" />
-            <p className="text-sm font-medium" data-testid="text-sample-banner">
-              This is a sample report. Yours will be based on your own business plan.
-            </p>
-          </div>
-          <Link href="/signup">
-            <Button size="sm" data-testid="button-sample-cta">
-              Assess My Plan
-              <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
-            </Button>
-          </Link>
-        </div>
-      </div>
+    <div className="mk min-h-[100dvh]">
+      <a href="#main-content" className="skip-to-content">Skip to main content</a>
+      <MarketingHeader signedIn={!!user} />
 
-      <div className="mx-auto max-w-6xl px-4 py-8">
-        <AssessmentReport assessment={SAMPLE_ASSESSMENT} onBack={() => setLocation("/")} publicMode />
-
-        <div className="mt-10 rounded-xl border bg-primary/5 p-8 text-center">
-          <h2 className="text-2xl font-semibold">Ready to see your own score?</h2>
-          <p className="mx-auto mt-2 max-w-xl text-muted-foreground">
-            Upload your business plan and get a full assessment like this one — with your overall
-            score, lender readiness grade, and a clear path to improve.
-          </p>
-          <div className="mt-5 flex flex-wrap justify-center gap-3">
-            <Link href="/signup">
-              <Button size="lg" data-testid="button-sample-signup">
-                Assess My Plan
-                <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
-              </Button>
-            </Link>
-            <Link href="/pricing">
-              <Button size="lg" variant="outline" data-testid="button-sample-pricing">
-                View Pricing
-              </Button>
-            </Link>
+      <main id="main-content">
+        <section className="mx-auto max-w-6xl px-4 pb-8 pt-12 md:pt-16">
+          <div className="grid gap-8 lg:grid-cols-[1.4fr_1fr] lg:items-end">
+            <div>
+              <p className="mk-chip mk-rise" data-testid="text-sample-banner">
+                <span className="h-2 w-2 rounded-full bg-[hsl(var(--mk-coral))]" aria-hidden="true" />
+                Fictional business · Illustrative example
+              </p>
+              <h1 className="mk-display mk-rise mt-5 text-4xl font-semibold leading-tight sm:text-5xl" style={{ animationDelay: "80ms" }}>
+                What a full report looks like
+              </h1>
+              <p className="mk-ink-soft mk-rise mt-4 max-w-xl text-lg leading-relaxed" style={{ animationDelay: "160ms" }}>
+                Riverside Coffee Roasters is made up. We wrote a sample plan for it and show the kind of documentation assessment AI Shark produces. Your report will reflect your own plan.
+              </p>
+            </div>
+            <Reveal className="mk-card p-5">
+              <p className="flex items-center gap-2 font-semibold"><Info className="h-4 w-4 mk-blue" aria-hidden="true" />How to read the scores</p>
+              <ul className="mk-ink-soft mt-3 space-y-2 text-sm">
+                <li className="flex gap-2"><CircleSlash className="mt-0.5 h-4 w-4 shrink-0 mk-coral" aria-hidden="true" />Not a credit check — no credit data is used.</li>
+                <li className="flex gap-2"><CircleSlash className="mt-0.5 h-4 w-4 shrink-0 mk-coral" aria-hidden="true" />Not verified underwriting — figures are taken from the plan as written.</li>
+                <li className="flex gap-2"><CircleSlash className="mt-0.5 h-4 w-4 shrink-0 mk-coral" aria-hidden="true" />Not a prediction of approval, terms or outcome.</li>
+              </ul>
+            </Reveal>
           </div>
-        </div>
-      </div>
+        </section>
+
+        <section className="mx-auto max-w-6xl px-4 pb-12" aria-label="Sample report">
+          <div className="mk-card overflow-hidden bg-background p-4 sm:p-6">
+            <AssessmentReport assessment={SAMPLE_ASSESSMENT} onBack={() => setLocation("/")} publicMode />
+          </div>
+        </section>
+
+        <section className="mx-auto max-w-6xl px-4 pb-20">
+          <Reveal className="mk-deep relative overflow-hidden rounded-[22px] p-8 sm:p-12">
+            <div className="grid items-center gap-8 md:grid-cols-[1.5fr_1fr]">
+              <div>
+                <h2 className="mk-display text-3xl font-semibold sm:text-4xl">See how your own plan reads.</h2>
+                <p className="mt-3 opacity-80">
+                  Start with the free preview — score, grade and top three gaps, no account needed. Get the full report only if you want the detail.
+                </p>
+              </div>
+              <div className="flex flex-col gap-3">
+                {user ? (
+                  <Link href="/dashboard" className="mk-btn mk-btn-coral" data-testid="button-sample-cta">
+                    Go to dashboard <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                  </Link>
+                ) : (
+                  <a href={previewHref} className="mk-btn mk-btn-coral" data-testid="button-sample-cta">
+                    Try the free preview <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                  </a>
+                )}
+                <Link href="/pricing" className="mk-btn border border-white/25 text-[hsl(42_38%_94%)] hover:bg-white/10" data-testid="button-sample-pricing">
+                  View pricing
+                </Link>
+              </div>
+            </div>
+          </Reveal>
+        </section>
+      </main>
+
+      <MarketingFooter />
     </div>
   );
 }

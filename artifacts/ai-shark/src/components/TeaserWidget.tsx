@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { FileUpload } from "@/components/FileUpload";
-import { TrustBadges } from "@/components/TrustBadges";
 import { AnalysisProgress } from "@/components/AnalysisProgress";
 import { ScoreRing } from "@/components/ScoreRing";
 import { Badge } from "@/components/ui/badge";
@@ -69,7 +68,7 @@ export function TeaserWidget() {
             <ScoreRing score={result.overallScore} size="lg" />
             <div className="text-center sm:text-left">
               <div className="flex items-center justify-center sm:justify-start gap-2 mb-2">
-                <span className="text-sm text-muted-foreground">Lender Readiness Grade</span>
+                <span className="text-sm text-muted-foreground">Plan documentation review grade</span>
                 <Badge className="text-base px-3 py-0.5" data-testid="badge-teaser-grade">
                   {grade}
                 </Badge>
@@ -79,6 +78,9 @@ export function TeaserWidget() {
               </p>
             </div>
           </div>
+          <p className="mt-4 text-xs text-muted-foreground">
+            This preview reviews the plan you provided; it does not verify creditworthiness or predict a lender's decision.
+          </p>
 
           <div className="mt-8">
             <div className="flex items-center gap-2 mb-3">
@@ -92,14 +94,6 @@ export function TeaserWidget() {
                     <AlertCircle className="h-4 w-4 mt-1 shrink-0 text-primary" aria-hidden="true" />
                     <span>{w}</span>
                   </div>
-                  <div className="ml-6 mt-1.5 flex items-center gap-2 rounded-md border bg-muted/40 px-3 py-2">
-                    <Lock className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
-                    <span className="select-none text-sm text-muted-foreground blur-[5px]" aria-hidden="true">
-                      Specific steps to fix this before you apply for the loan
-                    </span>
-                    <span className="sr-only">How to fix this is included in the full report.</span>
-                    <span className="ml-auto shrink-0 text-xs font-medium text-primary">Unlock to see the fix</span>
-                  </div>
                 </li>
               ))}
             </ul>
@@ -108,11 +102,11 @@ export function TeaserWidget() {
           <div className="mt-8 rounded-lg border bg-muted/40 p-5 text-center">
             <div className="flex items-center justify-center gap-2 mb-2 text-muted-foreground">
               <Lock className="h-4 w-4" aria-hidden="true" />
-              <span className="text-sm font-medium">Unlock the full report</span>
+              <span className="text-sm font-medium">Get a separate full assessment</span>
             </div>
             <p className="text-sm text-muted-foreground mb-3 max-w-md mx-auto">
-              Get the complete 10-criteria breakdown, SWOT, market analysis, 6 financial ratios,
-              specific recommendations, and a downloadable PDF.
+              Upload a plan after signup and payment for a separate assessment with criteria analysis,
+              recommendations, and a printable report. The free preview does not turn into a paid report.
             </p>
             <p className="text-sm mb-4 max-w-md mx-auto" data-testid="text-teaser-pricing">
               <span className="font-semibold text-foreground">Just $13.99</span>
@@ -128,7 +122,7 @@ export function TeaserWidget() {
                   data-testid="button-teaser-unlock"
                 >
                 <Link href="/signup" onClick={() => trackClick("teaser_unlock_full_report")}>
-                  Get My Full Report
+                  Start a Full Assessment
                   <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </Link>
               </Button>
@@ -195,12 +189,11 @@ export function TeaserWidget() {
           </div>
         )}
         <p className="mt-4 text-center text-xs text-muted-foreground">
-          Free preview — no account or credit card needed. Your file is analyzed, not stored.
-          We will email your score and follow-up information; you can unsubscribe at any time.
+          Free preview — no account or credit card needed. Your file is parsed in memory and is not saved as an assessment.
+          AI analysis processes the extracted text. We retain your email, score and grade for follow-up emails, and abuse-prevention telemetry;
+          you can unsubscribe from follow-up emails. See our{" "}
+          <Link href="/privacy" className="underline" data-testid="link-teaser-privacy">Privacy Policy</Link>.
         </p>
-        <div className="mt-4">
-          <TrustBadges />
-        </div>
       </CardContent>
     </Card>
   );

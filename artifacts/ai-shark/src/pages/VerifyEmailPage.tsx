@@ -24,6 +24,7 @@ export default function VerifyEmailPage() {
         if (res.ok) {
           setStatus("success");
           setMessage("Your email has been verified successfully!");
+          return;
         } else {
           return res.json().then((data) => {
             setStatus("error");

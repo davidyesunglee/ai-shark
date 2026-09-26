@@ -277,8 +277,15 @@ export default function Dashboard() {
     overallScore: a.overallScore,
   }));
 
-  const scorePoints: ScorePoint[] = assessments
-    .filter((a) => a.status === "complete" && a.overallScore !== null)
+  const completedScores = assessments.filter((a) => a.status === "complete" && a.overallScore !== null);
+  const scoreGroups = new Map<string, number>();
+  completedScores.forEach((a) => {
+    const name = a.businessName.trim().toLowerCase();
+    scoreGroups.set(name, (scoreGroups.get(name) || 0) + 1);
+  });
+  const scoreGroupName = [...scoreGroups.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
+  const scorePoints: ScorePoint[] = completedScores
+    .filter((a) => a.businessName.trim().toLowerCase() === scoreGroupName)
     .sort((a, b) => new Date(a.uploadDate).getTime() - new Date(b.uploadDate).getTime())
     .map((a) => ({
       date: new Date(a.uploadDate).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
@@ -290,6 +297,10 @@ export default function Dashboard() {
   const avgScore = assessments
     .filter((a) => a.overallScore !== null)
     .reduce((sum, a, _, arr) => sum + (a.overallScore || 0) / arr.length, 0);
+  const needsPayment = !isBillingLoading && (!billingStatus || billingStatus.tier === "free" || billingStatus.creditsRemaining <= 0);
+  const latestCompleted = assessments
+    .filter((a) => a.status === "complete")
+    .sort((a, b) => new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime())[0];
 
   if (isCheckingRegistration) {
     return (
@@ -402,13 +413,20 @@ export default function Dashboard() {
       <div className="min-h-screen bg-background">
         <Header />
         <main className="mx-auto max-w-6xl px-6 py-8">
-          <AssessmentReport assessment={mappedFull} onBack={handleBack} />
+          <AssessmentReport
+            assessment={mappedFull}
+            onBack={handleBack}
+            revisionAction={isBillingLoading ? "pending" : needsPayment ? "pricing" : "upload"}
+            onRevise={() => {
+              handleBack();
+              if (needsPayment) setLocation("/pricing");
+              else setUploadOpen(true);
+            }}
+          />
         </main>
       </div>
     );
   }
-
-  const needsPayment = !isBillingLoading && (!billingStatus || billingStatus.tier === "free" || billingStatus.creditsRemaining <= 0);
 
   return (
     <div className="min-h-screen bg-background">
@@ -480,6 +498,20 @@ export default function Dashboard() {
             </section>
           )}
 
+          {latestCompleted && (
+            <section className="rounded-xl border bg-card p-5 flex flex-wrap items-center justify-between gap-4" aria-labelledby="next-step-title">
+              <div>
+                <h2 id="next-step-title" className="font-semibold">Your next step: review and revise</h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Open your latest completed report for its recommendations, then update your plan and submit the revised document for a new evaluation.
+                </p>
+              </div>
+              <Button variant="outline" onClick={() => handleView(latestCompleted.id)} data-testid="button-review-latest">
+                Review recommendations
+              </Button>
+            </section>
+          )}
+
           <section aria-label="Assessment statistics">
             <h2 className="sr-only">Statistics</h2>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -503,8 +535,11 @@ export default function Dashboard() {
           </section>
 
           {scorePoints.length >= 2 && (
-            <section aria-label="Score trend">
+            <section aria-label="Assessment score history">
               <ScoreTrendCard points={scorePoints} />
+              <p className="mt-2 text-xs text-muted-foreground">
+                Scores shown only for assessments named "{scorePoints[0].businessName}". Matching names and score differences do not verify changes in business performance or lending outcomes.
+              </p>
             </section>
           )}
 

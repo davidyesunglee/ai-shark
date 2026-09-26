@@ -65,6 +65,8 @@ interface AssessmentReportProps {
   assessment: FullAssessment;
   onBack: () => void;
   publicMode?: boolean;
+  revisionAction?: "pending" | "pricing" | "upload";
+  onRevise?: () => void;
 }
 
 function gradeColor(grade?: string): string {
@@ -86,7 +88,7 @@ function handleExportPDF(assessment: FullAssessment) {
   const printWindow = window.open("", "_blank");
   if (!printWindow) return;
 
-  const gradeLabel = assessment.lenderReadinessGrade ? `Lender Grade: ${assessment.lenderReadinessGrade}` : "";
+  const gradeLabel = assessment.lenderReadinessGrade ? `Documentation review grade: ${assessment.lenderReadinessGrade}` : "";
   const score = assessment.overallScore;
   const scoreLabel = score >= 85 ? "Excellent" : score >= 75 ? "Strong" : score >= 65 ? "Good" : score >= 50 ? "Moderate" : "Needs Improvement";
 
@@ -200,7 +202,7 @@ function handleExportPDF(assessment: FullAssessment) {
     <div class="score-details">
       <h1>${assessment.businessName}</h1>
       ${gradeLabel ? `<div class="grade-badge">${gradeLabel}</div>` : ""}
-      <div class="score-label">${scoreLabel} — Bank Debt Financing Readiness</div>
+      <div class="score-label">${scoreLabel} — business plan documentation review score, not approval, a lending decision, or verification of creditworthiness</div>
     </div>
   </div>
 
@@ -245,7 +247,7 @@ function handleExportPDF(assessment: FullAssessment) {
   setTimeout(() => printWindow.print(), 500);
 }
 
-export function AssessmentReport({ assessment, onBack, publicMode = false }: AssessmentReportProps) {
+export function AssessmentReport({ assessment, onBack, publicMode = false, revisionAction, onRevise }: AssessmentReportProps) {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
@@ -280,30 +282,31 @@ export function AssessmentReport({ assessment, onBack, publicMode = false }: Ass
       <div className="grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-1">
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Overall Score</CardTitle>
+            <CardTitle className="text-lg">Documentation Review Score</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col items-center gap-4">
             <ScoreRing score={assessment.overallScore} size="lg" />
             {assessment.lenderReadinessGrade && (
               <div
                 className={`rounded-lg px-4 py-1.5 text-sm font-bold ${gradeColor(assessment.lenderReadinessGrade)}`}
-                aria-label={`Lender readiness grade: ${assessment.lenderReadinessGrade}`}
+                aria-label={`Documentation review grade: ${assessment.lenderReadinessGrade}`}
                 data-testid="text-lender-grade"
               >
-                Lender Grade: {assessment.lenderReadinessGrade}
+                Review Grade: {assessment.lenderReadinessGrade}
               </div>
             )}
             <p className="text-center text-sm text-muted-foreground">
               {assessment.overallScore >= 85
-                ? "Excellent candidate for bank debt financing"
+                ? "Strong documentation in this review"
                 : assessment.overallScore >= 75
-                ? "Strong candidate for bank debt financing"
+                ? "Mostly strong documentation with areas to review"
                 : assessment.overallScore >= 65
-                ? "Good candidate — minor gaps to address"
+                ? "Some documentation gaps to address"
                 : assessment.overallScore >= 50
-                ? "May qualify with additional documentation"
-                : "Significant improvements needed"}
+                ? "Additional documentation may help"
+                : "Significant documentation gaps to address"}
             </p>
+            <p className="text-center text-xs text-muted-foreground">This is not approval, a lending decision, or verified creditworthiness.</p>
           </CardContent>
         </Card>
 
@@ -508,6 +511,32 @@ export function AssessmentReport({ assessment, onBack, publicMode = false }: Ass
           recommendations={assessment.recommendations}
         />
       </section>
+
+      {!publicMode && onRevise && revisionAction && (
+        <section className="rounded-xl border bg-card p-5 sm:p-6" aria-labelledby="revision-heading">
+          <h2 id="revision-heading" className="text-lg font-semibold">Revise and review your plan</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Use these recommendations to update your document before submitting a revised file for a separate evaluation.
+          </p>
+          {assessment.recommendations.length > 0 ? (
+            <ol className="mt-4 list-decimal pl-5 space-y-2 text-sm">
+              {assessment.recommendations.map((recommendation, index) => (
+                <li key={index}>{recommendation}</li>
+              ))}
+            </ol>
+          ) : (
+            <p className="mt-4 text-sm text-muted-foreground">
+              No specific recommendations are available for this report. Review the criteria and weaknesses above before revising.
+            </p>
+          )}
+          <p className="mt-4 text-xs text-muted-foreground">
+            A revised upload creates a new assessment and uses one evaluation credit. Previous reports remain in your dashboard unless you delete them.
+          </p>
+          <Button className="mt-4" onClick={onRevise} disabled={revisionAction === "pending"} data-testid="button-revise-plan">
+            {revisionAction === "pending" ? "Checking evaluation credits..." : revisionAction === "pricing" ? "View plans to evaluate revision" : "Upload revised plan"}
+          </Button>
+        </section>
+      )}
 
       {!publicMode && (
         <div className="mt-6">

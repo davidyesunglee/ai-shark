@@ -1,0 +1,86 @@
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Spline+Sans+Mono:wght@500&display=swap");
+
+/* Scoped to marketing pages only (.mk root). Palette: "Harbor Chart" —
+   brand blue ink on warm chart paper, with a buoy-coral signal accent. */
+.mk {
+  --mk-paper: 42 38% 96%;
+  --mk-paper-2: 40 30% 91%;
+  --mk-ink: 220 55% 13%;
+  --mk-ink-soft: 219 20% 38%;
+  --mk-blue: 217 91% 35%;
+  --mk-deep: 221 70% 17%;
+  --mk-tide: 196 62% 88%;
+  --mk-coral: 12 82% 56%;
+  --mk-coral-ink: 12 70% 38%;
+  --mk-line: 220 25% 82%;
+  background: hsl(var(--mk-paper));
+  color: hsl(var(--mk-ink));
+  font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  position: relative;
+}
+.mk::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.35;
+  background-image: radial-gradient(hsl(var(--mk-line)) 0.8px, transparent 0.8px);
+  background-size: 22px 22px;
+}
+.mk > * { position: relative; z-index: 1; }
+.mk-display { font-family: "Fraunces", Georgia, serif; font-variation-settings: "opsz" 120; letter-spacing: -0.02em; }
+.mk-mono { font-family: "Spline Sans Mono", ui-monospace, monospace; letter-spacing: 0.06em; text-transform: uppercase; font-size: 0.72rem; }
+.mk-ink-soft { color: hsl(var(--mk-ink-soft)); }
+.mk-blue { color: hsl(var(--mk-blue)); }
+.mk-coral { color: hsl(var(--mk-coral-ink)); }
+.mk-card {
+  background: hsl(42 45% 98.5%);
+  border: 1px solid hsl(var(--mk-line));
+  border-radius: 18px;
+  box-shadow: 0 1px 0 hsl(var(--mk-line)), 0 18px 40px -28px hsl(var(--mk-deep) / 0.35);
+}
+.mk-rule { border-color: hsl(var(--mk-line)); }
+.mk-deep { background: hsl(var(--mk-deep)); color: hsl(42 38% 94%); }
+.mk-tide { background: hsl(var(--mk-tide)); }
+.mk-paper2 { background: hsl(var(--mk-paper-2)); }
+.mk-chip {
+  display: inline-flex; align-items: center; gap: .4rem;
+  border: 1px solid hsl(var(--mk-line)); border-radius: 999px;
+  padding: .3rem .75rem; background: hsl(42 45% 98.5%);
+  font-size: .78rem; font-weight: 600; color: hsl(var(--mk-ink-soft));
+}
+.mk-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  border-radius: 999px; padding: .8rem 1.35rem; font-weight: 600; font-size: .95rem;
+  transition: transform .2s ease, background-color .2s ease, box-shadow .2s ease;
+  cursor: pointer;
+}
+.mk-btn:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+.mk-btn-primary { background: hsl(var(--mk-blue)); color: hsl(42 50% 97%); box-shadow: 0 10px 24px -14px hsl(var(--mk-blue)); }
+.mk-btn-primary:hover:not(:disabled) { background: hsl(var(--mk-deep)); transform: translateY(-1px); }
+.mk-btn-coral { background: hsl(var(--mk-coral)); color: hsl(220 55% 10%); }
+.mk-btn-coral:hover:not(:disabled) { background: hsl(12 82% 62%); transform: translateY(-1px); }
+.mk-btn-ghost { border: 1px solid hsl(var(--mk-line)); background: hsl(42 45% 98.5%); color: hsl(var(--mk-ink)); }
+.mk-btn-ghost:hover:not(:disabled) { border-color: hsl(var(--mk-blue)); transform: translateY(-1px); }
+.mk-link { color: hsl(var(--mk-blue)); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+.mk-link:hover { color: hsl(var(--mk-coral-ink)); }
+.mk-marker { background: linear-gradient(transparent 62%, hsl(var(--mk-coral) / 0.32) 62%); padding: 0 .08em; }
+.mk-wave { color: hsl(var(--mk-blue) / .14); }
+
+/* Reveal motion */
+.mk-reveal { opacity: 0; transform: translateY(14px); transition: opacity .7s cubic-bezier(.2,.7,.2,1), transform .7s cubic-bezier(.2,.7,.2,1); }
+.mk-reveal.is-in { opacity: 1; transform: none; }
+@keyframes mk-rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+.mk-rise { animation: mk-rise .8s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes mk-bob { 0%,100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-8px) rotate(1deg); } }
+.mk-bob { animation: mk-bob 7s ease-in-out infinite; }
+@keyframes mk-drift { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.mk-drift { animation: mk-drift 38s linear infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .mk-reveal { opacity: 1; transform: none; transition: none; }
+  .mk-rise, .mk-bob, .mk-drift { animation: none; }
+  .mk-btn { transition: none; }
+  .mk-btn:hover { transform: none !important; }
+}
