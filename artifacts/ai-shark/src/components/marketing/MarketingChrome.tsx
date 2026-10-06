@@ -57,7 +57,7 @@ export function MarketingHeader({ signedIn }: NavUser) {
           {signedIn ? (
             <Link href="/dashboard" className="mk-btn mk-btn-primary !py-2 !px-4 text-sm" data-testid="link-dashboard">Dashboard</Link>
           ) : (
-            <Link href="/login" className="mk-btn mk-btn-ghost !py-2 !px-4 text-sm" data-testid="button-login-header">Sign in</Link>
+            <Link href="/sign-in" className="mk-btn mk-btn-ghost !py-2 !px-4 text-sm" data-testid="button-login-header">Sign in</Link>
           )}
         </nav>
       </div>

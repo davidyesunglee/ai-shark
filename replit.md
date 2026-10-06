@@ -26,6 +26,10 @@ _Populate as you build — short repo map plus pointers to the source-of-truth f
 
 ## Architecture decisions
 
+- Authentication uses Replit-managed Clerk, with same-origin session cookies on web and the canonical Clerk production proxy.
+- Preserve the existing local user-ID bridge via verified `sessionClaims.userId`; migrated users retain their original IDs and app records.
+- Existing users, sessions, and foreign keys remain intact. Clerk owns identity. New local users are provisioned on first protected request; email is inserted only to satisfy the existing constraint, and the required password-hash column receives an unusable sentinel, never a local credential.
+
 _Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
 
 ## Product

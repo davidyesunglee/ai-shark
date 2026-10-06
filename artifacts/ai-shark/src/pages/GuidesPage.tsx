@@ -46,7 +46,7 @@ export default function GuidesPage() {
             <Link href="/education">
               <Button variant="ghost" data-testid="button-education">Learn</Button>
             </Link>
-            <Link href="/signup">
+            <Link href="/sign-up">
               <Button data-testid="button-header-signup">Get Free Score</Button>
             </Link>
           </nav>

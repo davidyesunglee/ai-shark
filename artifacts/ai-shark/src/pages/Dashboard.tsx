@@ -14,6 +14,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { FileText, TrendingUp, CheckCircle, Clock, Loader2, CreditCard, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { customFetch, ApiError } from "@workspace/api-client-react";
 
 interface ApiAssessment {
   id: string;
@@ -112,7 +113,7 @@ export default function Dashboard() {
     }
   }, [pollingCredits, billingStatus]);
 
-  const { data: assessments = [], isLoading } = useQuery<ApiAssessment[]>({
+  const { data: assessments = [], isLoading, error: assessmentsError } = useQuery<ApiAssessment[]>({
     queryKey: ["/api/assessments"],
     refetchInterval: 5000,
     enabled: registrationStatus?.isRegistered === true,
@@ -141,11 +142,7 @@ export default function Dashboard() {
   const { data: fullAssessment, isLoading: isLoadingFull, isError: isFullAssessmentError, refetch: refetchFullAssessment } = useQuery<ApiFullAssessment>({
     queryKey: ["/api/assessments", viewingId],
     queryFn: async () => {
-      const response = await fetch(`/api/assessments/${viewingId}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch assessment");
-      }
-      return response.json();
+      return customFetch<ApiFullAssessment>(`/api/assessments/${viewingId}`);
     },
     enabled: !!viewingId,
     staleTime: 0,
@@ -167,7 +164,7 @@ export default function Dashboard() {
       const timeoutId = setTimeout(() => controller.abort(), 120000);
       
       try {
-        const response = await fetch("/api/assessments/upload", {
+        const result = await customFetch("/api/assessments/upload", {
           method: "POST",
           body: formData,
           credentials: "include",
@@ -175,16 +172,12 @@ export default function Dashboard() {
         });
         clearTimeout(timeoutId);
         
-        if (!response.ok) {
-          const error = await response.json();
-          if (error.requiresPayment) {
-            throw new Error("PAYMENT_REQUIRED:" + (error.message || "Payment required"));
-          }
-          throw new Error(error.message || "Upload failed");
-        }
-        return response.json();
+        return result;
       } catch (err: any) {
         clearTimeout(timeoutId);
+        if (err instanceof ApiError && (err.data as { requiresPayment?: boolean } | null)?.requiresPayment) {
+          throw new Error("PAYMENT_REQUIRED:" + ((err.data as { message?: string }).message || "Payment required"));
+        }
         if (err.name === "AbortError") {
           throw new Error("Upload timed out. Please try again with a smaller file.");
         }
@@ -315,6 +308,10 @@ export default function Dashboard() {
     );
   }
 
+  if (assessmentsError) {
+    return <main role="alert" className="p-8"><Header /><h1>Assessments could not be loaded</h1><p>Please try again or contact support.</p></main>;
+  }
+
   if (viewingId) {
     if (isLoadingFull) {
       return (
@@ -430,6 +427,9 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background">
+      {registrationStatus?.isRegistered && !isLoading && billingStatus && (
+        <span className="sr-only" data-testid="dashboard-account-loaded">Account assessments and billing loaded</span>
+      )}
       <a href="#main-content" className="skip-to-content">
         Skip to main content
       </a>

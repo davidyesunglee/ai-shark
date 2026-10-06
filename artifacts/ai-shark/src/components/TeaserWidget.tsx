@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { AlertCircle, ArrowRight, Lock, RotateCcw, ShieldAlert } from "lucide-react";
 import { Link } from "wouter";
 import { trackClick } from "@/lib/useSEO";
+import { customFetch, ApiError } from "@workspace/api-client-react";
 
 interface TeaserResult {
   overallScore: number;
@@ -37,18 +38,13 @@ export function TeaserWidget() {
       const formData = new FormData();
       formData.append("file", file);
       formData.append("email", email.trim());
-      const res = await fetch("/api/teaser", {
+      const data = await customFetch<TeaserResult>("/api/teaser", {
         method: "POST",
         body: formData,
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data?.message || "Something went wrong. Please try again.");
-        return;
-      }
-      setResult(data as TeaserResult);
+      setResult(data);
     } catch (err) {
-      setError("Could not reach the server. Please try again.");
+      setError(err instanceof ApiError ? err.message : "Could not reach the server. Please try again.");
     } finally {
       setIsAnalyzing(false);
     }
@@ -121,7 +117,7 @@ export function TeaserWidget() {
                   className="gap-2 w-full sm:w-auto"
                   data-testid="button-teaser-unlock"
                 >
-                <Link href="/signup" onClick={() => trackClick("teaser_unlock_full_report")}>
+                <Link href="/sign-up" onClick={() => trackClick("teaser_unlock_full_report")}>
                   Start a Full Assessment
                   <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </Link>

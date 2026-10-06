@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
 import { Plus, LogOut, CreditCard } from "lucide-react";
-import { useAuth } from "@/hooks/use-auth";
+import { useUser, useClerk } from "@clerk/react";
 import { Link } from "wouter";
 import logoImage from "@/assets/shark-mark.svg";
 
@@ -10,7 +10,8 @@ interface HeaderProps {
 }
 
 export function Header({ onNewAssessment }: HeaderProps) {
-  const { user, logout, isLoggingOut } = useAuth();
+  const { user } = useUser();
+  const { signOut } = useClerk();
 
   return (
     <header className="sticky top-0 z-50 flex h-16 items-center justify-between gap-2 border-b bg-background px-3 sm:px-6" role="banner">
@@ -27,7 +28,7 @@ export function Header({ onNewAssessment }: HeaderProps) {
         <div className="flex items-center gap-1 sm:gap-2">
           {user && (
             <span className="text-sm text-muted-foreground hidden sm:inline" data-testid="text-user-name">
-              {user.firstName || user.email || "User"}
+              {user.firstName || user.primaryEmailAddress?.emailAddress || "User"}
             </span>
           )}
           <Button variant="ghost" className="px-2 sm:px-3" asChild data-testid="link-pricing">
@@ -46,8 +47,7 @@ export function Header({ onNewAssessment }: HeaderProps) {
           <Button 
             variant="ghost" 
             size="icon" 
-            onClick={() => logout()} 
-            disabled={isLoggingOut}
+            onClick={() => signOut({ redirectUrl: import.meta.env.BASE_URL })}
             aria-label="Log out"
             data-testid="button-logout"
           >

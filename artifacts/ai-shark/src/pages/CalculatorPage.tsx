@@ -100,7 +100,7 @@ export default function CalculatorPage() {
             <Link href="/guides">
               <Button variant="ghost" data-testid="button-guides">Guides</Button>
             </Link>
-            <Link href="/signup">
+            <Link href="/sign-up">
               <Button data-testid="button-header-signup">Get Free Score</Button>
             </Link>
           </nav>

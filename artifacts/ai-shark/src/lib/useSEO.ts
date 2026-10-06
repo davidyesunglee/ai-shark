@@ -1,3 +1,4 @@
+import { customFetch } from "@workspace/api-client-react";
 import { useEffect } from "react";
 
 export interface SEOOptions {
@@ -98,7 +99,7 @@ export function useJsonLd(blocks: Array<{ id: string; data: unknown }>) {
 export function trackClick(label: string, extra?: { path?: string }) {
   try {
     const path = extra?.path || window.location.pathname;
-    fetch("/api/track-click", {
+    customFetch("/api/track-click", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ label, path }),
@@ -115,7 +116,7 @@ export function trackPageview(path: string) {
   try {
     if (path === lastTrackedPath) return;
     lastTrackedPath = path;
-    fetch("/api/track-pageview", {
+    customFetch("/api/track-pageview", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ path, referrer: document.referrer || null }),

@@ -1,7 +1,7 @@
 import { useLocation, Link } from "wouter";
 import { AssessmentReport, type FullAssessment } from "@/components/AssessmentReport";
 import { useSEO } from "@/lib/useSEO";
-import { useAuth } from "@/hooks/use-auth";
+import { useUser } from "@clerk/react";
 import { ArrowRight, Info, CircleSlash } from "lucide-react";
 import { MarketingHeader, MarketingFooter, Reveal } from "@/components/marketing/MarketingChrome";
 
@@ -186,7 +186,7 @@ const SAMPLE_ASSESSMENT: FullAssessment = {
 
 export default function SamplePage() {
   const [, setLocation] = useLocation();
-  const { user } = useAuth();
+  const { user } = useUser();
 
   useSEO({
     title: "Sample Business Plan Review (Fictional) | AI Shark",

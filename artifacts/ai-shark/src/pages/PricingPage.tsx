@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Check, Minus, ShieldCheck, CreditCard, FileText, ArrowRight, RefreshCw, Receipt } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { useAuth } from "@/hooks/use-auth";
+import { useUser } from "@clerk/react";
 import { Link, useLocation } from "wouter";
 import { useSEO } from "@/lib/useSEO";
 import { MarketingHeader, MarketingFooter, Reveal } from "@/components/marketing/MarketingChrome";
@@ -44,7 +44,8 @@ export default function PricingPage() {
     canonical: "/pricing",
   });
   const { toast } = useToast();
-  const { user, isLoading: authLoading } = useAuth();
+  const { user, isLoaded } = useUser();
+  const authLoading = !isLoaded;
   const [, setLocation] = useLocation();
   const [processingTier, setProcessingTier] = useState<string | null>(null);
 
@@ -54,7 +55,7 @@ export default function PricingPage() {
 
   const { data: billingData } = useQuery<{ tier: string; creditsRemaining: number; hasActiveSubscription: boolean }>({
     queryKey: ["/api/billing/status"],
-    enabled: !!user,
+    enabled: isLoaded && !!user,
   });
 
   const checkoutMutation = useMutation({
@@ -95,7 +96,7 @@ export default function PricingPage() {
 
   const handleSelectPlan = (priceId: string, isSubscription: boolean, tier: string) => {
     if (!user) {
-      setLocation("/login");
+      setLocation("/sign-in");
       return;
     }
     setProcessingTier(tier);
@@ -202,6 +203,11 @@ export default function PricingPage() {
       <MarketingHeader signedIn={!!user} />
 
       <main id="main-content">
+        {user && billingData && (
+          <p className="mx-auto max-w-6xl px-4 pt-6" data-testid="pricing-account-billing">
+            Your plan: {billingData.tier}. Reports remaining: {billingData.creditsRemaining}.
+          </p>
+        )}
         <section className="mx-auto max-w-6xl px-4 pb-10 pt-14 md:pt-20">
           <div className="max-w-3xl">
             <p className="mk-mono mk-coral mk-rise">Pricing</p>
@@ -248,7 +254,7 @@ export default function PricingPage() {
                 <button
                   className="mk-btn mk-btn-ghost mt-6 self-start"
                   data-testid="button-register-free"
-                  onClick={() => setLocation(user ? "/dashboard" : "/signup")}
+                  onClick={() => setLocation(user ? "/dashboard" : "/sign-up")}
                 >
                   {user ? "Go to dashboard" : "Create free account"}
                 </button>

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 80" fill="none">
+  <path fill="#0846AA" d="M24 62 C29 38 41 21 57 13 C50 29 51 46 61 62 Z"/>
+  <rect x="3" y="49" width="17" height="6" rx="3" fill="#0846AA"/>
+  <rect x="65" y="49" width="11" height="6" rx="3" fill="#0846AA"/>
+  <text x="90" y="50" fill="#0846AA" font-family="Inter, sans-serif" font-weight="700" font-size="36">AI Shark</text>
+</svg>

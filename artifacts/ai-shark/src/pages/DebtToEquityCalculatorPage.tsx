@@ -90,7 +90,7 @@ export default function DebtToEquityCalculatorPage() {
             <Link href="/calculator">
               <Button variant="ghost" data-testid="button-dscr-calc">DSCR Calculator</Button>
             </Link>
-            <Link href="/signup">
+            <Link href="/sign-up">
               <Button data-testid="button-header-signup">Get Free Score</Button>
             </Link>
           </nav>

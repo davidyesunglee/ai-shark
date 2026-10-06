@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { queryClient } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { 
   MessageSquare, 
   Bug, 
@@ -67,9 +67,7 @@ export default function AdminFeedbackPage() {
   const { data: feedback = [], isLoading, refetch, isRefetching } = useQuery<Feedback[]>({
     queryKey: ["/api/admin/feedback"],
     queryFn: async () => {
-      const res = await fetch("/api/admin/feedback", {
-        headers: { "x-admin-key": adminKey },
-      });
+      const res = await apiRequest("GET", "/api/admin/feedback", undefined, { "x-admin-key": adminKey });
       if (!res.ok) throw new Error("Unauthorized");
       return res.json();
     },
@@ -79,14 +77,7 @@ export default function AdminFeedbackPage() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, resolved }: { id: string; resolved: boolean }) => {
-      const res = await fetch(`/api/admin/feedback/${id}`, {
-        method: "PATCH",
-        headers: { 
-          "Content-Type": "application/json",
-          "x-admin-key": adminKey 
-        },
-        body: JSON.stringify({ resolved }),
-      });
+      const res = await apiRequest("PATCH", `/api/admin/feedback/${id}`, { resolved }, { "x-admin-key": adminKey });
       if (!res.ok) throw new Error("Failed to update");
       return res.json();
     },

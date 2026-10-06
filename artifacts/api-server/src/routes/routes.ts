@@ -3,7 +3,7 @@ import { storage } from "../storage";
 import multer from "multer";
 import { parseDocument } from "../documentParser";
 import { analyzeBusinessPlan, analyzeTeaser, isOpenAIConfigured } from "../openai";
-import { setupAuth, isAuthenticated } from "../replit_integrations/auth";
+import { requireAuth as isAuthenticated } from "../middlewares/requireAuth";
 import { insertUserRegistrationSchema, insertCustomerFeedbackSchema } from "@workspace/db";
 import { guideSlugs } from "../guides";
 import { startWeeklyEmailScheduler, startTransactionEmailScheduler, startRevenueReportScheduler, startExpenseReportScheduler, startWeeklySiteReportScheduler, triggerSiteReportManually, startWeeklyVisitsReportScheduler, triggerVisitsReportManually, startTeaserDripScheduler } from "../emailScheduler";
@@ -543,8 +543,6 @@ ${pages
     }
   });
 
-  await setupAuth(app);
-  
   startWeeklyEmailScheduler();
   startTeaserDripScheduler();
   startTransactionEmailScheduler();
@@ -555,7 +553,7 @@ ${pages
 
   app.get("/api/registration/status", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user?.id;
+      const userId = req.dbUser?.id;
       const registration = await storage.getUserRegistration(userId);
       res.json({ isRegistered: !!registration, registration });
     } catch (error) {
@@ -566,7 +564,7 @@ ${pages
 
   app.post("/api/registration", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user?.id;
+      const userId = req.dbUser?.id;
       
       const existing = await storage.getUserRegistration(userId);
       if (existing) {
@@ -634,7 +632,7 @@ ${pages
 
   app.get("/api/assessments", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user?.id;
+      const userId = req.dbUser?.id;
       const assessments = await storage.getAssessmentsByUser(userId);
       const mapped = assessments.map((a) => ({
         id: a.id,
@@ -653,7 +651,7 @@ ${pages
 
   app.get("/api/assessments/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user?.id;
+      const userId = req.dbUser?.id;
       const assessment = await storage.getAssessment(req.params.id);
       if (!assessment) {
         return res.status(404).json({ message: "Assessment not found" });
@@ -669,7 +667,7 @@ ${pages
   });
 
   app.post("/api/assessments/upload", isAuthenticated, upload.single("file"), async (req: any, res) => {
-    console.log("[Upload] Request received, user:", req.user?.id);
+    req.log.info({ userId: req.dbUser?.id }, "Upload request received");
     try {
       if (!req.file) {
         console.log("[Upload] No file in request");
@@ -683,7 +681,7 @@ ${pages
         return res.status(503).json({ message: "AI analysis is not configured." });
       }
 
-      const userId = req.user?.id;
+      const userId = req.dbUser?.id;
       
       const registration = await storage.getUserRegistration(userId);
       if (!registration) {
@@ -754,7 +752,7 @@ ${pages
 
   app.delete("/api/assessments/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user?.id;
+      const userId = req.dbUser?.id;
       const assessment = await storage.getAssessment(req.params.id);
       if (!assessment) {
         return res.status(404).json({ message: "Assessment not found" });
@@ -785,7 +783,7 @@ ${pages
 
   app.get("/api/billing/status", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user?.id;
+      const userId = req.dbUser?.id;
       console.log("[Billing Status] userId:", userId);
       
       const registration = await storage.getUserRegistration(userId);
@@ -876,11 +874,11 @@ ${pages
 
   app.post("/api/checkout/create-session", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user?.id;
+      const userId = req.dbUser?.id;
       const { priceId } = req.body;
       
       console.log("[Checkout] Starting checkout for user:", userId, "price:", priceId, "body:", JSON.stringify(req.body));
-      console.log("[Checkout] req.user object:", JSON.stringify(req.user));
+      req.log.info({ userId }, "Checkout account resolved");
 
       if (!priceId) {
         console.log("[Checkout] ERROR: No priceId provided");
@@ -975,7 +973,7 @@ ${pages
 
   app.post("/api/billing/portal", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user?.id;
+      const userId = req.dbUser?.id;
       const registration = await storage.getUserRegistration(userId);
       if (!registration) {
         return res.status(403).json({ message: "Registration required" });

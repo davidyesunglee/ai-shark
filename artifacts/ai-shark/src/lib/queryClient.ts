@@ -1,4 +1,5 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
+import { customFetch, ApiError } from "@workspace/api-client-react";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
@@ -11,10 +12,12 @@ export async function apiRequest(
   method: string,
   url: string,
   data?: unknown | undefined,
+  headers?: HeadersInit,
 ): Promise<Response> {
-  const res = await fetch(url, {
+  const res = await customFetch<Response>(url, {
+    responseType: "response",
     method,
-    headers: data ? { "Content-Type": "application/json" } : {},
+    headers: { ...(data ? { "Content-Type": "application/json" } : {}), ...headers },
     body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
   });
@@ -26,19 +29,17 @@ export async function apiRequest(
 type UnauthorizedBehavior = "returnNull" | "throw";
 export const getQueryFn: <T>(options: {
   on401: UnauthorizedBehavior;
-}) => QueryFunction<T> =
+}) => QueryFunction<T | null> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const res = await fetch(queryKey.join("/") as string, {
-      credentials: "include",
-    });
-
-    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-      return null;
+    try {
+      return await customFetch(queryKey.join("/") as string);
+    } catch (error) {
+      if (unauthorizedBehavior === "returnNull" && error instanceof ApiError && error.status === 401) {
+        return null;
+      }
+      throw error;
     }
-
-    await throwIfResNotOk(res);
-    return await res.json();
   };
 
 export const queryClient = new QueryClient({
@@ -47,7 +48,7 @@ export const queryClient = new QueryClient({
       queryFn: getQueryFn({ on401: "throw" }),
       refetchInterval: false,
       refetchOnWindowFocus: false,
-      staleTime: Infinity,
+      staleTime: 30000,
       retry: false,
     },
     mutations: {
